@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Sora:wght@100;200;300;400;500;600;700;800&display=swap");
+
+/* 360 Pathshala — Brand: deep navy blue + vibrant orange */
+
+:root {
+  --radius: 0.875rem;
+
+  /* Fonts */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --font-display: "Sora", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand Colors */
+  --background: oklch(0.99 0.005 80);
+  --foreground: oklch(0.22 0.06 265);
+
+  --surface: oklch(0.97 0.012 80);
+  --surface-elevated: oklch(1 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.06 265);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.06 265);
+
+  /* Primary */
+  --primary: oklch(0.34 0.13 265);
+  --primary-foreground: oklch(0.99 0.005 80);
+  --primary-soft: oklch(0.93 0.04 265);
+
+  /* Accent */
+  --accent: oklch(0.72 0.18 50);
+  --accent-foreground: oklch(1 0 0);
+  --accent-soft: oklch(0.96 0.04 70);
+
+  /* Secondary */
+  --secondary: oklch(0.96 0.012 265);
+  --secondary-foreground: oklch(0.22 0.06 265);
+
+  /* Muted */
+  --muted: oklch(0.96 0.008 265);
+  --muted-foreground: oklch(0.5 0.03 265);
+
+  /* Destructive */
+  --destructive: oklch(0.6 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Borders */
+  --border: oklch(0.9 0.012 265);
+  --input: oklch(0.92 0.012 265);
+  --ring: oklch(0.34 0.13 265);
+
+  /* Gradients */
+  --gradient-brand: linear-gradient(
+    135deg,
+    oklch(0.34 0.13 265) 0%,
+    oklch(0.42 0.16 270) 50%,
+    oklch(0.72 0.18 50) 100%
+  );
+
+  --gradient-hero:
+    radial-gradient(ellipse 80% 60% at 70% 0%, oklch(0.72 0.18 50 / 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 30%, oklch(0.34 0.13 265 / 0.12), transparent 60%);
+
+  --gradient-soft: linear-gradient(180deg, oklch(0.99 0.005 80) 0%, oklch(0.97 0.012 80) 100%);
+
+  --gradient-accent: linear-gradient(135deg, oklch(0.72 0.18 50), oklch(0.78 0.16 60));
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px oklch(0.22 0.06 265 / 0.04), 0 4px 16px oklch(0.22 0.06 265 / 0.06);
+
+  --shadow-elevated:
+    0 4px 12px oklch(0.22 0.06 265 / 0.08), 0 24px 48px -12px oklch(0.22 0.06 265 / 0.18);
+
+  --shadow-glow: 0 20px 60px -20px oklch(0.72 0.18 50 / 0.45);
+
+  --shadow-brand: 0 20px 60px -20px oklch(0.34 0.13 265 / 0.4);
+}
+
+/* Dark Mode */
+
+.dark {
+  --background: oklch(0.16 0.03 265);
+  --foreground: oklch(0.98 0.005 80);
+
+  --surface: oklch(0.2 0.04 265);
+  --surface-elevated: oklch(0.24 0.05 265);
+
+  --card: oklch(0.2 0.04 265);
+  --card-foreground: oklch(0.98 0.005 80);
+
+  --popover: oklch(0.2 0.04 265);
+  --popover-foreground: oklch(0.98 0.005 80);
+
+  --primary: oklch(0.72 0.18 50);
+  --primary-foreground: oklch(0.16 0.03 265);
+
+  --accent: oklch(0.72 0.18 50);
+  --accent-foreground: oklch(0.16 0.03 265);
+
+  --secondary: oklch(0.26 0.05 265);
+  --secondary-foreground: oklch(0.98 0.005 80);
+
+  --muted: oklch(0.26 0.05 265);
+  --muted-foreground: oklch(0.72 0.03 265);
+
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.72 0.18 50);
+}
+
+/* Base styles — no @layer wrapper needed in Tailwind v4 */
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+/* Custom utility classes */
+.font-display {
+  font-family: var(--font-display);
+}
+.bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+.bg-gradient-hero {
+  background-image: var(--gradient-hero);
+}
+.bg-gradient-soft {
+  background-image: var(--gradient-soft);
+}
+.bg-gradient-accent {
+  background-image: var(--gradient-accent);
+}
+
+.text-gradient-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-accent {
+  background-image: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+.shadow-elevated {
+  box-shadow: var(--shadow-elevated);
+}
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+.shadow-brand {
+  box-shadow: var(--shadow-brand);
+}

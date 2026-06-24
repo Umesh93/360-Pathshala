@@ -1,0 +1,14 @@
+package com.pathshala.entity;
+
+public enum ModuleCode {
+    STUDENT_MANAGEMENT,
+    TEACHER_MANAGEMENT,
+    PARENT_MANAGEMENT,
+    ATTENDANCE,
+    EXAMINATION,
+    ASSIGNMENT,
+    FEE_MANAGEMENT,
+    LEAVE_MANAGEMENT,
+    NOTIFICATIONS,
+    ANALYTICS_DASHBOARD
+}

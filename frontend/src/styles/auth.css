@@ -1,0 +1,189 @@
+* {
+  box-sizing: border-box;
+}
+
+.login-page {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* LEFT SIDE */
+
+.login-left {
+  width: 50%;
+  height: 100vh;
+}
+
+.login-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* RIGHT SIDE */
+
+.login-right {
+  width: 50%;
+  background: #ffffff;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+}
+
+/* FORM */
+
+.login-form-wrapper {
+  width: 420px;
+}
+
+.login-logo {
+  width: 246px;
+  height: 84px;
+  object-fit: contain;
+
+  margin-bottom: 50px;
+}
+
+.welcome-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1f4a93;
+  margin-bottom: 8px;
+}
+
+.welcome-subtitle {
+  color: #8d8d8d;
+  margin-bottom: 35px;
+  font-size: 15px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group span {
+  color: red;
+}
+
+.form-group input {
+  width: 100%;
+  height: 52px;
+
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+
+  padding: 0 16px;
+
+  font-size: 14px;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+
+  right: 15px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  color: #888;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 14px;
+  color: #666;
+}
+
+.login-options a {
+  color: #f58220;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.login-btn {
+  width: 100%;
+  height: 52px;
+
+  background: #1f4a93;
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.settings-btn {
+  position: fixed;
+
+  right: 30px;
+  bottom: 30px;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  border: none;
+
+  background: #1f4a93;
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 20px;
+}
+
+/* Responsive */
+
+@media (max-width: 992px) {
+  .login-left {
+    display: none;
+  }
+
+  .login-right {
+    width: 100%;
+  }
+}
