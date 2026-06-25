@@ -5,8 +5,12 @@ import {
   ChevronRight,
   UserCircle,
 } from "lucide-react";
+
+import { NavLink } from "react-router-dom";
+
 import logo from "../assets/images/logo.png";
 import favicon from "../assets/images/favicon.ico";
+
 interface SidebarProps {
   collapsed: boolean;
 }
@@ -34,15 +38,14 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       </div>
 
       {/* User Card */}
-
       <div
-        className={`
+        className="
           m-3
           bg-gray-100
           rounded-2xl
           transition-all
           duration-300
-        `}
+        "
       >
         {collapsed ? (
           <div className="flex justify-center py-4">
@@ -64,15 +67,21 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       <nav className="px-3">
         {/* Dashboard */}
 
-        <div
-          className={`
-            bg-[#234A91]
-            text-white
+        <NavLink
+          to="/super-admin/dashboard"
+          className={({ isActive }) =>
+            `
+            block
             rounded-xl
             mb-2
-            cursor-pointer
             transition-all
-          `}
+            ${
+              isActive
+                ? "bg-[#234A91] text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }
+          `
+          }
         >
           <div
             className={`
@@ -88,16 +97,25 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
             {!collapsed && <ChevronRight size={16} />}
           </div>
-        </div>
+        </NavLink>
 
         {/* Schools */}
 
-        <div
-          className={`
+        <NavLink
+          to="/super-admin/schools"
+          className={({ isActive }) =>
+            `
+            block
             rounded-xl
-            hover:bg-gray-100
-            cursor-pointer
-          `}
+            mb-2
+            transition-all
+            ${
+              isActive
+                ? "bg-[#234A91] text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }
+          `
+          }
         >
           <div
             className={`
@@ -113,16 +131,24 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
             {!collapsed && <ChevronRight size={16} />}
           </div>
-        </div>
+        </NavLink>
 
-        {/* Demo */}
+        {/* Demo Requests */}
 
-        <div
-          className={`
+        <NavLink
+          to="/super-admin/demo-requests"
+          className={({ isActive }) =>
+            `
+            block
             rounded-xl
-            hover:bg-gray-100
-            cursor-pointer
-          `}
+            transition-all
+            ${
+              isActive
+                ? "bg-[#234A91] text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }
+          `
+          }
         >
           <div
             className={`
@@ -138,7 +164,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
             {!collapsed && <ChevronRight size={16} />}
           </div>
-        </div>
+        </NavLink>
       </nav>
     </aside>
   );
