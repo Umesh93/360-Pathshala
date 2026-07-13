@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Java / Maven
+backend/target/
+*.class
+
+# Spring Boot local files
+backend/data/*.mv.db

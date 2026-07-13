@@ -5,6 +5,7 @@ import com.pathshala.entity.LeaveStatus;
 import com.pathshala.entity.ModuleCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +14,8 @@ import java.util.Map;
 
 public class ApiDtos {
     public record SchoolRequest(@NotBlank String name, @NotBlank String code, String address, String phone, String email) {}
-    public record PlanRequest(@NotBlank String name, BigDecimal monthlyPrice, String description) {}
+    public record PlanRequest(@NotBlank String name, @PositiveOrZero BigDecimal monthlyPrice, String description) {}
+    public record ModuleRequest(@NotNull ModuleCode code, @NotBlank String name, String description, boolean active) {}
     public record ModuleAssignmentRequest(@NotNull Long schoolId, @NotNull ModuleCode moduleCode, boolean active) {}
     public record AcademicYearRequest(String name, LocalDate startsOn, LocalDate endsOn, boolean active) {}
     public record ClassRequest(String name, String code) {}

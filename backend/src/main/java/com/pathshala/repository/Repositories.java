@@ -12,10 +12,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface Repositories {
-    interface SchoolRepository extends JpaRepository<School, Long> {}
-    interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, Long> {}
+    interface SchoolRepository extends JpaRepository<School, Long> {
+        boolean existsByCode(String code);
+    }
+    interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, Long> {
+        boolean existsByName(String name);
+    }
     interface ModuleRepository extends JpaRepository<PlatformModule, Long> {
         Optional<PlatformModule> findByCode(ModuleCode code);
+        boolean existsByCode(ModuleCode code);
     }
     interface SchoolModuleRepository extends JpaRepository<SchoolModule, Long> {
         Optional<SchoolModule> findBySchoolIdAndModuleCodeAndDeletedFalse(Long schoolId, ModuleCode moduleCode);
