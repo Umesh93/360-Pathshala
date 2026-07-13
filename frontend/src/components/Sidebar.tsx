@@ -5,6 +5,18 @@ import {
   ChevronRight,
   UserCircle,
   LogOut,
+  Users,
+  GraduationCap,
+  BookOpen,
+  ClipboardCheck,
+  FileText,
+  Wallet,
+  Calendar,
+  CalendarClock,
+  Award,
+  BarChart3,
+  Settings,
+  UserCheck,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -14,17 +26,60 @@ import favicon from "../assets/images/favicon.ico";
 
 interface SidebarProps {
   collapsed: boolean;
+  role?: string;
+  enabledModules?: string[];
 }
 
-export default function Sidebar({ collapsed }: SidebarProps) {
+const SUPER_ADMIN_LINKS = [
+  { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/super-admin/schools", label: "Schools", icon: School },
+  {
+    to: "/super-admin/demo-requests",
+    label: "Demo Requests",
+    icon: ClipboardList,
+  },
+];
+
+const ADMIN_LINKS = [
+  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/students", label: "Students", icon: GraduationCap },
+  { to: "/admin/teachers", label: "Teachers", icon: UserCheck },
+  { to: "/admin/guardians", label: "Parents/Guardians", icon: Users },
+  { to: "/admin/classes", label: "Classes", icon: School },
+  { to: "/admin/subjects", label: "Subjects", icon: BookOpen },
+  { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
+  { to: "/admin/examinations", label: "Examinations", icon: FileText },
+  { to: "/admin/assignments", label: "Assignments", icon: BookOpen },
+  { to: "/admin/fees", label: "Fee Management", icon: Wallet },
+  { to: "/admin/calendar", label: "Academic Calendar", icon: Calendar },
+  { to: "/admin/leaves", label: "Leaves", icon: CalendarClock },
+  { to: "/admin/certificates", label: "Certificates", icon: Award },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
+];
+
+export default function Sidebar({
+  collapsed,
+  role = "SUPER_ADMIN",
+  enabledModules,
+}: SidebarProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
-
     navigate("/");
   };
+
+  const isAdmin = role === "ADMIN";
+  const links = isAdmin ? ADMIN_LINKS : SUPER_ADMIN_LINKS;
+
+  const filteredLinks =
+    enabledModules && enabledModules.length > 0
+      ? links.filter((link) => enabledModules.includes(link.label))
+      : links;
+
+  const userLabel = isAdmin ? "School Admin" : "Super Admin";
 
   return (
     <aside
@@ -58,10 +113,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
           <div className="p-4 flex justify-between items-center">
             <div>
               <h3 className="font-semibold">Umesh_Krafts</h3>
-
-              <p className="text-sm text-gray-500">Super Admin</p>
+              <p className="text-sm text-gray-500">{userLabel}</p>
             </div>
-
             <ChevronRight size={16} />
           </div>
         )}
@@ -69,83 +122,31 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="px-3">
-        {/* Dashboard */}
-        <NavLink
-          to="/super-admin/dashboard"
-          className={({ isActive }) =>
-            `block rounded-xl mb-2 transition-all ${
-              isActive
-                ? "bg-[#234A91] text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <div
-            className={`flex items-center ${
-              collapsed ? "justify-center py-4" : "justify-between p-4"
-            }`}
+        {filteredLinks.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            className={({ isActive }) =>
+              `block rounded-xl mb-2 transition-all ${
+                isActive
+                  ? "bg-[#234A91] text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`
+            }
           >
-            <div className="flex items-center gap-3">
-              <LayoutDashboard size={20} />
-
-              {!collapsed && <span>Dashboard</span>}
+            <div
+              className={`flex items-center ${
+                collapsed ? "justify-center py-4" : "justify-between p-4"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <link.icon size={20} />
+                {!collapsed && <span>{link.label}</span>}
+              </div>
+              {!collapsed && <ChevronRight size={16} />}
             </div>
-
-            {!collapsed && <ChevronRight size={16} />}
-          </div>
-        </NavLink>
-
-        {/* Schools */}
-        <NavLink
-          to="/super-admin/schools"
-          className={({ isActive }) =>
-            `block rounded-xl mb-2 transition-all ${
-              isActive
-                ? "bg-[#234A91] text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <div
-            className={`flex items-center ${
-              collapsed ? "justify-center py-4" : "justify-between p-4"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <School size={20} />
-
-              {!collapsed && <span>Schools</span>}
-            </div>
-
-            {!collapsed && <ChevronRight size={16} />}
-          </div>
-        </NavLink>
-
-        {/* Demo Requests */}
-        <NavLink
-          to="/super-admin/demo-requests"
-          className={({ isActive }) =>
-            `block rounded-xl transition-all ${
-              isActive
-                ? "bg-[#234A91] text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`
-          }
-        >
-          <div
-            className={`flex items-center ${
-              collapsed ? "justify-center py-4" : "justify-between p-4"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <ClipboardList size={20} />
-
-              {!collapsed && <span>Demo Requests</span>}
-            </div>
-
-            {!collapsed && <ChevronRight size={16} />}
-          </div>
-        </NavLink>
+          </NavLink>
+        ))}
       </nav>
 
       {/* Logout */}
@@ -161,10 +162,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
           >
             <div className="flex items-center gap-3">
               <LogOut size={20} />
-
               {!collapsed && <span>Logout</span>}
             </div>
-
             {!collapsed && <ChevronRight size={16} />}
           </div>
         </button>

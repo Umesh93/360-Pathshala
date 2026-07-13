@@ -22,6 +22,15 @@ const LoginForm = () => {
       return;
     }
 
+    if (username === "admin" && password === "admin") {
+      localStorage.setItem("token", "mock-token");
+      localStorage.setItem("role", "ADMIN");
+
+      navigate("/admin/dashboard");
+
+      return;
+    }
+
     setError("Invalid username or password");
   };
 
