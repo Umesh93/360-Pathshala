@@ -4,6 +4,7 @@ import Dashboard from "../pages/super-admin/Dashboard";
 import Schools from "../pages/super-admin/Schools";
 import AdminDashboard from "../pages/admin/Dashboard";
 import StudentListPage from "../modules/admin/students/pages/StudentListPage";
+import AddStudentPage from "../modules/admin/students/pages/AddStudentPage";
 import TeacherListPage from "../modules/admin/teachers/pages/TeacherListPage";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -40,6 +41,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <StudentListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/students/add"
+        element={
+          <ProtectedRoute>
+            <AddStudentPage />
           </ProtectedRoute>
         }
       />

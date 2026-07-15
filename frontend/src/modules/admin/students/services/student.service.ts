@@ -1,4 +1,5 @@
-import type { Student, PaginatedResponse, AttendanceSummary, FeeRecord, ExamResult, ActivityLog } from "../types/student.types";
+import type { Student, PaginatedResponse, AttendanceSummary, FeeRecord, ExamResult } from "../types/student.types";
+// import type { StudentFormData } from "../schemas/student.schema";
 
 const mockStudents: Student[] = [
   {
@@ -260,30 +261,6 @@ const mockResults: ExamResult[] = [
   },
 ];
 
-const mockActivities: ActivityLog[] = [
-  {
-    id: 1,
-    action: "Admission",
-    description: "Student admitted to Grade 10",
-    date: "2024-01-10",
-    user: "Admin",
-  },
-  {
-    id: 2,
-    action: "Attendance",
-    description: "Attendance marked present",
-    date: "2026-07-01",
-    user: "Class Teacher",
-  },
-  {
-    id: 3,
-    action: "Exam",
-    description: "Mid-term exam result published",
-    date: "2026-07-05",
-    user: "Exam Coordinator",
-  },
-];
-
 export const getStudents = async (
   page = 1,
   limit = 10,
@@ -339,9 +316,22 @@ export const getStudentById = async (id: number): Promise<Student | undefined> =
   return mockStudents.find((s) => s.id === id);
 };
 
-export const createStudent = async (student: Omit<Student, "id">): Promise<Student> => {
+export const createStudent = async (formData: any): Promise<Student> => {
   await new Promise((resolve) => setTimeout(resolve, 500));
-  const newStudent = { ...student, id: Date.now() } as Student;
+  const flat: Record<string, unknown> = {
+    ...formData.academicInfo,
+    ...formData.personalInfo,
+    ...formData.guardian,
+    ...formData.address,
+    ...formData.medical,
+    ...formData.academicHistory,
+    ...formData.hostel,
+    ...formData.transport,
+    ...formData.bank,
+    ...formData.login,
+    notes: formData.notes.notes,
+  };
+  const newStudent = { ...flat, id: Date.now() } as Student;
   mockStudents.push(newStudent);
   return newStudent;
 };
@@ -380,7 +370,14 @@ export const getStudentResults = async (): Promise<ExamResult[]> => {
   return mockResults;
 };
 
-export const getStudentActivities = async (): Promise<ActivityLog[]> => {
+export const generateAdmissionNo = async (): Promise<string> => {
   await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockActivities;
+  const year = new Date().getFullYear();
+  const count = mockStudents.length + 1;
+  return `ADM-${year}-${String(count).padStart(3, "0")}`;
+};
+
+export const uploadDocuments = async (files: File[]): Promise<string[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return files.map((file) => URL.createObjectURL(file));
 };

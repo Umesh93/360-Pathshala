@@ -20,9 +20,11 @@ import RecentActivities from "../../components/RecentActivities";
 import BirthdayStudents from "../../components/BirthdayStudents";
 import UpcomingFeeDue from "../../components/UpcomingFeeDue";
 import RecentNotifications from "../../components/RecentNotifications";
-import { UserPlus, UserCheck, School, FileText, Megaphone, CalendarDays } from "lucide-react";
+  import { UserPlus, UserCheck, School, FileText, Megaphone, CalendarDays } from "lucide-react";
+  import { useNavigate } from "react-router-dom";
 
-const SchoolDashboard = () => {
+  const SchoolDashboard = () => {
+    const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,12 +99,12 @@ const SchoolDashboard = () => {
   }
 
   const quickActions = [
-    { label: "Add Student", icon: <UserPlus size={20} />, onClick: () => {} },
-    { label: "Add Teacher", icon: <UserCheck size={20} />, onClick: () => {} },
-    { label: "Create Class", icon: <School size={20} />, onClick: () => {} },
-    { label: "Create Exam", icon: <FileText size={20} />, onClick: () => {} },
-    { label: "Publish Notice", icon: <Megaphone size={20} />, onClick: () => {} },
-    { label: "Add Event", icon: <CalendarDays size={20} />, onClick: () => {} },
+    { label: "Add Student", icon: <UserPlus size={20} />, onClick: () => navigate("/admin/students/add") },
+    { label: "Add Teacher", icon: <UserCheck size={20} />, onClick: () => navigate("/admin/teachers") },
+    { label: "Create Class", icon: <School size={20} />, onClick: () => navigate("/admin/classes") },
+    { label: "Create Exam", icon: <FileText size={20} />, onClick: () => navigate("/admin/examinations") },
+    { label: "Publish Notice", icon: <Megaphone size={20} />, onClick: () => navigate("/admin/dashboard") },
+    { label: "Add Event", icon: <CalendarDays size={20} />, onClick: () => navigate("/admin/calendar") },
   ];
 
   return (
