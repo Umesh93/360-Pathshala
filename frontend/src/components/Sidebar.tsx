@@ -84,18 +84,12 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        relative
-        bg-white
-        border-r
-        border-gray-200
-        h-screen
-        transition-all
-        duration-300
+        bg-white border-r border-gray-200 transition-all duration-300 min-h-screen
         ${collapsed ? "w-20" : "w-[300px]"}
       `}
     >
       {/* Logo */}
-      <div className="h-20 border-b border-slate-200 flex items-center justify-center">
+      <div className="h-20 border-b border-slate-200 flex items-center justify-center shrink-0">
         {collapsed ? (
           <img src={favicon} alt="360 Pathshala" className="h-10 w-10" />
         ) : (
@@ -104,7 +98,7 @@ export default function Sidebar({
       </div>
 
       {/* User Card */}
-      <div className="m-3 bg-gray-100 rounded-2xl transition-all duration-300">
+      <div className="m-3 bg-gray-100 rounded-2xl transition-all duration-300 shrink-0">
         {collapsed ? (
           <div className="flex justify-center py-4">
             <UserCircle size={36} className="text-gray-500" />
@@ -120,8 +114,8 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="px-3">
+      {/* Navigation + Logout */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
         {filteredLinks.map((link) => (
           <NavLink
             key={link.to}
@@ -147,10 +141,7 @@ export default function Sidebar({
             </div>
           </NavLink>
         ))}
-      </nav>
 
-      {/* Logout */}
-      <div className="absolute bottom-4 left-0 w-full px-3">
         <button
           onClick={handleLogout}
           className="w-full rounded-xl text-[#234A91] hover:bg-blue-50 transition-all"
@@ -167,7 +158,7 @@ export default function Sidebar({
             {!collapsed && <ChevronRight size={16} />}
           </div>
         </button>
-      </div>
+      </nav>
     </aside>
   );
 }

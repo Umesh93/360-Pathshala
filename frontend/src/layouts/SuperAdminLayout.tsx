@@ -16,10 +16,10 @@ export default function SuperAdminLayout({ children }: Props) {
     <div className="flex bg-[#EEF3F8] min-h-screen">
       <Sidebar collapsed={collapsed} />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <Header collapsed={collapsed} setCollapsed={setCollapsed} />
 
-        <main className="flex-1 p-10">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-10">{children}</main>
 
         <Footer />
       </div>

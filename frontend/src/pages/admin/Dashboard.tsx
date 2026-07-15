@@ -107,12 +107,12 @@ const SchoolDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div>
-          <h1 className="text-[42px] font-bold text-gray-800 mb-2">
+          <h1 className="text-2xl md:text-3xl lg:text-[42px] font-bold text-gray-800 mb-2">
             Dashboard
           </h1>
-          <p className="text-gray-600 text-xl mb-10">
+          <p className="text-gray-600 text-base md:text-xl mb-6 md:mb-10">
             {data.schoolName} → Manage your school efficiently
           </p>
         </div>
