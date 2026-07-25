@@ -6,6 +6,7 @@ import AdminDashboard from "../pages/admin/Dashboard";
 import StudentListPage from "../modules/admin/students/pages/StudentListPage";
 import AddStudentPage from "../modules/admin/students/pages/AddStudentPage";
 import TeacherListPage from "../modules/admin/teachers/pages/TeacherListPage";
+import AddTeacherPage from "../modules/admin/teachers/pages/AddTeacherPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 const AppRoutes = () => {
@@ -57,6 +58,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <TeacherListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/teachers/add"
+        element={
+          <ProtectedRoute>
+            <AddTeacherPage />
           </ProtectedRoute>
         }
       />

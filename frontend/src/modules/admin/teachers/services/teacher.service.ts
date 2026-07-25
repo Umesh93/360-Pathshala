@@ -1,4 +1,69 @@
-import type { Teacher, PaginatedResponse } from "../types/teacher.types";
+import type {
+  Teacher,
+  PaginatedResponse,
+  Department,
+  Designation,
+  Subject,
+  ClassItem,
+  SectionItem,
+  AcademicYear,
+} from "../types/teacher.types";
+
+const mockDepartments: Department[] = [
+  { id: 1, name: "Mathematics" },
+  { id: 2, name: "Science" },
+  { id: 3, name: "English" },
+  { id: 4, name: "Social Studies" },
+  { id: 5, name: "Computer Science" },
+  { id: 6, name: "Physical Education" },
+];
+
+const mockDesignations: Designation[] = [
+  { id: 1, name: "Teacher", title: "Teacher" },
+  { id: 2, name: "Senior Teacher", title: "Senior Teacher" },
+  { id: 3, name: "HOD", title: "Head of Department" },
+  { id: 4, name: "Vice Principal", title: "Vice Principal" },
+];
+
+const mockSubjects: Subject[] = [
+  { id: 1, name: "Mathematics", code: "MATH" },
+  { id: 2, name: "Physics", code: "PHY" },
+  { id: 3, name: "Chemistry", code: "CHEM" },
+  { id: 4, name: "English", code: "ENG" },
+  { id: 5, name: "Nepali", code: "NEP" },
+  { id: 6, name: "Computer Science", code: "CS" },
+  { id: 7, name: "Social Studies", code: "SOC" },
+  { id: 8, name: "Health", code: "HEA" },
+];
+
+const mockClasses: ClassItem[] = [
+  { id: 1, name: "Grade 1", section: "A" },
+  { id: 2, name: "Grade 1", section: "B" },
+  { id: 3, name: "Grade 2", section: "A" },
+  { id: 4, name: "Grade 3", section: "A" },
+  { id: 5, name: "Grade 4", section: "A" },
+  { id: 6, name: "Grade 5", section: "A" },
+  { id: 7, name: "Grade 6", section: "A" },
+  { id: 8, name: "Grade 7", section: "A" },
+  { id: 9, name: "Grade 8", section: "A" },
+  { id: 10, name: "Grade 9", section: "A" },
+  { id: 11, name: "Grade 10", section: "A" },
+];
+
+const mockSections: SectionItem[] = [
+  { id: 1, name: "A", classId: 1 },
+  { id: 2, name: "B", classId: 1 },
+  { id: 3, name: "A", classId: 2 },
+  { id: 4, name: "B", classId: 2 },
+  { id: 5, name: "A", classId: 3 },
+  { id: 6, name: "A", classId: 4 },
+  { id: 7, name: "A", classId: 5 },
+];
+
+const mockAcademicYears: AcademicYear[] = [
+  { id: 1, name: "2025/2026", startDate: "2025-04-01", endDate: "2026-03-31", isCurrent: true },
+  { id: 2, name: "2024/2025", startDate: "2024-04-01", endDate: "2025-03-31", isCurrent: false },
+];
 
 const mockTeachers: Teacher[] = [
   {
@@ -6,6 +71,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-001",
     firstName: "John",
     lastName: "Doe",
+    fullName: "John Doe",
     gender: "male",
     dob: "1985-03-15",
     phone: "9800000001",
@@ -22,6 +88,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-002",
     firstName: "Jane",
     lastName: "Smith",
+    fullName: "Jane Smith",
     gender: "female",
     dob: "1988-07-22",
     phone: "9800000002",
@@ -38,6 +105,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-003",
     firstName: "Robert",
     lastName: "Brown",
+    fullName: "Robert Brown",
     gender: "male",
     dob: "1990-11-05",
     phone: "9800000003",
@@ -54,6 +122,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-004",
     firstName: "Emily",
     lastName: "Davis",
+    fullName: "Emily Davis",
     gender: "female",
     dob: "1987-09-12",
     phone: "9800000004",
@@ -70,6 +139,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-005",
     firstName: "Michael",
     lastName: "Wilson",
+    fullName: "Michael Wilson",
     gender: "male",
     dob: "1983-05-30",
     phone: "9800000005",
@@ -86,6 +156,7 @@ const mockTeachers: Teacher[] = [
     teacherId: "TCH-2024-006",
     firstName: "Sarah",
     lastName: "Johnson",
+    fullName: "Sarah Johnson",
     gender: "female",
     dob: "1992-01-18",
     phone: "9800000006",
@@ -149,7 +220,9 @@ export const getTeacherById = async (id: number): Promise<Teacher | undefined> =
   return mockTeachers.find((t) => t.id === id);
 };
 
-export const createTeacher = async (teacher: Omit<Teacher, "id">): Promise<Teacher> => {
+export const createTeacher = async (
+  teacher: Omit<Teacher, "id">
+): Promise<Teacher> => {
   await new Promise((resolve) => setTimeout(resolve, 500));
   const newTeacher = { ...teacher, id: Date.now() } as Teacher;
   mockTeachers.push(newTeacher);
@@ -174,3 +247,46 @@ export const deleteTeacher = async (id: number): Promise<boolean> => {
   mockTeachers.splice(index, 1);
   return true;
 };
+
+export const generateTeacherId = async (): Promise<string> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const year = new Date().getFullYear();
+  const count = mockTeachers.length + 1;
+  return `TCH-${year}-${String(count).padStart(3, "0")}`;
+};
+
+export const getDepartments = async (): Promise<Department[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockDepartments;
+};
+
+export const getDesignations = async (): Promise<Designation[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockDesignations;
+};
+
+export const getSubjects = async (): Promise<Subject[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockSubjects;
+};
+
+export const getClasses = async (): Promise<ClassItem[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockClasses;
+};
+
+export const getSections = async (): Promise<SectionItem[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockSections;
+};
+
+export const getAcademicYears = async (): Promise<AcademicYear[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockAcademicYears;
+};
+
+export const uploadDocuments = async (files: File[]): Promise<string[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return files.map((file) => URL.createObjectURL(file));
+};
+

@@ -100,7 +100,7 @@ import RecentNotifications from "../../components/RecentNotifications";
 
   const quickActions = [
     { label: "Add Student", icon: <UserPlus size={20} />, onClick: () => navigate("/admin/students/add") },
-    { label: "Add Teacher", icon: <UserCheck size={20} />, onClick: () => navigate("/admin/teachers") },
+    { label: "Add Teacher", icon: <UserCheck size={20} />, onClick: () => navigate("/admin/teachers/add") },
     { label: "Create Class", icon: <School size={20} />, onClick: () => navigate("/admin/classes") },
     { label: "Create Exam", icon: <FileText size={20} />, onClick: () => navigate("/admin/examinations") },
     { label: "Publish Notice", icon: <Megaphone size={20} />, onClick: () => navigate("/admin/dashboard") },
