@@ -1,9 +1,12 @@
 export interface LoginRequest {
-  email: string;
+  usernameOrEmail: string;
   password: string;
 }
 
 export interface LoginResponse {
   token: string;
-  role: string;
+  userId: number;
+  schoolId: number;
+  username: string;
+  roles: string[];
 }

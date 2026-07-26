@@ -8,7 +8,6 @@ import MedicalSection from "./MedicalSection";
 import AcademicHistorySection from "./AcademicHistorySection";
 import HostelSection from "./HostelSection";
 import TransportSection from "./TransportSection";
-import BankSection from "./BankSection";
 import DocumentsSection from "./DocumentsSection";
 import LoginSection from "./LoginSection";
 import NotesSection from "./NotesSection";
@@ -25,7 +24,7 @@ const steps: { title: string; section: SectionKey }[] = [
   { title: "Personal", section: "personalInfo" },
   { title: "Guardian", section: "guardian" },
   { title: "Address & Medical", section: "address" },
-  { title: "History, Hostel, Transport, Bank, Docs, Login, Notes", section: "academicHistory" },
+  { title: "History, Hostel, Transport, Docs, Login, Notes", section: "academicHistory" },
 ];
 
 const StudentForm: React.FC = () => {
@@ -58,7 +57,7 @@ const StudentForm: React.FC = () => {
       await createStudent(formData);
       showToast("Student saved successfully!", "success");
       clearDraft();
-      navigate("/admin/students");
+      navigate("/admin/students/add");
     } catch {
       showToast("Failed to save student", "error");
     } finally {
@@ -136,6 +135,7 @@ const StudentForm: React.FC = () => {
             <MedicalSection
               data={formData.medical}
               onChange={(data) => updateSection("medical", data)}
+              guardianData={formData.guardian}
             />
           </div>
         )}
@@ -153,10 +153,6 @@ const StudentForm: React.FC = () => {
             <TransportSection
               data={formData.transport}
               onChange={(data) => updateSection("transport", data)}
-            />
-            <BankSection
-              data={formData.bank}
-              onChange={(data) => updateSection("bank", data)}
             />
             <DocumentsSection
               data={formData.documents}

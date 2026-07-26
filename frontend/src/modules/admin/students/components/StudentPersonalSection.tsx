@@ -31,7 +31,9 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Personal Information
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex flex-col items-center">
@@ -40,9 +42,15 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#234A91] overflow-hidden"
           >
             {data.photo ? (
-              <img src={data.photo} alt="Preview" className="w-full h-full object-cover" />
+              <img
+                src={data.photo}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <span className="text-xs text-gray-500 text-center px-2">Click to upload</span>
+              <span className="text-xs text-gray-500 text-center px-2">
+                Click to upload
+              </span>
             )}
           </div>
           <input
@@ -56,63 +64,61 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">First Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            First Name
+          </label>
           <input
             type="text"
             value={data.firstName}
             onChange={(e) => {
               update("firstName", e.target.value);
-              update("fullName", `${e.target.value} ${data.middleName || ""} ${data.lastName || ""}`.trim());
             }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.firstName ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
+          {errors.firstName && (
+            <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Middle Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Middle Name
+          </label>
           <input
             type="text"
             value={data.middleName}
             onChange={(e) => {
               update("middleName", e.target.value);
-              update("fullName", `${data.firstName || ""} ${e.target.value} ${data.lastName || ""}`.trim());
             }}
             className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Last Name
+          </label>
           <input
             type="text"
             value={data.lastName}
             onChange={(e) => {
               update("lastName", e.target.value);
-              update("fullName", `${data.firstName || ""} ${data.middleName || ""} ${e.target.value}`.trim());
             }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.lastName ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
+          {errors.lastName && (
+            <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
-          <input
-            type="text"
-            value={data.fullName}
-            onChange={(e) => update("fullName", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Date of Birth</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Date of Birth
+          </label>
           <input
             type="date"
             value={data.dob}
@@ -121,11 +127,15 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
               errors.dob ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.dob && <p className="mt-1 text-xs text-red-600">{errors.dob}</p>}
+          {errors.dob && (
+            <p className="mt-1 text-xs text-red-600">{errors.dob}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Gender</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Gender
+          </label>
           <select
             value={data.gender}
             onChange={(e) => update("gender", e.target.value)}
@@ -138,11 +148,15 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && <p className="mt-1 text-xs text-red-600">{errors.gender}</p>}
+          {errors.gender && (
+            <p className="mt-1 text-xs text-red-600">{errors.gender}</p>
+          )}
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Blood Group</label>
+        {/* <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Blood Group
+          </label>
           <select
             value={data.bloodGroup}
             onChange={(e) => update("bloodGroup", e.target.value)}
@@ -158,66 +172,62 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             <option value="O+">O+</option>
             <option value="O-">O-</option>
           </select>
-        </div>
+        </div> */}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Religion</label>
-          <input
-            type="text"
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Religion
+          </label>
+          <select
             value={data.religion}
             onChange={(e) => update("religion", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
-          <input
-            type="text"
-            value={data.nationality}
-            onChange={(e) => update("nationality", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Mother Tongue</label>
-          <input
-            type="text"
-            value={data.motherTongue}
-            onChange={(e) => update("motherTongue", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number</label>
-          <input
-            type="tel"
-            value={data.phone}
-            onChange={(e) => update("phone", e.target.value)}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.phone ? "border-red-500" : "border-gray-200"
+              errors.religion ? "border-red-500" : "border-gray-200"
             }`}
-          />
-          {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+          >
+            <option value="">Select Religion</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Buddhist">Buddhist</option>
+            <option value="Muslim">Muslim</option>
+            <option value="Christian">Christian</option>
+            <option value="Kirat">Kirat</option>
+            <option value="Sikh">Sikh</option>
+            <option value="Jain">Jain</option>
+            <option value="Bon">Bon</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.religion && (
+            <p className="mt-1 text-xs text-red-600">{errors.religion}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            value={data.email}
-            onChange={(e) => update("email", e.target.value)}
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Caste
+          </label>
+          <select
+            value={data.caste}
+            onChange={(e) => update("caste", e.target.value)}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.email ? "border-red-500" : "border-gray-200"
+              errors.caste ? "border-red-500" : "border-gray-200"
             }`}
-          />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+          >
+            <option value="">Select Caste</option>
+            <option value="Brahmin/Chhetri">Brahmin/Chhetri</option>
+            <option value="Adivasi/Janajati">Adivasi/Janajati</option>
+            <option value="Dalit">Dalit</option>
+            <option value="Madhesi">Madhesi</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.caste && (
+            <p className="mt-1 text-xs text-red-600">{errors.caste}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Citizenship Number</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Citizenship Number (Optional)
+          </label>
           <input
             type="text"
             value={data.citizenshipNumber}
@@ -227,7 +237,33 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Student ID Barcode</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            EMIS ID / Student Registration Number (Optional)
+          </label>
+          <input
+            type="text"
+            value={data.emisId}
+            onChange={(e) => update("emisId", e.target.value)}
+            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Nationality
+          </label>
+          <input
+            type="text"
+            value={data.nationality}
+            onChange={(e) => update("nationality", e.target.value)}
+            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Student ID Barcode
+          </label>
           <input
             type="text"
             value={data.studentIdBarcode}

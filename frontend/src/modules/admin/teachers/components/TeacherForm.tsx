@@ -1,17 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherEmploymentSection from "./TeacherEmploymentSection";
-import TeacherAcademicAssignmentSection from "./TeacherAcademicAssignmentSection";
 import TeacherPersonalSection from "./TeacherPersonalSection";
 import TeacherEmergencySection from "./TeacherEmergencySection";
-import TeacherAddressSection from "./TeacherAddressSection";
 import TeacherEducationSection from "./TeacherEducationSection";
 import TeacherMedicalSection from "./TeacherMedicalSection";
+import TeacherAddressSection from "./TeacherAddressSection";
 import TeacherBankSection from "./TeacherBankSection";
-import TeacherSocialSection from "./TeacherSocialSection";
 import TeacherDocumentsSection from "./TeacherDocumentsSection";
 import TeacherLoginSection from "./TeacherLoginSection";
-import TeacherNotesSection from "./TeacherNotesSection";
 import TeacherFormFooter from "./TeacherFormFooter";
 import { useTeacherForm } from "../hooks/useTeacherForm";
 import { createTeacher } from "../services/teacher.service";
@@ -21,12 +18,12 @@ import type { TeacherFormData } from "../schemas/teacher.schema";
 type SectionKey = keyof TeacherFormData;
 
 const steps: { title: string; section: SectionKey }[] = [
-  { title: "Employment & Academic", section: "employment" },
+  { title: "Employment", section: "employment" },
   { title: "Personal", section: "personal" },
+  { title: "Family & Emergency", section: "emergency" },
   { title: "Education", section: "education" },
   { title: "Medical & Address", section: "medical" },
-  { title: "Bank, Docs & Social", section: "bank" },
-  { title: "Login & Notes", section: "login" },
+  { title: "Bank, Docs & Login", section: "bank" },
 ];
 
 const TeacherForm: React.FC = () => {
@@ -59,7 +56,7 @@ const TeacherForm: React.FC = () => {
       await createTeacher(formData as any);
       showToast("Teacher saved successfully!", "success");
       clearDraft();
-      navigate("/admin/teachers");
+      navigate("/admin/teachers/add");
     } catch {
       showToast("Failed to save teacher", "error");
     } finally {
@@ -108,16 +105,10 @@ const TeacherForm: React.FC = () => {
 
       <div className="space-y-4">
         {currentStep === 0 && (
-          <div className="space-y-4">
-            <TeacherEmploymentSection
-              data={formData.employment}
-              onChange={(data) => updateSection("employment", data)}
-            />
-            <TeacherAcademicAssignmentSection
-              data={formData.academicAssignment}
-              onChange={(data) => updateSection("academicAssignment", data)}
-            />
-          </div>
+          <TeacherEmploymentSection
+            data={formData.employment}
+            onChange={(data) => updateSection("employment", data)}
+          />
         )}
 
         {currentStep === 1 && (
@@ -128,13 +119,20 @@ const TeacherForm: React.FC = () => {
         )}
 
         {currentStep === 2 && (
+          <TeacherEmergencySection
+            data={formData.emergency}
+            onChange={(data) => updateSection("emergency", data)}
+          />
+        )}
+
+        {currentStep === 3 && (
           <TeacherEducationSection
             data={formData.education}
             onChange={(data) => updateSection("education", data)}
           />
         )}
 
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <div className="space-y-4">
             <TeacherMedicalSection
               data={formData.medical}
@@ -147,7 +145,7 @@ const TeacherForm: React.FC = () => {
           </div>
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 5 && (
           <div className="space-y-4">
             <TeacherBankSection
               data={formData.bank}
@@ -157,26 +155,9 @@ const TeacherForm: React.FC = () => {
               data={formData.documents}
               onChange={(data) => updateSection("documents", data)}
             />
-            <TeacherSocialSection
-              data={formData.social}
-              onChange={(data) => updateSection("social", data)}
-            />
-          </div>
-        )}
-
-        {currentStep === 5 && (
-          <div className="space-y-4">
             <TeacherLoginSection
               data={formData.login}
               onChange={(data) => updateSection("login", data)}
-            />
-            <TeacherNotesSection
-              data={formData.notes}
-              onChange={(data) => updateSection("notes", data)}
-            />
-            <TeacherEmergencySection
-              data={formData.emergency}
-              onChange={(data) => updateSection("emergency", data)}
             />
           </div>
         )}

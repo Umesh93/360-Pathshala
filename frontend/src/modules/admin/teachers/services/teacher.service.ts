@@ -285,8 +285,134 @@ export const getAcademicYears = async (): Promise<AcademicYear[]> => {
   return mockAcademicYears;
 };
 
+export const getDistricts = async (
+  provinceId: number
+): Promise<{ id: number; name: string }[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const districtMap: Record<number, { id: number; name: string }[]> = {
+    1: [
+      { id: 1, name: "Taplejung" },
+      { id: 2, name: "Panchthar" },
+      { id: 3, name: "Ilam" },
+      { id: 4, name: "Jhapa" },
+      { id: 5, name: "Morang" },
+      { id: 6, name: "Sunsari" },
+      { id: 7, name: "Dhankuta" },
+      { id: 8, name: "Terhathum" },
+      { id: 9, name: "Sankhuwasabha" },
+      { id: 10, name: "Bhojpur" },
+      { id: 11, name: "Khotang" },
+      { id: 12, name: "Okhaldhunga" },
+      { id: 13, name: "Udayapur" },
+    ],
+    2: [
+      { id: 14, name: "Siraha" },
+      { id: 15, name: "Saptari" },
+      { id: 16, name: "Udayapur" },
+      { id: 17, name: "Mahottari" },
+      { id: 18, name: "Dhanusha" },
+      { id: 19, name: "Sarlahi" },
+      { id: 20, name: "Rautahat" },
+      { id: 21, name: "Bara" },
+      { id: 22, name: "Parsa" },
+    ],
+    3: [
+      { id: 23, name: "Kathmandu" },
+      { id: 24, name: "Lalitpur" },
+      { id: 25, name: "Bhaktapur" },
+      { id: 26, name: "Rasuwa" },
+      { id: 27, name: "Nuwakot" },
+      { id: 28, name: "Dhading" },
+      { id: 29, name: "Makwanpur" },
+      { id: 30, name: "Chitwan" },
+      { id: 31, name: "Nawalparasi" },
+      { id: 32, name: "Rupandehi" },
+    ],
+    4: [
+      { id: 33, name: "Gorkha" },
+      { id: 34, name: "Tanahun" },
+      { id: 35, name: "Syangja" },
+      { id: 36, name: "Kaski" },
+      { id: 37, name: "Lamjung" },
+      { id: 38, name: "Nuwakot" },
+      { id: 39, name: "Dhading" },
+    ],
+    5: [
+      { id: 40, name: "Palpa" },
+      { id: 41, name: "Nawalparasi" },
+      { id: 42, name: "Arghakhanchi" },
+      { id: 43, name: " Gulmi" },
+      { id: 44, name: "Pyuthan" },
+      { id: 45, name: "Rolpa" },
+      { id: 46, name: "Rukum" },
+      { id: 47, name: "Salyan" },
+    ],
+    6: [
+      { id: 48, name: "Jumla" },
+      { id: 49, name: "Kalikot" },
+      { id: 50, name: "Dailekh" },
+      { id: 51, name: "Jajarkot" },
+      { id: 52, name: "Rukum" },
+      { id: 53, name: "Salyan" },
+      { id: 54, name: "Surkhet" },
+    ],
+    7: [
+      { id: 55, name: "Darchula" },
+      { id: 56, name: "Bajhang" },
+      { id: 57, name: "Bajura" },
+      { id: 58, name: "Doti" },
+      { id: 59, name: "Achham" },
+      { id: 60, name: "Baitadi" },
+      { id: 61, name: "Dadeldhura" },
+    ],
+  };
+  return districtMap[provinceId] || [];
+};
+
+export const getMunicipalities = async (
+  districtId: number
+): Promise<{ id: number; name: string }[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const municipalityMap: Record<number, { id: number; name: string }[]> = {
+    1: [{ id: 101, name: "Mechi Municipality" }, { id: 102, name: "Ilam Municipality" }],
+    2: [{ id: 103, name: "Bhadrapur Municipality" }, { id: 104, name: "Chandragadhi Municipality" }],
+    3: [{ id: 105, name: "Kathmandu Metropolitan" }, { id: 106, name: "Lalitpur Metropolitan" }],
+    4: [{ id: 107, name: "Gorkha Municipality" }, { id: 108, name: "Tanahun Municipality" }],
+    5: [{ id: 109, name: "Tansen Municipality" }, { id: 110, name: "Palpa Municipality" }],
+    6: [{ id: 111, name: "Jumla Municipality" }, { id: 112, name: "Surkhet Municipality" }],
+    7: [{ id: 113, name: "Dhangadhi Municipality" }, { id: 114, name: "Bajhang Municipality" }],
+  };
+  return municipalityMap[districtId] || [];
+};
+
+export const getWards = async (
+  municipalityId: number
+): Promise<{ id: number; number: number }[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const wardCounts: Record<number, number> = {
+    101: 12,
+    102: 10,
+    103: 15,
+    104: 11,
+    105: 32,
+    106: 29,
+    107: 14,
+    108: 13,
+    109: 16,
+    110: 12,
+    111: 18,
+    112: 10,
+    113: 16,
+    114: 11,
+  };
+  const count = wardCounts[municipalityId] || 10;
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    number: i + 1,
+  }));
+};
+
 export const uploadDocuments = async (files: File[]): Promise<string[]> => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return files.map((file) => URL.createObjectURL(file));
 };
-

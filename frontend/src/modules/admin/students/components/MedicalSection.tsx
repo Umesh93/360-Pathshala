@@ -1,14 +1,58 @@
-import React from "react";
+import React, { useEffect } from "react";
 import type { MedicalData } from "../schemas/student.schema";
+import type { GuardianData } from "../schemas/student.schema";
 
 interface MedicalSectionProps {
   data: MedicalData;
   onChange: (data: MedicalData) => void;
+  guardianData?: GuardianData;
+  errors?: Record<string, string>;
 }
 
-const MedicalSection: React.FC<MedicalSectionProps> = ({ data, onChange }) => {
+const medicalConditionsOptions = [
+  "None",
+  "Physical / Mobility Disability",
+  "Visual Impairment",
+  "Hearing Impairment",
+  "Speech Impairment",
+  "Cognitive / Intellectual Disability",
+  "Autism Spectrum Disorder",
+  "Multiple Disabilities",
+  "Chronic Illness",
+  "Other",
+];
+
+const emergencyContactOptions = ["Father", "Mother", "Guardian", "Other"];
+
+const MedicalSection: React.FC<MedicalSectionProps> = ({
+  data,
+  onChange,
+  guardianData,
+  errors = {},
+}) => {
   const update = (field: keyof MedicalData, value: string) => {
     onChange({ ...data, [field]: value });
+  };
+
+  useEffect(() => {
+    if (data.emergencyContactPerson === "Father" && guardianData?.fatherPhone) {
+      update("emergencyContactNumber", guardianData.fatherPhone);
+    } else if (data.emergencyContactPerson === "Mother" && guardianData?.motherPhone) {
+      update("emergencyContactNumber", guardianData.motherPhone);
+    } else if (data.emergencyContactPerson === "Guardian" && guardianData?.guardianPhone) {
+      update("emergencyContactNumber", guardianData.guardianPhone);
+    }
+  }, [data.emergencyContactPerson, guardianData]);
+
+  const handleEmergencyPersonChange = (value: string) => {
+    update("emergencyContactPerson", value);
+    if (value === "Father" && guardianData?.fatherPhone) {
+      update("emergencyContactNumber", guardianData.fatherPhone);
+    } else if (value === "Mother" && guardianData?.motherPhone) {
+      update("emergencyContactNumber", guardianData.motherPhone);
+    } else if (value === "Guardian" && guardianData?.guardianPhone) {
+      update("emergencyContactNumber", guardianData.guardianPhone);
+    }
   };
 
   return (
@@ -58,13 +102,32 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({ data, onChange }) => {
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Medical Conditions</label>
-          <input
-            type="text"
+          <select
             value={data.medicalConditions}
             onChange={(e) => update("medicalConditions", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
+            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
+              errors.medicalConditions ? "border-red-500" : "border-gray-200"
+            }`}
+          >
+            <option value="">Select</option>
+            {medicalConditionsOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.medicalConditions && <p className="mt-1 text-xs text-red-600">{errors.medicalConditions}</p>}
         </div>
+
+        {data.medicalConditions === "Other" && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Specify Medical Condition</label>
+            <input
+              type="text"
+              value={data.medicalConditionsOther || ""}
+              onChange={(e) => update("medicalConditionsOther", e.target.value)}
+              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        )}
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Allergies</label>
@@ -87,25 +150,20 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({ data, onChange }) => {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Doctor Name</label>
-          <input
-            type="text"
-            value={data.doctorName}
-            onChange={(e) => update("doctorName", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact Person</label>
-          <input
-            type="text"
+          <select
             value={data.emergencyContactPerson}
-            onChange={(e) => update("emergencyContactPerson", e.target.value)}
+            onChange={(e) => handleEmergencyPersonChange(e.target.value)}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              data.emergencyContactPerson ? "" : "border-gray-200"
+              errors.emergencyContactPerson ? "border-red-500" : "border-gray-200"
             }`}
-          />
+          >
+            <option value="">Select</option>
+            {emergencyContactOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {errors.emergencyContactPerson && <p className="mt-1 text-xs text-red-600">{errors.emergencyContactPerson}</p>}
         </div>
 
         <div>
@@ -114,8 +172,11 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({ data, onChange }) => {
             type="tel"
             value={data.emergencyContactNumber}
             onChange={(e) => update("emergencyContactNumber", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
+              errors.emergencyContactNumber ? "border-red-500" : "border-gray-200"
+            }`}
           />
+          {errors.emergencyContactNumber && <p className="mt-1 text-xs text-red-600">{errors.emergencyContactNumber}</p>}
         </div>
       </div>
     </div>

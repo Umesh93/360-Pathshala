@@ -3,7 +3,6 @@ import type { TeacherFormData } from "../schemas/teacher.schema";
 export const buildTeacherPayload = (formData: TeacherFormData) => {
   const payload: Record<string, unknown> = {
     ...formData.employment,
-    ...formData.academicAssignment,
     ...formData.personal,
     fullName: formData.personal.fullName || `${formData.personal.firstName} ${formData.personal.middleName || ""} ${formData.personal.lastName}`.trim(),
     ...formData.emergency,
@@ -11,13 +10,7 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
     ...formData.education,
     ...formData.medical,
     ...formData.bank,
-    ...formData.social,
     ...formData.login,
-    bio: formData.notes.bio,
-    teachingPhilosophy: formData.notes.teachingPhilosophy,
-    achievements: formData.notes.achievements,
-    awards: formData.notes.awards,
-    remarks: formData.notes.remarks,
   };
 
   return payload;

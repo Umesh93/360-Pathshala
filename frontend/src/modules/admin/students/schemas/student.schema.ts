@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const academicInfoSchema = z.object({
   academicYear: z.string().min(1, "Academic year is required"),
+  medium: z.enum(["English", "Nepali"]).optional(),
   admissionNo: z.string().min(1, "Admission number is required"),
   admissionDate: z.string().min(1, "Admission date is required"),
   class: z.string().min(1, "Class is required"),
@@ -9,7 +10,6 @@ export const academicInfoSchema = z.object({
   rollNumber: z.string().min(1, "Roll number is required"),
   house: z.string().optional(),
   status: z.enum(["active", "inactive", "transfer"]),
-  category: z.enum(["General", "OBC", "SC", "ST"]),
   scholarship: z.string().optional(),
 });
 
@@ -17,16 +17,17 @@ export const personalInfoSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
-  fullName: z.string().optional(),
   dob: z.string().min(1, "Date of birth is required"),
   gender: z.enum(["male", "female", "other"]),
   bloodGroup: z.string().optional(),
-  religion: z.string().optional(),
-  nationality: z.string().optional(),
+  religion: z.string().min(1, "Religion is required"),
+  caste: z.string().min(1, "Caste is required"),
+  nationality: z.string().default("Nepalese"),
   motherTongue: z.string().optional(),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   citizenshipNumber: z.string().optional(),
+  emisId: z.string().optional(),
   studentIdBarcode: z.string().optional(),
   photo: z.any().optional(),
 });
@@ -57,7 +58,7 @@ export const addressSchema = z.object({
   currentDistrict: z.string().min(1, "District is required"),
   currentMunicipality: z.string().min(1, "Municipality is required"),
   currentWard: z.string().min(1, "Ward is required"),
-  currentStreet: z.string().min(1, "Street is required"),
+  currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
   permanentProvince: z.string().optional(),
   permanentDistrict: z.string().optional(),
@@ -71,9 +72,9 @@ export const medicalSchema = z.object({
   height: z.string().optional(),
   weight: z.string().optional(),
   medicalConditions: z.string().optional(),
+  medicalConditionsOther: z.string().optional(),
   allergies: z.string().optional(),
   disability: z.string().optional(),
-  doctorName: z.string().optional(),
   emergencyContactPerson: z.string().min(1, "Emergency contact person is required"),
   emergencyContactNumber: z.string().min(10, "Emergency contact number is required"),
 });
@@ -100,16 +101,9 @@ export const transportSchema = z.object({
   vehicle: z.string().optional(),
 });
 
-export const bankSchema = z.object({
-  bankName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  branch: z.string().optional(),
-  ifsc: z.string().optional(),
-  nationalId: z.string().optional(),
-});
-
 export const documentsSchema = z.object({
   documents: z.any().optional(),
+  documentCategories: z.array(z.string()).optional(),
 });
 
 export const loginSchema = z.object({
@@ -133,7 +127,6 @@ export const studentFormSchema = z.object({
   academicHistory: academicHistorySchema,
   hostel: hostelSchema,
   transport: transportSchema,
-  bank: bankSchema,
   documents: documentsSchema,
   login: loginSchema,
   notes: notesSchema,
@@ -148,7 +141,6 @@ export type MedicalData = z.infer<typeof medicalSchema>;
 export type AcademicHistoryData = z.infer<typeof academicHistorySchema>;
 export type HostelData = z.infer<typeof hostelSchema>;
 export type TransportData = z.infer<typeof transportSchema>;
-export type BankData = z.infer<typeof bankSchema>;
 export type DocumentsData = z.infer<typeof documentsSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 export type NotesData = z.infer<typeof notesSchema>;
