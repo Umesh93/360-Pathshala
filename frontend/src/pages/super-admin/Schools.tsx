@@ -32,6 +32,7 @@ export default function Schools() {
   };
 
   useEffect(() => {
+    console.log("[Schools] component mounted, loading schools...");
     loadSchools();
   }, []);
 

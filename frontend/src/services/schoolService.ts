@@ -12,22 +12,29 @@ export interface CreateSchoolResponse {
 }
 
 export const getSchools = async (): Promise<School[]> => {
-  const response = await api.get("/saas/schools");
-  return response.data.map((school: any) => ({
-    id: school.id,
-    schoolId: school.code,
-    schoolName: school.name,
-    address: school.address || "",
-    email: school.email,
-    phoneNumber: school.phone || "",
-    status: school.status || "DEMO",
-    modules: school.modules || [],
-    adminUsername: school.adminUsername || "",
-    adminPassword: "",
-    totalAmount: 0,
-    paymentStatus: "",
-    referenceNumber: "",
-  }));
+  console.log("[schoolService] getSchools called");
+  try {
+    const response = await api.get("/saas/schools");
+    console.log("[schoolService] getSchools response", response.data);
+    return response.data.map((school: any) => ({
+      id: school.id,
+      schoolId: school.code,
+      schoolName: school.name,
+      address: school.address || "",
+      email: school.email,
+      phoneNumber: school.phone || "",
+      status: school.status || "DEMO",
+      modules: school.modules || [],
+      adminUsername: school.adminUsername || "",
+      adminPassword: "",
+      totalAmount: 0,
+      paymentStatus: "",
+      referenceNumber: "",
+    }));
+  } catch (error) {
+    console.error("[schoolService] getSchools error", error);
+    throw error;
+  }
 };
 
 export const createSchool = async (payload: any): Promise<CreateSchoolResponse> => {

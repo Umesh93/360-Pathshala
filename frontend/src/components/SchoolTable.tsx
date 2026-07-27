@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { MoreVertical, Edit, Eye, Trash2, Power, PowerOff } from "lucide-react";
 import type { School } from "../types/School";
+import { MODULE_OPTIONS } from "./AddSchoolForm";
+
+const MODULE_CODE_TO_NAME = Object.fromEntries(
+  MODULE_OPTIONS.map((m) => [m.code, m.name]),
+);
 
 interface Props {
   schools: School[];
@@ -18,7 +23,7 @@ export default function SchoolTable({
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white">
+    <div className="overflow-visible rounded-3xl border border-slate-200 bg-white">
       <table className="w-full">
         <thead className="bg-slate-50">
           <tr>
@@ -85,12 +90,12 @@ export default function SchoolTable({
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex flex-wrap gap-2">
-                    {school.modules.slice(0, 3).map((module) => (
+                    {school.modules.slice(0, 3).map((moduleCode) => (
                       <span
-                        key={module}
+                        key={moduleCode}
                         className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700"
                       >
-                        {module}
+                        {MODULE_CODE_TO_NAME[moduleCode] || moduleCode}
                       </span>
                     ))}
                     {school.modules.length > 3 && (

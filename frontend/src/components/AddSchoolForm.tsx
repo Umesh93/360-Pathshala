@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import api from "../config/axios";
 import type { School } from "../types/School";
 
-const MODULE_OPTIONS: ModuleOption[] = [
+export const MODULE_OPTIONS: ModuleOption[] = [
   {
     code: "STUDENT_MANAGEMENT",
     name: "Student Registration",
@@ -153,13 +153,14 @@ export default function AddSchoolForm({
   };
 
   const handleSubmit = async () => {
-    console.log("handleSubmit called", {
+    console.log("[AddSchoolForm] handleSubmit called", {
       schoolName,
       address,
       email,
       phoneNumber,
       status,
       selectedModules,
+      isEdit,
     });
     if (!schoolName.trim()) {
       showToast("School Name is required", "error");
@@ -192,21 +193,23 @@ export default function AddSchoolForm({
         modules: selectedModules,
         status,
       };
-      console.log("Submitting payload:", payload);
+      console.log("[AddSchoolForm] Submitting payload:", payload);
 
       let response;
       if (isEdit && editSchool) {
+        console.log("[AddSchoolForm] Updating school id:", editSchool.id);
         response = await updateSchool(editSchool.id, payload);
         showToast("School updated successfully!", "success");
       } else {
+        console.log("[AddSchoolForm] Creating new school");
         response = await createSchool(payload);
         setSuccess(response);
         showToast("School Registered Successfully", "success");
       }
-      console.log("Save school response:", response);
+      console.log("[AddSchoolForm] Save school response:", response);
       onSuccess?.();
     } catch (error: any) {
-      console.error("Save school error:", error);
+      console.error("[AddSchoolForm] Save school error:", error);
       const message =
         error.response?.data?.message ||
         error.message ||
