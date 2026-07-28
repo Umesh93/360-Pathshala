@@ -37,7 +37,8 @@ export default function AddSchoolForm({
       : ["STUDENT_MANAGEMENT", "EXAMINATION"],
   );
   const [username, setUsername] = useState(editSchool?.adminUsername || "");
-  const [password, setPassword] = useState(generatePassword());
+  const [password, setPassword] = useState(() => isEdit ? "********" : generatePassword());
+  const [passwordRegenerated, setPasswordRegenerated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<CreateSchoolResponse | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -59,6 +60,12 @@ export default function AddSchoolForm({
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleRegeneratePassword = () => {
+    const newPassword = generatePassword();
+    setPassword(newPassword);
+    setPasswordRegenerated(true);
   };
 
   const handleSubmit = async () => {
@@ -85,21 +92,31 @@ export default function AddSchoolForm({
 
     setSubmitting(true);
     try {
-      const payload = {
-        name: schoolName,
-        address,
-        email,
-        phone: phoneNumber,
-        modules: selectedModules,
-        status: "ACTIVE",
-      };
-
       let response;
       if (isEdit && editSchool) {
-        response = await updateSchool(editSchool.id, payload);
+        const updatePayload: any = {
+          name: schoolName,
+          address,
+          email,
+          phone: phoneNumber,
+          modules: selectedModules,
+          status: "ACTIVE",
+        };
+        if (passwordRegenerated) {
+          updatePayload.password = password;
+        }
+        response = await updateSchool(editSchool.id, updatePayload);
         showToast("School updated successfully!", "success");
       } else {
-        response = await createSchool(payload);
+        const createPayload = {
+          name: schoolName,
+          address,
+          email,
+          phone: phoneNumber,
+          modules: selectedModules,
+          status: "ACTIVE",
+        };
+        response = await createSchool(createPayload);
         setSuccess(response);
         setPassword(response.adminPassword);
         showToast("School Registered Successfully", "success");
@@ -123,6 +140,7 @@ export default function AddSchoolForm({
     setPhoneNumber("");
     setSelectedModules(["STUDENT_MANAGEMENT", "EXAMINATION"]);
     setPassword("");
+    setPasswordRegenerated(false);
     setSuccess(null);
     onSuccess?.();
   };
@@ -157,6 +175,8 @@ export default function AddSchoolForm({
             onUsernameChange={setUsername}
             onPasswordChange={setPassword}
             onModulesChange={setSelectedModules}
+            onRegeneratePassword={handleRegeneratePassword}
+            isEdit={isEdit}
           />
         </div>
       </div>

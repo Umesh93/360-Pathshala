@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Copy, Check, RefreshCw } from "lucide-react";
+import { Copy, Check, RefreshCw, Eye, EyeOff } from "lucide-react";
 import MultiSelect from "./MultiSelect";
 import { useToast } from "../modules/admin/students/components/Toast";
 import type { ModuleOption } from "../types/School";
@@ -97,7 +97,9 @@ interface SchoolFormFieldsProps {
   onUsernameChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onModulesChange: (value: string[]) => void;
+  onRegeneratePassword?: () => void;
   hideCredentials?: boolean;
+  isEdit?: boolean;
 }
 
 export default function SchoolFormFields({
@@ -115,17 +117,20 @@ export default function SchoolFormFields({
   onUsernameChange,
   onPasswordChange,
   onModulesChange,
+  onRegeneratePassword,
   hideCredentials = false,
+  isEdit = false,
 }: SchoolFormFieldsProps) {
   const { showToast } = useToast();
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
-    if (email && !username) {
+    if (email) {
       const prefix = email.split("@")[0];
       onUsernameChange(prefix);
     }
-  }, [email, username, onUsernameChange]);
+  }, [email, onUsernameChange]);
 
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -223,10 +228,24 @@ export default function SchoolFormFields({
             </label>
             <div className="flex items-center gap-2">
               <input
+                type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => onPasswordChange(e.target.value)}
+                readOnly={isEdit && password === "********"}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-600 font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setPasswordVisible(!passwordVisible)}
+                className="rounded-xl border border-slate-200 p-3 hover:bg-slate-50"
+                title={passwordVisible ? "Hide password" : "Show password"}
+              >
+                {passwordVisible ? (
+                  <EyeOff size={18} className="text-slate-500" />
+                ) : (
+                  <Eye size={18} className="text-slate-500" />
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => handleCopy(password, "password")}
@@ -238,14 +257,16 @@ export default function SchoolFormFields({
                   <Copy size={18} className="text-slate-500" />
                 )}
               </button>
-              <button
-                type="button"
-                onClick={handleRegeneratePassword}
-                className="rounded-xl border border-slate-200 p-3 hover:bg-slate-50"
-                title="Generate Again"
-              >
-                <RefreshCw size={18} className="text-slate-500" />
-              </button>
+              {isEdit && (
+                <button
+                  type="button"
+                  onClick={onRegeneratePassword}
+                  className="rounded-xl border border-slate-200 p-3 hover:bg-slate-50"
+                  title="Regenerate Password"
+                >
+                  <RefreshCw size={18} className="text-slate-500" />
+                </button>
+              )}
             </div>
             <p className="mt-2 text-xs text-slate-500">
               School Admin can change password after first login.
