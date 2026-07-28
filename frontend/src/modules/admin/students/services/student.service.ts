@@ -264,10 +264,10 @@ const mockResults: ExamResult[] = [
 export const getStudents = async (
   page = 1,
   limit = 10,
-  search = "",
-  classFilter = "",
-  sectionFilter = "",
-  statusFilter = ""
+  _search = "",
+  _classFilter = "",
+  _sectionFilter = "",
+  _statusFilter = ""
 ): Promise<PaginatedResponse<Student>> => {
   const response = await api.get("/people/students", {
     params: {

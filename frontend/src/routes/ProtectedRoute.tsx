@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }: Props) => {
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
     localStorage.removeItem("schoolId");
-    return <Navigate to="/" />;
+    return <Navigate to="/login" />;
   }
 
   return <>{children}</>;

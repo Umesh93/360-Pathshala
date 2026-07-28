@@ -17,6 +17,7 @@ import {
   BarChart3,
   Settings,
   UserCheck,
+  FileCheck,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -38,6 +39,14 @@ const SUPER_ADMIN_LINKS = [
     label: "Demo Requests",
     icon: ClipboardList,
   },
+  {
+    to: "/super-admin/demo-conversions",
+    label: "Conversion History",
+    icon: FileCheck,
+  },
+  { to: "/super-admin/payments", label: "Payments", icon: Wallet },
+  { to: "/super-admin/users", label: "Users", icon: Users },
+  { to: "/super-admin/settings", label: "Settings", icon: Settings },
 ];
 
 const ADMIN_LINKS = [
@@ -68,7 +77,7 @@ export default function Sidebar({
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
-    navigate("/");
+    navigate("/login");
   };
 
   const isAdmin = role === "ADMIN";

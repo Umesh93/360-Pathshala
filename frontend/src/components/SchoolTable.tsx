@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { MoreVertical, Edit, Eye, Trash2, Power, PowerOff } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Power, PowerOff } from "lucide-react";
 import type { School } from "../types/School";
-import { MODULE_OPTIONS } from "./AddSchoolForm";
+import { MODULE_OPTIONS } from "./SchoolFormFields";
 
 const MODULE_CODE_TO_NAME = Object.fromEntries(
   MODULE_OPTIONS.map((m) => [m.code, m.name]),

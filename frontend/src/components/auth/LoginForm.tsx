@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { FiEye, FiEyeOff, FiSettings } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import { login } from "../../services/authService";
 import type { LoginResponse } from "../../types/Auth";
@@ -12,7 +11,6 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   console.log("LoginForm rendered, API_BASE_URL:", API_BASE_URL);
 
