@@ -1,7 +1,7 @@
 import React from "react";
 import TeacherAvatar from "./TeacherAvatar";
 import TeacherStatusBadge from "./TeacherStatusBadge";
-import TeacherActionMenu from "./TeacherActionMenu";
+import ActionMenu from "@/components/common/ActionMenu";
 import type { Teacher } from "../types/teacher.types";
 
 interface TeacherTableProps {
@@ -229,8 +229,8 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
                   <TeacherStatusBadge status={teacher.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <TeacherActionMenu
-                    teacherId={teacher.id}
+                  <ActionMenu
+                    id={teacher.id}
                     onView={onView}
                     onEdit={onEdit}
                     onDelete={onDelete}

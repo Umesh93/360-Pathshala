@@ -5,6 +5,9 @@ import type { DashboardResponse } from "../../services/dashboardService";
 import Skeleton from "../../components/Skeleton";
 import StatCard from "../../components/StatCard";
 import { Wallet, ClipboardCheck, FileText, CalendarDays } from "lucide-react";
+import PageHeader from "../../components/layout/PageHeader";
+import ErrorState from "../../components/feedback/ErrorState";
+import ChartCard from "../../components/dashboard/ChartCard";
 
 const ParentDashboard = () => {
   const [data, setData] = useState<DashboardResponse | null>(null);
@@ -30,8 +33,10 @@ const ParentDashboard = () => {
     return (
       <ParentLayout>
         <div className="space-y-6">
-          <Skeleton className="h-10 w-48 mb-2" />
-          <Skeleton className="h-6 w-96 mb-6" />
+          <div>
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-6 w-96 mb-6" />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-32" />
@@ -45,17 +50,8 @@ const ParentDashboard = () => {
   if (error) {
     return (
       <ParentLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <p className="text-red-600 text-lg font-medium">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-[#234A91] text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+        <PageHeader title="Parent / Guardian Dashboard" subtitle="Here's your children's overview." />
+        <ErrorState description={error} onRetry={() => window.location.reload()} />
       </ParentLayout>
     );
   }
@@ -67,16 +63,9 @@ const ParentDashboard = () => {
 
   return (
     <ParentLayout>
-      <div className="space-y-4 md:space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl lg:text-[42px] font-bold text-gray-800 mb-2">
-            Parent / Guardian Dashboard
-          </h1>
-          <p className="text-gray-600 text-base md:text-xl mb-6">
-            Welcome back! Here's your children's overview.
-          </p>
-        </div>
+      <PageHeader title="Parent / Guardian Dashboard" subtitle="Here's your children's overview." />
 
+      <div className="space-y-4 md:space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Outstanding Fees"
@@ -102,6 +91,19 @@ const ParentDashboard = () => {
             icon={<CalendarDays />}
             iconBg="bg-orange-500"
           />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ChartCard title="Child Performance">
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+              Performance chart placeholder
+            </div>
+          </ChartCard>
+          <ChartCard title="Recent Activities">
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+              Activities placeholder
+            </div>
+          </ChartCard>
         </div>
       </div>
     </ParentLayout>

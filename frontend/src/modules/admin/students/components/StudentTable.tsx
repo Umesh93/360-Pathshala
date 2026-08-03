@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import StudentAvatar from "./StudentAvatar";
 import StudentStatusBadge from "./StudentStatusBadge";
-import StudentActionMenu from "./StudentActionMenu";
+import ActionMenu from "@/components/common/ActionMenu";
 import type { Student } from "../types/student.types";
 
 interface StudentTableProps {
@@ -11,6 +11,9 @@ interface StudentTableProps {
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onBulkDelete?: (ids: number[]) => void;
+  selectedRows?: Set<number>;
+  onSelectionChange?: (ids: Set<number>) => void;
 }
 
 type SortKey = keyof Student;
@@ -22,10 +25,19 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onView,
   onEdit,
   onDelete,
+  onBulkDelete,
+  selectedRows: externalSelectedRows,
+  onSelectionChange,
 }) => {
   const [sortKey, setSortKey] = React.useState<SortKey>("firstName");
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
-  const [selectedRows, setSelectedRows] = React.useState<Set<number>>(new Set());
+  const [sortDirection, setSortDirection] =
+    React.useState<SortDirection>("asc");
+  const [internalSelectedRows, setInternalSelectedRows] = React.useState<
+    Set<number>
+  >(new Set());
+
+  const selectedRows = externalSelectedRows ?? internalSelectedRows;
+  const setSelectedRows = onSelectionChange ?? setInternalSelectedRows;
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -137,6 +149,20 @@ const StudentTable: React.FC<StudentTableProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {selectedRows.size > 0 && onBulkDelete && (
+        <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+          <span className="text-sm text-blue-700">
+            {selectedRows.size} student{selectedRows.size > 1 ? "s" : ""}{" "}
+            selected
+          </span>
+          <button
+            onClick={() => onBulkDelete(Array.from(selectedRows))}
+            className="text-sm text-red-600 hover:text-red-700 font-medium"
+          >
+            Delete Selected
+          </button>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1200px]">
           <thead>
@@ -181,9 +207,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                     className="w-4 h-4 rounded border-gray-300 text-[#234A91] focus:ring-[#234A91]"
                   />
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
-                  {index + 1}
-                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <StudentAvatar
@@ -233,8 +257,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
                   <StudentStatusBadge status={student.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <StudentActionMenu
-                    studentId={student.id}
+                  <ActionMenu
+                    id={student.id}
                     onView={onView}
                     onEdit={onEdit}
                     onDelete={onDelete}

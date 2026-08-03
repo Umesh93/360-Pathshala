@@ -5,6 +5,9 @@ interface StudentToolbarProps {
   onSearch: (value: string) => void;
   onRefresh: () => void;
   onAddStudent: () => void;
+  onExportCSV?: () => void;
+  onExportPDF?: () => void;
+  onImport?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   searchPlaceholder?: string;
 }
 
@@ -12,9 +15,13 @@ const StudentToolbar: React.FC<StudentToolbarProps> = ({
   onSearch,
   onRefresh,
   onAddStudent,
+  onExportCSV,
+  onExportPDF,
+  onImport,
   searchPlaceholder = "Search students...",
 }) => {
   const [localSearch, setLocalSearch] = useState("");
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -26,7 +33,6 @@ const StudentToolbar: React.FC<StudentToolbarProps> = ({
     <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-          {/* Search */}
           <div className="relative flex-1 max-w-md">
             <Search
               size={18}
@@ -41,35 +47,71 @@ const StudentToolbar: React.FC<StudentToolbarProps> = ({
             />
           </div>
 
-          {/* Filter Button */}
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <SlidersHorizontal size={16} />
-            Filter
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <SlidersHorizontal size={16} />
+              Filter
+            </button>
 
-          {/* Export Button */}
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Download size={16} />
-            Export
-          </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Download size={16} />
+                Export
+              </button>
+              {showExportMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowExportMenu(false)}
+                  />
+                  <div className="absolute right-0 z-20 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-200 py-1">
+                    <button
+                      onClick={() => {
+                        onExportCSV?.();
+                        setShowExportMenu(false);
+                      }}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Export CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        onExportPDF?.();
+                        setShowExportMenu(false);
+                      }}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Export PDF
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
 
-          {/* Import Button */}
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Upload size={16} />
-            Import
-          </button>
+            <label className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+              <Upload size={16} />
+              Import
+              <input
+                type="file"
+                accept=".csv,.xlsx"
+                onChange={onImport}
+                className="hidden"
+              />
+            </label>
 
-          {/* Refresh Button */}
-          <button
-            onClick={onRefresh}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <RefreshCw size={16} />
-            Refresh
-          </button>
+            <button
+              onClick={onRefresh}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {/* Add Student Button */}
         <button
           onClick={onAddStudent}
           className="flex items-center gap-2 px-6 py-2.5 bg-[#234A91] text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap"

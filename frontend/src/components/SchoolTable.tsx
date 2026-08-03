@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { MoreVertical, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import { Power, PowerOff } from "lucide-react";
 import type { School } from "../types/School";
 import { MODULE_OPTIONS } from "./SchoolFormFields";
+import ActionMenu from "@/components/common/ActionMenu";
 
 const MODULE_CODE_TO_NAME = Object.fromEntries(
   MODULE_OPTIONS.map((m) => [m.code, m.name]),
@@ -20,8 +20,6 @@ export default function SchoolTable({
   onDelete,
   onToggleStatus,
 }: Props) {
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-
   return (
     <div className="overflow-visible rounded-3xl border border-slate-200 bg-white">
       <table className="w-full">
@@ -124,45 +122,11 @@ export default function SchoolTable({
                         <Power size={16} className="text-green-500" />
                       )}
                     </button>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpenMenuId(
-                            openMenuId === school.id ? null : school.id,
-                          )
-                        }
-                        className="rounded-lg p-2 hover:bg-slate-100"
-                      >
-                        <MoreVertical size={16} className="text-slate-600" />
-                      </button>
-                      {openMenuId === school.id && (
-                        <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border border-slate-200 bg-white shadow-xl">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onEdit?.(school);
-                              setOpenMenuId(null);
-                            }}
-                            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                          >
-                            <Edit size={16} />
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onDelete?.(school);
-                              setOpenMenuId(null);
-                            }}
-                            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 size={16} />
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <ActionMenu
+                      id={school.id}
+                      onEdit={onEdit ? () => onEdit(school) : undefined}
+                      onDelete={onDelete ? () => onDelete(school) : undefined}
+                    />
                   </div>
                 </td>
               </tr>

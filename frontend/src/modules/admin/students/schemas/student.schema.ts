@@ -6,7 +6,9 @@ export const academicInfoSchema = z.object({
   admissionNo: z.string().min(1, "Admission number is required"),
   admissionDate: z.string().min(1, "Admission date is required"),
   class: z.string().min(1, "Class is required"),
+  className: z.string().optional(),
   section: z.string().min(1, "Section is required"),
+  sectionName: z.string().optional(),
   rollNumber: z.string().min(1, "Roll number is required"),
   house: z.string().optional(),
   status: z.enum(["active", "inactive", "transfer"]),
@@ -33,6 +35,7 @@ export const personalInfoSchema = z.object({
 });
 
 export const guardianSchema = z.object({
+  guardianId: z.number().optional(),
   fatherName: z.string().min(1, "Father name is required"),
   fatherOccupation: z.string().optional(),
   fatherPhone: z.string().min(10, "Father phone is required"),
@@ -55,9 +58,13 @@ export const guardianSchema = z.object({
 
 export const addressSchema = z.object({
   currentProvince: z.string().min(1, "Province is required"),
+  currentProvinceName: z.string().optional(),
   currentDistrict: z.string().min(1, "District is required"),
+  currentDistrictName: z.string().optional(),
   currentMunicipality: z.string().min(1, "Municipality is required"),
+  currentMunicipalityName: z.string().optional(),
   currentWard: z.string().min(1, "Ward is required"),
+  currentWardNumber: z.string().optional(),
   currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
   permanentProvince: z.string().optional(),

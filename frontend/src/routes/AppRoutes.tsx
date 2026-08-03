@@ -12,7 +12,9 @@ import DemoRequests from "../pages/super-admin/DemoRequests";
 import ConversionHistory from "../pages/super-admin/ConversionHistory";
 import AdminDashboard from "../pages/admin/Dashboard";
 import StudentListPage from "../modules/admin/students/pages/StudentListPage";
+import StudentDetailPage from "../modules/admin/students/pages/StudentDetailPage";
 import AddStudentPage from "../modules/admin/students/pages/AddStudentPage";
+import EditStudentPage from "../modules/admin/students/pages/EditStudentPage";
 import TeacherListPage from "../modules/admin/teachers/pages/TeacherListPage";
 import AddTeacherPage from "../modules/admin/teachers/pages/AddTeacherPage";
 import TeacherDashboard from "../pages/teacher/Dashboard";
@@ -88,6 +90,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
             <AddStudentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/students/:id"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <StudentDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/students/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <EditStudentPage />
           </ProtectedRoute>
         }
       />

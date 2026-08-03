@@ -1,324 +1,168 @@
-import type { Student, PaginatedResponse, AttendanceSummary, FeeRecord, ExamResult } from "../types/student.types";
+import type {
+  Student,
+  StudentEditLookups,
+  StudentRequest,
+  StudentResponse,
+  PaginatedResponse,
+  AttendanceSummary,
+  FeeRecord,
+  ExamResult,
+} from "../types/student.types";
+import type { StudentFormData } from "../schemas/student.schema";
 import api from "../../../../services/api";
 
-const mockStudents: Student[] = [
-  {
-    id: 1,
-    admissionNo: "ADM-2024-001",
-    firstName: "Aarav",
-    lastName: "Khadka",
-    rollNumber: "10A-01",
-    class: "Grade 10",
-    section: "A",
-    gender: "male",
-    dob: "2008-05-15",
-    bloodGroup: "A+",
-    phone: "9800000001",
-    email: "aarav.k@example.com",
-    address: "Kathmandu, Nepal",
-    category: "General",
-    religion: "Hindu",
-    nationality: "Nepali",
-    status: "active",
-    admissionDate: "2024-01-10",
-    house: "Red",
-    previousSchool: "ABC School",
-    transport: "Bus",
-    hostel: "No",
+const mapStudent = (item: StudentResponse | Record<string, unknown>): Student => {
+  const record = item as Record<string, unknown>;
+  const guardian = (record.guardian as Record<string, unknown>) || {};
+  const details = (record.details as Record<string, unknown>) || {};
+  return {
+    id: (record.id as number),
+    admissionNo: (record.admissionNo as string) ?? "",
+    firstName: (record.firstName as string),
+    lastName: (record.lastName as string),
+    rollNumber: (record.rollNumber as string) ?? "",
+    class: (record.className as string) ?? "",
+    className: (record.className as string) ?? "",
+    section: (record.sectionName as string) ?? "",
+    sectionName: (record.sectionName as string) ?? "",
+    classId: (record.classId as number) ?? undefined,
+    sectionId: (record.sectionId as number) ?? undefined,
+    guardianId: (record.guardianId as number) ?? undefined,
+    guardianName: (record.guardianName as string) ?? (guardian.guardianName as string) ?? "",
+    gender: (record.gender as Student["gender"]) || "other",
+    dob: (record.dob as string) ?? "",
+    phone: ((details.studentPhone as string) ?? (guardian.phone as string) ?? (record.phone as string) ?? ""),
+    email: ((details.studentEmail as string) ?? (guardian.email as string) ?? (record.email as string) ?? ""),
+    address: ((guardian.address as string) ?? (record.address as string) ?? ""),
+    status: ["active", "inactive", "transferred", "graduated", "suspended", "dropped"].includes(record.status as string)
+      ? (record.status as Student["status"])
+      : "inactive",
+    photo: (details.photo as string) ?? (record.photo as string) ?? "",
+    admissionDate: (details.admissionDate as string) ?? (record.admissionDate as string) ?? "",
     guardian: {
-      fatherName: "Rajesh Khadka",
-      motherName: "Sita Khadka",
-      guardianName: "Rajesh Khadka",
-      relationship: "Father",
-      occupation: "Business",
-      phone: "9800000001",
-      email: "rajesh.k@example.com",
-      address: "Kathmandu, Nepal",
+      fatherName: (guardian.fatherName as string) ?? "",
+      motherName: (guardian.motherName as string) ?? "",
+      guardianName: (guardian.guardianName as string) ?? "",
+      relationship: (guardian.relationship as string) ?? "",
+      occupation: (guardian.occupation as string) ?? "",
+      phone: (guardian.phone as string) ?? "",
+      email: (guardian.email as string) ?? "",
+      address: (guardian.address as string) ?? "",
+      fatherOccupation: (guardian.fatherOccupation as string) ?? "",
+      fatherPhone: (guardian.fatherPhone as string) ?? "",
+      fatherEmail: (guardian.fatherEmail as string) ?? "",
+      motherOccupation: (guardian.motherOccupation as string) ?? "",
+      motherPhone: (guardian.motherPhone as string) ?? "",
+      motherEmail: (guardian.motherEmail as string) ?? "",
     },
-    classTeacher: "John Doe",
-    subjects: ["Math", "Science", "English"],
-  },
-  {
-    id: 2,
-    admissionNo: "ADM-2024-002",
-    firstName: "Sita",
-    lastName: "Gurung",
-    rollNumber: "10A-02",
-    class: "Grade 10",
-    section: "A",
-    gender: "female",
-    dob: "2008-08-22",
-    bloodGroup: "B+",
-    phone: "9800000002",
-    email: "sita.g@example.com",
-    address: "Pokhara, Nepal",
-    category: "General",
-    religion: "Buddhist",
-    nationality: "Nepali",
-    status: "active",
-    admissionDate: "2024-01-12",
-    house: "Blue",
-    previousSchool: "XYZ School",
-    transport: "Bus",
-    hostel: "No",
-    guardian: {
-      fatherName: "Mohan Gurung",
-      motherName: "Kamala Gurung",
-      guardianName: "Mohan Gurung",
-      relationship: "Father",
-      occupation: "Teacher",
-      phone: "9800000002",
-      email: "mohan.g@example.com",
-      address: "Pokhara, Nepal",
-    },
-    classTeacher: "Jane Smith",
-    subjects: ["Math", "Science", "English"],
-  },
-  {
-    id: 3,
-    admissionNo: "ADM-2024-003",
-    firstName: "Ram",
-    lastName: "Sharma",
-    rollNumber: "9B-03",
-    class: "Grade 9",
-    section: "B",
-    gender: "male",
-    dob: "2009-03-10",
-    bloodGroup: "O+",
-    phone: "9800000003",
-    email: "ram.s@example.com",
-    address: "Lalitpur, Nepal",
-    category: "OBC",
-    religion: "Hindu",
-    nationality: "Nepali",
-    status: "inactive",
-    admissionDate: "2024-01-15",
-    house: "Green",
-    previousSchool: "LM School",
-    transport: "None",
-    hostel: "No",
-    guardian: {
-      fatherName: "Krishna Sharma",
-      motherName: "Radha Sharma",
-      guardianName: "Krishna Sharma",
-      relationship: "Father",
-      occupation: "Engineer",
-      phone: "9800000003",
-      email: "krishna.s@example.com",
-      address: "Lalitpur, Nepal",
-    },
-    classTeacher: "Robert Brown",
-    subjects: ["Math", "Science", "Social"],
-  },
-  {
-    id: 4,
-    admissionNo: "ADM-2024-004",
-    firstName: "Maya",
-    lastName: "Tamang",
-    rollNumber: "8C-01",
-    class: "Grade 8",
-    section: "C",
-    gender: "female",
-    dob: "2010-11-05",
-    bloodGroup: "AB+",
-    phone: "9800000004",
-    email: "maya.t@example.com",
-    address: "Bhaktapur, Nepal",
-    category: "ST",
-    religion: "Buddhist",
-    nationality: "Nepali",
-    status: "active",
-    admissionDate: "2024-01-20",
-    house: "Yellow",
-    previousSchool: "Sunshine School",
-    transport: "Bus",
-    hostel: "Yes",
-    guardian: {
-      fatherName: "Nima Tamang",
-      motherName: "Pemba Tamang",
-      guardianName: "Nima Tamang",
-      relationship: "Father",
-      occupation: "Farmer",
-      phone: "9800000004",
-      email: "nima.t@example.com",
-      address: "Bhaktapur, Nepal",
-    },
-    classTeacher: "Emily Davis",
-    subjects: ["Math", "English", "Science"],
-  },
-  {
-    id: 5,
-    admissionNo: "ADM-2024-005",
-    firstName: "Kiran",
-    lastName: "Thapa",
-    rollNumber: "9A-05",
-    class: "Grade 9",
-    section: "A",
-    gender: "male",
-    dob: "2009-07-18",
-    bloodGroup: "A-",
-    phone: "9800000005",
-    email: "kiran.t@example.com",
-    address: "Kathmandu, Nepal",
-    category: "General",
-    religion: "Hindu",
-    nationality: "Nepali",
-    status: "active",
-    admissionDate: "2024-02-01",
-    house: "Red",
-    previousSchool: "Everest School",
-    transport: "Van",
-    hostel: "No",
-    guardian: {
-      fatherName: "Bikash Thapa",
-      motherName: "Sunita Thapa",
-      guardianName: "Bikash Thapa",
-      relationship: "Father",
-      occupation: "Doctor",
-      phone: "9800000005",
-      email: "bikash.t@example.com",
-      address: "Kathmandu, Nepal",
-    },
-    classTeacher: "John Doe",
-    subjects: ["Math", "Science", "English"],
-  },
-];
-
-const mockAttendance: AttendanceSummary = {
-  total: 120,
-  present: 108,
-  absent: 5,
-  late: 4,
-  leave: 2,
-  halfDay: 1,
-  percentage: 90,
-  monthlyData: [
-    { month: "Jan", present: 20, absent: 2 },
-    { month: "Feb", present: 22, absent: 1 },
-    { month: "Mar", present: 21, absent: 3 },
-    { month: "Apr", present: 23, absent: 2 },
-    { month: "May", present: 22, absent: 1 },
-    { month: "Jun", present: 20, absent: 2 },
-  ],
+    classTeacher: (record.classTeacher as string) ?? "",
+    subjects: (record.subjects as string[]) ?? [],
+    province: (record.province as string) ?? "",
+    provinceId: (record.provinceId as number) ?? undefined,
+    district: (record.district as string) ?? "",
+    districtId: (record.districtId as number) ?? undefined,
+    municipality: (record.municipality as string) ?? "",
+    municipalityId: (record.municipalityId as number) ?? undefined,
+    ward: (record.ward as number) ?? undefined,
+    wardId: (record.wardId as number) ?? undefined,
+    street: (record.street as string) ?? "",
+    academicYear: (details.academicYear as string) ?? "",
+    medium: (details.medium as string) ?? "",
+    house: (details.house as string) ?? "",
+    scholarship: (details.scholarship as string) ?? "",
+    middleName: (details.middleName as string) ?? "",
+    bloodGroup: (details.bloodGroup as string) ?? "",
+    religion: (details.religion as string) ?? "",
+    caste: (details.caste as string) ?? "",
+    nationality: (details.nationality as string) ?? "",
+    motherTongue: (details.motherTongue as string) ?? "",
+    citizenshipNumber: (details.citizenshipNumber as string) ?? "",
+    emisId: (details.emisId as string) ?? "",
+    studentIdBarcode: (details.studentIdBarcode as string) ?? "",
+    medicalBloodGroup: (details.medicalBloodGroup as string) ?? "",
+    height: (details.height as string) ?? "",
+    weight: (details.weight as string) ?? "",
+    medicalConditions: (details.medicalConditions as string) ?? "",
+    medicalConditionsOther: (details.medicalConditionsOther as string) ?? "",
+    allergies: (details.allergies as string) ?? "",
+    disability: (details.disability as string) ?? "",
+    emergencyContactPerson: (details.emergencyContactPerson as string) ?? "",
+    emergencyContactNumber: (details.emergencyContactNumber as string) ?? "",
+    previousSchool: (details.previousSchool as string) ?? "",
+    previousAddress: (details.previousAddress as string) ?? "",
+    previousClass: (details.previousClass as string) ?? "",
+    transferCertificateNumber: (details.transferCertificateNumber as string) ?? "",
+    reasonForLeaving: (details.reasonForLeaving as string) ?? "",
+    hasHostel: (details.hasHostel as boolean) ?? false,
+    hostel: (details.hostel as string) ?? "",
+    roomNumber: (details.roomNumber as string) ?? "",
+    bedNumber: (details.bedNumber as string) ?? "",
+    usesTransport: (details.usesTransport as boolean) ?? false,
+    route: (details.route as string) ?? "",
+    transport: (details.route as string) ?? "",
+    pickupPoint: (details.pickupPoint as string) ?? "",
+    vehicle: (details.vehicle as string) ?? "",
+    documents: (details.documents as string) ?? "",
+    documentCategories: (details.documentCategories as string) ?? "",
+    notes: (details.notes as string) ?? "",
+  };
 };
 
-const mockFees: FeeRecord[] = [
-  {
-    id: 1,
-    studentId: 1,
-    feeType: "Tuition Fee",
-    amount: 15000,
-    paidAmount: 15000,
-    dueDate: "2026-07-10",
-    status: "paid",
-    paymentHistory: [
-      {
-        id: 1,
-        date: "2026-07-01",
-        amount: 15000,
-        method: "Cash",
-        receiptNo: "RCP-001",
-      },
-    ],
-  },
-  {
-    id: 2,
-    studentId: 1,
-    feeType: "Transport Fee",
-    amount: 2000,
-    paidAmount: 1000,
-    dueDate: "2026-07-15",
-    status: "pending",
-    paymentHistory: [
-      {
-        id: 2,
-        date: "2026-07-01",
-        amount: 1000,
-        method: "Cash",
-        receiptNo: "RCP-002",
-      },
-    ],
-  },
-];
-
-const mockResults: ExamResult[] = [
-  {
-    id: 1,
-    examId: 1,
-    examName: "Mid-Term Exam",
-    studentId: 1,
-    subjects: [
-      { subject: "Math", marks: 92, fullMarks: 100, grade: "A+" },
-      { subject: "Science", marks: 88, fullMarks: 100, grade: "A" },
-      { subject: "English", marks: 85, fullMarks: 100, grade: "A" },
-    ],
-    totalMarks: 300,
-    obtainedMarks: 265,
-    percentage: 88.33,
-    grade: "A+",
-    division: "First",
-    rank: 2,
-  },
-];
+const buildStudentPayload = (formData: StudentFormData): StudentRequest => {
+  const flat: Record<string, unknown> = {
+    ...formData.academicInfo, ...formData.personalInfo, ...formData.guardian, ...formData.address,
+    ...formData.medical, ...formData.academicHistory, ...formData.hostel, ...formData.transport,
+    ...formData.documents, ...formData.login, notes: formData.notes?.notes,
+  };
+  const guardianSelection = flat.guardianSelection as string;
+  const selectedPhone = guardianSelection === "father" ? flat.fatherPhone : guardianSelection === "mother" ? flat.motherPhone : flat.guardianPhone;
+  const selectedName = guardianSelection === "father" ? flat.fatherName : guardianSelection === "mother" ? flat.motherName : flat.guardianName;
+  return {
+    admissionNumber: flat.admissionNo, rollNumber: flat.rollNumber, firstName: flat.firstName, lastName: flat.lastName,
+    dateOfBirth: flat.dob, gender: flat.gender, parentId: typeof flat.guardianId === "number" ? flat.guardianId : null,
+    classId: flat.class ? Number(flat.class) : null, sectionId: flat.section ? Number(flat.section) : null,
+    province: flat.currentProvinceName || undefined, district: flat.currentDistrictName || undefined,
+    municipality: flat.currentMunicipalityName || undefined, ward: flat.currentWardNumber ? Number(flat.currentWardNumber) : null,
+    street: flat.currentStreet || undefined, fatherName: flat.fatherName || undefined, motherName: flat.motherName || undefined,
+    guardianName: selectedName && selectedName !== flat.fatherName ? selectedName : undefined, relationship: flat.guardianRelationship || undefined,
+    occupation: flat.guardianOccupation || undefined, guardianPhone: selectedPhone || undefined, guardianEmail: flat.guardianEmail || undefined,
+    guardianAddress: flat.guardianAddress || undefined, academicYear: flat.academicYear, medium: flat.medium, admissionDate: flat.admissionDate,
+    house: flat.house, status: flat.status, scholarship: flat.scholarship, middleName: flat.middleName, bloodGroup: flat.bloodGroup,
+    religion: flat.religion, caste: flat.caste, nationality: flat.nationality, motherTongue: flat.motherTongue, studentPhone: flat.phone,
+    studentEmail: flat.email, citizenshipNumber: flat.citizenshipNumber, emisId: flat.emisId, studentIdBarcode: flat.studentIdBarcode, photo: flat.photo,
+    fatherOccupation: flat.fatherOccupation, fatherPhone: flat.fatherPhone, fatherEmail: flat.fatherEmail, motherOccupation: flat.motherOccupation,
+    motherPhone: flat.motherPhone, motherEmail: flat.motherEmail, medicalBloodGroup: flat.bloodGroup, height: flat.height, weight: flat.weight,
+    medicalConditions: flat.medicalConditions, medicalConditionsOther: flat.medicalConditionsOther, allergies: flat.allergies, disability: flat.disability,
+    emergencyContactPerson: flat.emergencyContactPerson, emergencyContactNumber: flat.emergencyContactNumber, previousSchool: flat.previousSchool,
+    previousAddress: flat.previousAddress, previousClass: flat.previousClass, transferCertificateNumber: flat.transferCertificateNumber,
+    reasonForLeaving: flat.reasonForLeaving, hasHostel: flat.hasHostel, hostel: flat.hostel, roomNumber: flat.roomNumber, bedNumber: flat.bedNumber,
+    usesTransport: flat.usesTransport, route: flat.route, pickupPoint: flat.pickupPoint, vehicle: flat.vehicle,
+    documents: typeof flat.documents === "string" ? flat.documents : undefined,
+    documentCategories: Array.isArray(flat.documentCategories) ? flat.documentCategories.join(",") : flat.documentCategories,
+    notes: flat.notes,
+  };
+};
 
 export const getStudents = async (
   page = 1,
   limit = 10,
-  _search = "",
-  _classFilter = "",
-  _sectionFilter = "",
-  _statusFilter = ""
+  search = "",
+  classFilter = "",
+  sectionFilter = "",
+  statusFilter = ""
 ): Promise<PaginatedResponse<Student>> => {
   const response = await api.get("/people/students", {
     params: {
       page: page - 1,
       size: limit,
+      search: search || undefined,
+      class: classFilter || undefined,
+      section: sectionFilter || undefined,
+      status: statusFilter || undefined,
     },
   });
 
   const data = response.data;
-  const mapStudent = (item: any): Student => ({
-    id: item.id,
-    admissionNo: item.admissionNo ?? "",
-    firstName: item.firstName,
-    lastName: item.lastName,
-    rollNumber: item.rollNumber ?? "",
-    class: item.className ?? "",
-    section: item.sectionName ?? "",
-    gender: (item.gender as Student["gender"]) || "other",
-    dob: item.dob ?? "",
-    bloodGroup: "",
-    phone: item.guardian?.phone ?? "",
-    email: item.guardian?.email ?? "",
-    address: item.guardian?.address ?? "",
-    category: "",
-    religion: "",
-    nationality: "",
-    status: (item.status === "active" || item.status === "inactive") ? item.status : "inactive",
-    photo: "",
-    admissionDate: "",
-    house: "",
-    previousSchool: "",
-    transport: "",
-    hostel: "",
-    medicalConditions: "",
-    allergies: "",
-    disability: "",
-    doctor: "",
-    emergencyContact: "",
-    guardian: {
-      fatherName: item.guardian?.fatherName ?? "",
-      motherName: item.guardian?.motherName ?? "",
-      guardianName: item.guardian?.guardianName ?? "",
-      relationship: item.guardian?.relationship ?? "",
-      occupation: item.guardian?.occupation ?? "",
-      phone: item.guardian?.phone ?? "",
-      email: item.guardian?.email ?? "",
-      address: item.guardian?.address ?? "",
-    },
-    classTeacher: "",
-    subjects: [],
-  });
 
   return {
     data: data.content.map(mapStudent),
@@ -329,215 +173,236 @@ export const getStudents = async (
   };
 };
 
-export const getStudentById = async (id: number): Promise<Student | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockStudents.find((s) => s.id === id);
+export const getStudentById = async (id: number): Promise<Student> => {
+  const response = await api.get<StudentResponse>(`/people/students/${id}`);
+  return mapStudent(response.data);
 };
 
-export const createStudent = async (formData: any): Promise<Student> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const flat: Record<string, unknown> = {
-    ...formData.academicInfo,
-    ...formData.personalInfo,
-    ...formData.guardian,
-    ...formData.address,
-    ...formData.medical,
-    ...formData.academicHistory,
-    ...formData.hostel,
-    ...formData.transport,
-    ...formData.bank,
-    ...formData.login,
-    notes: formData.notes.notes,
-  };
-  const newStudent = { ...flat, id: Date.now() } as Student;
-  mockStudents.push(newStudent);
-  return newStudent;
+export const createStudent = async (formData: StudentFormData): Promise<Student> => {
+  const payload = buildStudentPayload(formData);
+
+  const response = await api.post("/people/students", payload);
+  return mapStudent(response.data);
 };
 
 export const updateStudent = async (
   id: number,
-  student: Partial<Student>
-): Promise<Student | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const index = mockStudents.findIndex((s) => s.id === id);
-  if (index === -1) return undefined;
-  mockStudents[index] = { ...mockStudents[index], ...student };
-  return mockStudents[index];
+  formData: StudentFormData
+): Promise<Student> => {
+  const payload = buildStudentPayload(formData);
+
+  const response = await api.put(`/people/students/${id}`, payload);
+  return mapStudent(response.data);
 };
 
 export const deleteStudent = async (id: number): Promise<boolean> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const index = mockStudents.findIndex((s) => s.id === id);
-  if (index === -1) return false;
-  mockStudents.splice(index, 1);
+  await api.delete(`/people/students/${id}`);
+  return true;
+};
+
+export const bulkDeleteStudents = async (ids: number[]): Promise<boolean> => {
+  await Promise.all(ids.map((id) => deleteStudent(id)));
   return true;
 };
 
 export const getStudentAttendance = async (): Promise<AttendanceSummary> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockAttendance;
+  try {
+    const response = await api.get("/people/students/attendance/summary");
+    return response.data as AttendanceSummary;
+  } catch {
+    return {
+      total: 0,
+      present: 0,
+      absent: 0,
+      late: 0,
+      leave: 0,
+      halfDay: 0,
+      percentage: 0,
+      monthlyData: [],
+    };
+  }
 };
 
 export const getStudentFees = async (): Promise<FeeRecord[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockFees;
+  try {
+    const response = await api.get("/people/students/fees");
+    return response.data as FeeRecord[];
+  } catch {
+    return [];
+  }
 };
 
 export const getStudentResults = async (): Promise<ExamResult[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockResults;
+  try {
+    const response = await api.get("/people/students/results");
+    return response.data as ExamResult[];
+  } catch {
+    return [];
+  }
 };
 
 export const generateAdmissionNo = async (): Promise<string> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const year = new Date().getFullYear();
-  const count = mockStudents.length + 1;
-  return `ADM-${year}-${String(count).padStart(3, "0")}`;
+  try {
+    const response = await api.get("/people/students/next-admission-no");
+    return (response.data.admissionNo as string) || `ADM-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+  } catch {
+    return `ADM-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+  }
 };
 
 export const getNextRollNumber = async (
   classId: string,
   sectionId: string
 ): Promise<{ nextRollNumber: number }> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const matchingStudents = mockStudents.filter(
-    (s) => s.class === classId && s.section === sectionId
-  );
-  const maxRoll = matchingStudents.reduce((max, s) => {
-    const num = parseInt(s.rollNumber, 10);
-    return num > max ? num : max;
-  }, 0);
-  return { nextRollNumber: maxRoll + 1 };
+  try {
+    const response = await api.get(`/people/students/next-roll-number`, {
+      params: { class: classId, section: sectionId },
+    });
+    return response.data as { nextRollNumber: number };
+  } catch {
+    return { nextRollNumber: 1 };
+  }
+};
+
+export const getClasses = async (): Promise<{ id: number; name: string }[]> => {
+  try {
+    const response = await api.get("/academic/classes", {
+      params: { page: 0, size: 100 },
+    });
+    return (response.data.content as Record<string, unknown>[]).map((c) => ({
+      id: (c.id as number) ?? 0,
+      name: (c.name as string) ?? "",
+    }));
+  } catch {
+    return [];
+  }
+};
+
+export const getGuardians = async (): Promise<{ id: number; name: string }[]> => {
+  try {
+    const response = await api.get("/people/students/guardians", { params: { page: 0, size: 1000 } });
+    return (response.data.content as Record<string, unknown>[]).map((guardian) => ({
+      id: guardian.id as number,
+      name: (guardian.fullName as string) ?? "",
+    }));
+  } catch {
+    return [];
+  }
+};
+
+export const getSections = async (): Promise<{ id: number; name: string; classId: number }[]> => {
+  try {
+    const response = await api.get("/academic/sections", {
+      params: { page: 0, size: 100 },
+    });
+    return (response.data.content as Record<string, unknown>[]).map((s) => ({
+      id: (s.id as number) ?? 0,
+      name: (s.name as string) ?? "",
+      classId: (s.classId as number) ?? 0,
+    }));
+  } catch {
+    return [];
+  }
+};
+
+export const getProvinces = async (): Promise<{ id: number; name: string }[]> => {
+  try {
+    const response = await api.get("/people/students/locations/provinces");
+    return response.data as { id: number; name: string }[];
+  } catch {
+    return [];
+  }
 };
 
 export const getDistricts = async (
-  provinceId: number
-): Promise<{ id: number; name: string }[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const districtMap: Record<number, { id: number; name: string }[]> = {
-    1: [
-      { id: 1, name: "Taplejung" },
-      { id: 2, name: "Panchthar" },
-      { id: 3, name: "Ilam" },
-      { id: 4, name: "Jhapa" },
-      { id: 5, name: "Morang" },
-      { id: 6, name: "Sunsari" },
-      { id: 7, name: "Dhankuta" },
-      { id: 8, name: "Terhathum" },
-      { id: 9, name: "Sankhuwasabha" },
-      { id: 10, name: "Bhojpur" },
-      { id: 11, name: "Khotang" },
-      { id: 12, name: "Okhaldhunga" },
-      { id: 13, name: "Udayapur" },
-    ],
-    2: [
-      { id: 14, name: "Siraha" },
-      { id: 15, name: "Saptari" },
-      { id: 16, name: "Udayapur" },
-      { id: 17, name: "Mahottari" },
-      { id: 18, name: "Dhanusha" },
-      { id: 19, name: "Sarlahi" },
-      { id: 20, name: "Rautahat" },
-      { id: 21, name: "Bara" },
-      { id: 22, name: "Parsa" },
-    ],
-    3: [
-      { id: 23, name: "Kathmandu" },
-      { id: 24, name: "Lalitpur" },
-      { id: 25, name: "Bhaktapur" },
-      { id: 26, name: "Rasuwa" },
-      { id: 27, name: "Nuwakot" },
-      { id: 28, name: "Dhading" },
-      { id: 29, name: "Makwanpur" },
-      { id: 30, name: "Chitwan" },
-      { id: 31, name: "Nawalparasi" },
-      { id: 32, name: "Rupandehi" },
-    ],
-    4: [
-      { id: 33, name: "Gorkha" },
-      { id: 34, name: "Tanahun" },
-      { id: 35, name: "Syangja" },
-      { id: 36, name: "Kaski" },
-      { id: 37, name: "Lamjung" },
-      { id: 38, name: "Nuwakot" },
-      { id: 39, name: "Dhading" },
-    ],
-    5: [
-      { id: 40, name: "Palpa" },
-      { id: 41, name: "Nawalparasi" },
-      { id: 42, name: "Arghakhanchi" },
-      { id: 43, name: " Gulmi" },
-      { id: 44, name: "Pyuthan" },
-      { id: 45, name: "Rolpa" },
-      { id: 46, name: "Rukum" },
-      { id: 47, name: "Salyan" },
-    ],
-    6: [
-      { id: 48, name: "Jumla" },
-      { id: 49, name: "Kalikot" },
-      { id: 50, name: "Dailekh" },
-      { id: 51, name: "Jajarkot" },
-      { id: 52, name: "Rukum" },
-      { id: 53, name: "Salyan" },
-      { id: 54, name: "Surkhet" },
-    ],
-    7: [
-      { id: 55, name: "Darchula" },
-      { id: 56, name: "Bajhang" },
-      { id: 57, name: "Bajura" },
-      { id: 58, name: "Doti" },
-      { id: 59, name: "Achham" },
-      { id: 60, name: "Baitadi" },
-      { id: 61, name: "Dadeldhura" },
-    ],
-  };
-  return districtMap[provinceId] || [];
+  provinceId?: number
+): Promise<{ id: number; name: string; provinceId: number }[]> => {
+  try {
+    const response = await api.get("/people/students/locations/districts", {
+      params: provinceId ? { provinceId } : undefined,
+    });
+    return response.data as { id: number; name: string; provinceId: number }[];
+  } catch {
+    return [];
+  }
 };
 
 export const getMunicipalities = async (
-  districtId: number
-): Promise<{ id: number; name: string }[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const municipalityMap: Record<number, { id: number; name: string }[]> = {
-    1: [{ id: 101, name: "Mechi Municipality" }, { id: 102, name: "Ilam Municipality" }],
-    2: [{ id: 103, name: "Bhadrapur Municipality" }, { id: 104, name: "Chandragadhi Municipality" }],
-    3: [{ id: 105, name: "Kathmandu Metropolitan" }, { id: 106, name: "Lalitpur Metropolitan" }],
-    4: [{ id: 107, name: "Gorkha Municipality" }, { id: 108, name: "Tanahun Municipality" }],
-    5: [{ id: 109, name: "Tansen Municipality" }, { id: 110, name: "Palpa Municipality" }],
-    6: [{ id: 111, name: "Jumla Municipality" }, { id: 112, name: "Surkhet Municipality" }],
-    7: [{ id: 113, name: "Dhangadhi Municipality" }, { id: 114, name: "Bajhang Municipality" }],
-  };
-  return municipalityMap[districtId] || [];
+  districtId?: number
+): Promise<{ id: number; name: string; type: string; districtId: number }[]> => {
+  try {
+    const response = await api.get("/people/students/locations/municipalities", {
+      params: districtId ? { districtId } : undefined,
+    });
+    return response.data as { id: number; name: string; type: string; districtId: number }[];
+  } catch {
+    return [];
+  }
 };
 
 export const getWards = async (
-  municipalityId: number
-): Promise<{ id: number; number: number }[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const wardCounts: Record<number, number> = {
-    101: 12,
-    102: 10,
-    103: 15,
-    104: 11,
-    105: 32,
-    106: 29,
-    107: 14,
-    108: 13,
-    109: 16,
-    110: 12,
-    111: 18,
-    112: 10,
-    113: 16,
-    114: 11,
+  municipalityId?: number
+): Promise<{ id: number; number: number; name: string; municipalityId: number }[]> => {
+  try {
+    const response = await api.get("/people/students/locations/wards", {
+      params: municipalityId ? { municipalityId } : undefined,
+    });
+    return response.data as { id: number; number: number; name: string; municipalityId: number }[];
+  } catch {
+    return [];
+  }
+};
+
+export const loadStudentEditData = async (
+  id: number
+): Promise<{ student: Student; lookups: StudentEditLookups }> => {
+  const classes = await getClasses();
+  const sections = await getSections();
+  const guardians = await getGuardians();
+  const provinces = await getProvinces();
+  const districts = await getDistricts();
+  const municipalities = await getMunicipalities();
+  const wards = await getWards();
+  const student = await getStudentById(id);
+
+  return {
+    student,
+    lookups: { classes, sections, guardians, provinces, districts, municipalities, wards },
   };
-  const count = wardCounts[municipalityId] || 10;
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    number: i + 1,
-  }));
 };
 
 export const uploadDocuments = async (files: File[]): Promise<string[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return files.map((file) => URL.createObjectURL(file));
+  try {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    const response = await api.post("/people/students/documents/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return (response.data.urls as string[]) || [];
+  } catch {
+    return files.map((file) => URL.createObjectURL(file));
+  }
+};
+
+export const exportStudentsCSV = async (): Promise<Blob> => {
+  const response = await api.get("/people/students/export/csv", {
+    responseType: "blob",
+  });
+  return response.data as Blob;
+};
+
+export const exportStudentsPDF = async (): Promise<Blob> => {
+  const response = await api.get("/people/students/export/pdf", {
+    responseType: "blob",
+  });
+  return response.data as Blob;
+};
+
+export const importStudents = async (file: File): Promise<{ imported: number; failed: number }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post("/people/students/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data as { imported: number; failed: number };
 };

@@ -1,33 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import type { AcademicInfoData } from "../schemas/student.schema";
-import { getNextRollNumber } from "../services/student.service";
+import { getNextRollNumber, getClasses, getSections } from "../services/student.service";
 
 interface StudentAcademicSectionProps {
   data: AcademicInfoData;
   onChange: (data: AcademicInfoData) => void;
   errors?: Record<string, string>;
+  lookupData?: {
+    classes: { id: number; name: string }[];
+    sections: { id: number; name: string; classId: number }[];
+  };
 }
 
 const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
   data,
   onChange,
   errors = {},
+  lookupData,
 }) => {
-  const update = (field: keyof AcademicInfoData, value: string) => {
+  const update = useCallback((field: keyof AcademicInfoData, value: string) => {
     onChange({ ...data, [field]: value });
-  };
+  }, [data, onChange]);
 
   const [rollNumberLoading, setRollNumberLoading] = useState(false);
+  const [classes, setClasses] = useState<{ id: number; name: string }[]>([]);
+  const [sections, setSections] = useState<{ id: number; name: string; classId: number }[]>([]);
 
   useEffect(() => {
-    if (data.class && data.section) {
-      setRollNumberLoading(true);
+    if (lookupData) {
+      setClasses(lookupData.classes);
+      setSections(lookupData.sections);
+      return;
+    }
+    Promise.all([getClasses(), getSections()]).then(([classList, sectionList]) => {
+      setClasses(classList);
+      setSections(sectionList);
+    }).catch(() => {
+    });
+  }, [lookupData]);
+
+  const availableSections = data.class
+    ? sections.filter((s) => s.classId === Number(data.class))
+    : sections;
+
+  useEffect(() => {
+    if (data.class && data.section && !data.rollNumber) {
+      Promise.resolve().then(() => setRollNumberLoading(true));
       getNextRollNumber(data.class, data.section).then((result) => {
         update("rollNumber", String(result.nextRollNumber));
         setRollNumberLoading(false);
       });
     }
-  }, [data.class, data.section]);
+  }, [data.class, data.section, data.rollNumber, update]);
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -113,28 +137,25 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
           </label>
           <select
             value={data.class}
-            onChange={(e) => update("class", e.target.value)}
+            onChange={(e) => {
+              const classId = e.target.value;
+              onChange({
+                ...data,
+                class: classId,
+                className: classes.find((item) => String(item.id) === classId)?.name ?? "",
+                section: "",
+                sectionName: "",
+                rollNumber: "",
+              });
+            }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.class ? "border-red-500" : "border-gray-200"
             }`}
           >
             <option value="">Select Class</option>
-            <option value="Grade PG">PG</option>
-            <option value="Grade Nursery">Nursery</option>
-            <option value="Grade LKG">LKG</option>
-            <option value="Grade UKG">UKG</option>
-            <option value="Grade 1">Grade 1</option>
-            <option value="Grade 2">Grade 2</option>
-            <option value="Grade 3">Grade 3</option>
-            <option value="Grade 4">Grade 4</option>
-            <option value="Grade 5">Grade 5</option>
-            <option value="Grade 6">Grade 6</option>
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 8">Grade 8</option>
-            <option value="Grade 9">Grade 9</option>
-            <option value="Grade 10">Grade 10</option>
-            <option value="Grade 11">Grade 11</option>
-            <option value="Grade 12">Grade 12</option>
+            {classes.map((c) => (
+              <option key={c.id} value={String(c.id)}>{c.name}</option>
+            ))}
           </select>
           {errors.class && (
             <p className="mt-1 text-xs text-red-600">{errors.class}</p>
@@ -147,16 +168,23 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
           </label>
           <select
             value={data.section}
-            onChange={(e) => update("section", e.target.value)}
+            onChange={(e) => {
+              const sectionId = e.target.value;
+              onChange({
+                ...data,
+                section: sectionId,
+                sectionName: sections.find((item) => String(item.id) === sectionId)?.name ?? "",
+                rollNumber: "",
+              });
+            }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.section ? "border-red-500" : "border-gray-200"
             }`}
           >
             <option value="">Select Section</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
+            {availableSections.map((s) => (
+              <option key={s.id} value={String(s.id)}>{s.name}</option>
+            ))}
           </select>
           {errors.section && (
             <p className="mt-1 text-xs text-red-600">{errors.section}</p>

@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SuperAdminLayout from "../../layouts/SuperAdminLayout";
 import StatCard from "../../components/StatCard";
+import Skeleton from "../../components/Skeleton";
 import {
   School,
   GraduationCap,
   Users,
-  Wallet,
   ClipboardList,
   FileCheck,
   Activity,
@@ -17,6 +17,8 @@ import { getSchools } from "../../services/schoolService";
 import { getAdminDemoRequests } from "../../services/demoRequestService";
 import { getDemoAccounts } from "../../services/demoAccountService";
 import { getConversionHistory } from "../../services/conversionHistoryService";
+import PageHeader from "../../components/layout/PageHeader";
+import ErrorState from "../../components/feedback/ErrorState";
 
 export default function Dashboard() {
   const [schoolCount, setSchoolCount] = useState<number | null>(null);
@@ -25,37 +27,67 @@ export default function Dashboard() {
   const [expiredDemos, setExpiredDemos] = useState(0);
   const [convertedCount, setConvertedCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      getSchools().catch(() => [] as any[]),
-      getAdminDemoRequests().catch(() => [] as any[]),
-      getDemoAccounts().catch(() => [] as any[]),
-      getConversionHistory().catch(() => [] as any[]),
-    ]).then(([schools, requests, accounts, conversions]) => {
-      setSchoolCount((schools as any[]).length);
-      setTotalDemoRequests((requests as any[]).length);
-      setActiveDemos((accounts as any[]).filter((a: any) => a.status === "ACTIVE" || a.status === "EXTENDED").length);
-      setExpiredDemos((accounts as any[]).filter((a: any) => a.status === "EXPIRED").length);
-      setConvertedCount((conversions as any[]).length);
-    }).finally(() => setLoading(false));
+      getSchools().catch(() => []),
+      getAdminDemoRequests().catch(() => []),
+      getDemoAccounts().catch(() => []),
+      getConversionHistory().catch(() => []),
+    ])
+      .then(([schools, requests, accounts, conversions]) => {
+        setSchoolCount((schools as { id: number }[]).length);
+        setTotalDemoRequests((requests as { id: number }[]).length);
+        setActiveDemos((accounts as { status: string }[]).filter((a) => a.status === "ACTIVE" || a.status === "EXTENDED").length);
+        setExpiredDemos((accounts as { status: string }[]).filter((a) => a.status === "EXPIRED").length);
+        setConvertedCount((conversions as { id: number }[]).length);
+      })
+      .catch(() => setError("Failed to load dashboard data"))
+      .finally(() => setLoading(false));
   }, []);
 
   const conversionRate = totalDemoRequests > 0 ? ((convertedCount / totalDemoRequests) * 100).toFixed(1) : "0.0";
 
+  if (loading) {
+    return (
+      <SuperAdminLayout>
+        <div className="space-y-6">
+          <div>
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-6 w-96 mb-6" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+        </div>
+      </SuperAdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <SuperAdminLayout>
+        <PageHeader title="Dashboard" subtitle="Super Admin → Create Schools and Provide required access" />
+        <ErrorState description={error} onRetry={() => window.location.reload()} />
+      </SuperAdminLayout>
+    );
+  }
+
   return (
     <SuperAdminLayout>
-      <h1 className="text-[42px] font-bold text-gray-800 mb-2">Dashboard</h1>
-
-      <p className="text-gray-600 text-xl mb-10">
-        Super Admin → Create Schools and Provide required access
-      </p>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Super Admin → Create Schools and Provide required access"
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
         <Link to="/super-admin/schools" className="block">
           <StatCard
             title="Total Schools"
-            value={loading ? "..." : schoolCount !== null ? schoolCount.toLocaleString() : "0"}
+            value={schoolCount !== null ? schoolCount.toLocaleString() : "0"}
             icon={<School />}
             iconBg="bg-orange-500"
           />
@@ -64,7 +96,7 @@ export default function Dashboard() {
         <Link to="/super-admin/demo-requests" className="block">
           <StatCard
             title="Total Demo Requests"
-            value={loading ? "..." : totalDemoRequests.toLocaleString()}
+            value={totalDemoRequests.toLocaleString()}
             icon={<ClipboardList />}
             iconBg="bg-blue-500"
           />
@@ -72,14 +104,14 @@ export default function Dashboard() {
 
         <StatCard
           title="Active Demo Accounts"
-          value={loading ? "..." : activeDemos.toLocaleString()}
+          value={activeDemos.toLocaleString()}
           icon={<Activity />}
           iconBg="bg-green-500"
         />
 
         <StatCard
           title="Expired Demo Accounts"
-          value={loading ? "..." : expiredDemos.toLocaleString()}
+          value={expiredDemos.toLocaleString()}
           icon={<XCircle />}
           iconBg="bg-red-500"
         />
@@ -87,7 +119,7 @@ export default function Dashboard() {
         <Link to="/super-admin/demo-conversions" className="block">
           <StatCard
             title="Converted Schools"
-            value={loading ? "..." : convertedCount.toLocaleString()}
+            value={convertedCount.toLocaleString()}
             icon={<FileCheck />}
             iconBg="bg-purple-500"
           />
@@ -95,13 +127,13 @@ export default function Dashboard() {
 
         <StatCard
           title="Conversion Rate"
-          value={loading ? "..." : `${conversionRate}%`}
+          value={`${conversionRate}%`}
           icon={<TrendingUp />}
           iconBg="bg-teal-500"
         />
 
         <StatCard
-          title="Total Student"
+          title="Total Students"
           value="—"
           icon={<GraduationCap />}
           iconBg="bg-blue-500"

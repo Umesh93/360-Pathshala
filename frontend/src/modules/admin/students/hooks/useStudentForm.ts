@@ -10,7 +10,9 @@ const initialFormData: StudentFormData = {
     admissionNo: "",
     admissionDate: new Date().toISOString().split("T")[0],
     class: "",
+    className: "",
     section: "",
+    sectionName: "",
     rollNumber: "",
     house: "",
     status: "active",
@@ -35,6 +37,7 @@ const initialFormData: StudentFormData = {
     photo: undefined,
   },
   guardian: {
+    guardianId: undefined,
     fatherName: "",
     fatherOccupation: "",
     fatherPhone: "",
@@ -56,9 +59,13 @@ const initialFormData: StudentFormData = {
   },
   address: {
     currentProvince: "",
+    currentProvinceName: "",
     currentDistrict: "",
+    currentDistrictName: "",
     currentMunicipality: "",
+    currentMunicipalityName: "",
     currentWard: "",
+    currentWardNumber: "",
     currentStreet: "",
     permanentSameAsCurrent: false,
     permanentProvince: "",
@@ -154,6 +161,10 @@ export const useStudentForm = () => {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  const loadStudent = useCallback((student: StudentFormData) => {
+    setFormData(student);
+  }, []);
+
   return {
     currentStep,
     setCurrentStep,
@@ -165,6 +176,7 @@ export const useStudentForm = () => {
     prevStep,
     saveDraft,
     loadDraft,
+    loadStudent,
     clearDraft,
   };
 };
