@@ -138,11 +138,6 @@ export default function SchoolFormFields({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleRegeneratePassword = () => {
-    const newPassword = generatePassword();
-    onPasswordChange(newPassword);
-  };
-
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4">
@@ -231,7 +226,7 @@ export default function SchoolFormFields({
                 type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => onPasswordChange(e.target.value)}
-                readOnly={isEdit && password === "********"}
+                readOnly={isEdit}
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-600 font-mono"
               />
               <button
@@ -257,16 +252,14 @@ export default function SchoolFormFields({
                   <Copy size={18} className="text-slate-500" />
                 )}
               </button>
-              {isEdit && (
-                <button
-                  type="button"
-                  onClick={onRegeneratePassword}
-                  className="rounded-xl border border-slate-200 p-3 hover:bg-slate-50"
-                  title="Regenerate Password"
-                >
-                  <RefreshCw size={18} className="text-slate-500" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={onRegeneratePassword}
+                className="rounded-xl border border-slate-200 p-3 hover:bg-slate-50"
+                title="Regenerate Password"
+              >
+                <RefreshCw size={18} className="text-slate-500" />
+              </button>
             </div>
             <p className="mt-2 text-xs text-slate-500">
               School Admin can change password after first login.

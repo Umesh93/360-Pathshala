@@ -18,6 +18,8 @@ import {
   Settings,
   UserCheck,
   FileCheck,
+  Bell,
+  CheckSquare,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -34,16 +36,8 @@ interface SidebarProps {
 const SUPER_ADMIN_LINKS = [
   { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/super-admin/schools", label: "Schools", icon: School },
-  {
-    to: "/super-admin/demo-requests",
-    label: "Demo Requests",
-    icon: ClipboardList,
-  },
-  {
-    to: "/super-admin/demo-conversions",
-    label: "Conversion History",
-    icon: FileCheck,
-  },
+  { to: "/super-admin/demo-requests", label: "Demo Requests", icon: ClipboardList },
+  { to: "/super-admin/demo-conversions", label: "Conversion History", icon: FileCheck },
   { to: "/super-admin/payments", label: "Payments", icon: Wallet },
   { to: "/super-admin/users", label: "Users", icon: Users },
   { to: "/super-admin/settings", label: "Settings", icon: Settings },
@@ -67,6 +61,78 @@ const ADMIN_LINKS = [
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+const TEACHER_LINKS = [
+  { to: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/teacher/my-classes", label: "My Classes", icon: School },
+  { to: "/teacher/attendance", label: "Attendance", icon: ClipboardCheck },
+  { to: "/teacher/assignments", label: "Assignments", icon: FileText },
+  { to: "/teacher/marks", label: "Marks Entry", icon: CheckSquare },
+  { to: "/teacher/exams", label: "Exams", icon: FileText },
+  { to: "/teacher/leaves", label: "Leave Requests", icon: CalendarClock },
+  { to: "/teacher/notifications", label: "Notifications", icon: Bell },
+  { to: "/teacher/settings", label: "Settings", icon: Settings },
+];
+
+const STUDENT_LINKS = [
+  { to: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/student/attendance", label: "My Attendance", icon: ClipboardCheck },
+  { to: "/student/assignments", label: "My Assignments", icon: FileText },
+  { to: "/student/results", label: "My Results", icon: Award },
+  { to: "/student/fees", label: "My Fees", icon: Wallet },
+  { to: "/student/leave", label: "Leave Request", icon: CalendarClock },
+  { to: "/student/timetable", label: "My Timetable", icon: Calendar },
+  { to: "/student/notifications", label: "Notifications", icon: Bell },
+  { to: "/student/settings", label: "Settings", icon: Settings },
+];
+
+const PARENT_LINKS = [
+  { to: "/parent/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/parent/child-attendance", label: "Child Attendance", icon: ClipboardCheck },
+  { to: "/parent/child-fees", label: "Child Fees", icon: Wallet },
+  { to: "/parent/child-results", label: "Child Results", icon: Award },
+  { to: "/parent/child-assignments", label: "Child Assignments", icon: FileText },
+  { to: "/parent/leave", label: "Leave Request", icon: CalendarClock },
+  { to: "/parent/timetable", label: "Child Timetable", icon: Calendar },
+  { to: "/parent/notifications", label: "Notifications", icon: Bell },
+  { to: "/parent/settings", label: "Settings", icon: Settings },
+];
+
+const getLinksForRole = (role: string) => {
+  const normalizedRole = role === "ADMIN" ? "SCHOOL_ADMIN" : role;
+  switch (normalizedRole) {
+    case "SUPER_ADMIN":
+      return SUPER_ADMIN_LINKS;
+    case "SCHOOL_ADMIN":
+      return ADMIN_LINKS;
+    case "TEACHER":
+      return TEACHER_LINKS;
+    case "STUDENT":
+      return STUDENT_LINKS;
+    case "PARENT":
+      return PARENT_LINKS;
+    default:
+      return [];
+  }
+};
+
+const getUserLabel = (role: string): string => {
+  const normalizedRole = role === "ADMIN" ? "SCHOOL_ADMIN" : role;
+  switch (normalizedRole) {
+    case "SUPER_ADMIN":
+      return "Super Admin";
+    case "SCHOOL_ADMIN":
+      return "School Admin";
+    case "TEACHER":
+      return "Teacher";
+    case "STUDENT":
+      return "Student";
+    case "PARENT":
+      return "Parent / Guardian";
+    default:
+      return "User";
+  }
+};
+
 export default function Sidebar({
   collapsed,
   role = "SUPER_ADMIN",
@@ -80,15 +146,14 @@ export default function Sidebar({
     navigate("/login");
   };
 
-  const isAdmin = role === "ADMIN";
-  const links = isAdmin ? ADMIN_LINKS : SUPER_ADMIN_LINKS;
+  const links = getLinksForRole(role);
 
   const filteredLinks =
     enabledModules && enabledModules.length > 0
       ? links.filter((link) => enabledModules.includes(link.label))
       : links;
 
-  const userLabel = isAdmin ? "School Admin" : "Super Admin";
+  const userLabel = getUserLabel(role);
 
   return (
     <aside
@@ -115,7 +180,7 @@ export default function Sidebar({
         ) : (
           <div className="p-4 flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">Umesh_Krafts</h3>
+              <h3 className="font-semibold">{localStorage.getItem("username") || "User"}</h3>
               <p className="text-sm text-gray-500">{userLabel}</p>
             </div>
             <ChevronRight size={16} />

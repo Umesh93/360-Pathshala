@@ -1,9 +1,28 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiSettings } from "react-icons/fi";
 import logo from "../../assets/images/logo.png";
 import { login } from "../../services/authService";
+import { useAuth } from "../../hooks/useAuth";
 import type { LoginResponse } from "../../types/Auth";
-import { API_BASE_URL } from "../../config/env";
+
+const getDashboardRoute = (role: string): string => {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return "/super-admin/dashboard";
+    case "SCHOOL_ADMIN":
+    case "ADMIN":
+      return "/admin/dashboard";
+    case "TEACHER":
+      return "/teacher/dashboard";
+    case "STUDENT":
+      return "/student/dashboard";
+    case "PARENT":
+      return "/parent/dashboard";
+    default:
+      return "/";
+  }
+};
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,49 +30,34 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  console.log("LoginForm rendered, API_BASE_URL:", API_BASE_URL);
+  const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted");
     setError("");
     setLoading(true);
 
     try {
-      console.log("Attempting login with:", { username, password });
       const data: LoginResponse = await login(username, password);
-      console.log("Login response:", data);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.roles?.[0] || "");
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("userId", String(data.userId));
-      if (data.schoolId) localStorage.setItem("schoolId", String(data.schoolId));
+      setAuth({
+        token: data.token,
+        role: data.roles?.[0] || "",
+        userId: data.userId,
+        schoolId: data.schoolId,
+        username: data.username,
+        roles: data.roles || [],
+      });
 
-      const role = data.roles?.[0];
-      console.log("Navigating with role:", role);
-      if (role === "SUPER_ADMIN") {
-        console.log("Navigating to /super-admin/dashboard");
-        window.location.href = "/super-admin/dashboard";
-      } else if (role === "SCHOOL_ADMIN" || role === "ADMIN") {
-        console.log("Navigating to /admin/dashboard");
-        window.location.href = "/admin/dashboard";
-      } else {
-        console.log("Navigating to /");
-        window.location.href = "/";
-      }
-    } catch (err: any) {
-      console.error("Login error:", err);
-      const message = err.response?.data?.message || err.message || "Invalid username or password";
+      navigate(getDashboardRoute(data.roles?.[0] || ""));
+    } catch (err) {
+      const axiosError = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = axiosError.response?.data?.message || axiosError.message || "Invalid username or password";
       setError(message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleButtonClick = () => {
-    console.log("Button clicked, username:", username, "password:", password);
   };
 
   return (
@@ -118,7 +122,6 @@ const LoginForm = () => {
           type="submit"
           className="login-btn"
           disabled={loading}
-          onClick={handleButtonClick}
         >
           {loading ? "Logging in..." : "Log In"}
         </button>

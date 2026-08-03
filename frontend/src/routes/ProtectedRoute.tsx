@@ -1,13 +1,16 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 import { isTokenExpired } from "../utils/jwt";
+import { useAuth } from "../hooks/useAuth";
 
 interface Props {
   children: ReactNode;
+  allowedRoles?: string[];
 }
 
-const ProtectedRoute = ({ children }: Props) => {
-  const token = localStorage.getItem("token");
+const ProtectedRoute = ({ children, allowedRoles }: Props) => {
+  const { role, token } = useAuth();
+  const location = useLocation();
 
   if (!token || isTokenExpired(token)) {
     localStorage.removeItem("token");
@@ -15,7 +18,11 @@ const ProtectedRoute = ({ children }: Props) => {
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
     localStorage.removeItem("schoolId");
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: location }} />;
+  }
+
+  if (allowedRoles && role && !allowedRoles.includes(role)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <>{children}</>;

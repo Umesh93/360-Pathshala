@@ -26,7 +26,7 @@ export const getSchools = async (): Promise<School[]> => {
       status: school.status || "DEMO",
       modules: school.modules || [],
       adminUsername: school.adminUsername || "",
-      adminPassword: "",
+      adminPassword: school.adminPassword || "",
       totalAmount: 0,
       paymentStatus: "",
       referenceNumber: "",

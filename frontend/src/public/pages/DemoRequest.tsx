@@ -45,15 +45,20 @@ function DemoRequestPage() {
   const { showToast } = useToast();
 
   const toggle = (m: string) =>
-    setSelected((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
+    setSelected((prev) =>
+      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m],
+    );
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
     if (!school.trim()) next.school = "School / Institution is required.";
-    if (!contactPerson.trim()) next.contactPerson = "Contact person is required.";
-    if (!email.trim() || !email.includes("@")) next.email = "A valid email is required.";
+    if (!contactPerson.trim())
+      next.contactPerson = "Contact person is required.";
+    if (!email.trim() || !email.includes("@"))
+      next.email = "A valid email is required.";
     if (!phone.trim()) next.phone = "Phone number is required.";
-    if (selected.length === 0) next.modules = "Please select at least one module.";
+    if (selected.length === 0)
+      next.modules = "Please select at least one module.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -86,7 +91,10 @@ function DemoRequestPage() {
       showToast("Demo request submitted successfully!", "success");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      const message = err?.response?.data?.message || err.message || "Something went wrong. Please try again.";
+      const message =
+        err?.response?.data?.message ||
+        err.message ||
+        "Something went wrong. Please try again.";
       showToast(message, "error");
     } finally {
       setLoading(false);
@@ -114,14 +122,15 @@ function DemoRequestPage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground/70 shadow-soft">
                 <Sparkles className="h-3.5 w-3.5 text-accent" />
-                Free 30-min demo
+                Free 30-days demo
               </span>
               <h1 className="mt-6 font-display text-5xl font-extrabold leading-tight text-foreground sm:text-6xl">
-                See 360 Pathshala in <span className="text-gradient-accent">action</span>.
+                See 360 Pathshala in{" "}
+                <span className="text-gradient-accent">action</span>.
               </h1>
               <p className="mt-5 text-lg text-muted-foreground">
-                Tell us a little about your institution and we'll set up a tailored walkthrough of
-                the modules that matter most to you.
+                Tell us a little about your institution and we'll set up a
+                tailored walkthrough of the modules that matter most to you.
               </p>
               <ul className="mt-8 space-y-3 text-sm text-foreground/80">
                 {[
@@ -147,8 +156,8 @@ function DemoRequestPage() {
                     Request received!
                   </h2>
                   <p className="mt-3 max-w-sm text-muted-foreground">
-                    Thank you. Our team will reach out within one business day to schedule your
-                    personalized demo.
+                    Thank you. Our team will reach out within one business day
+                    to schedule your personalized demo.
                   </p>
                   <button
                     type="button"
@@ -162,8 +171,12 @@ function DemoRequestPage() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="school" className="text-sm font-semibold text-foreground">
-                        School / Institution <span className="text-accent">*</span>
+                      <label
+                        htmlFor="school"
+                        className="text-sm font-semibold text-foreground"
+                      >
+                        School / Institution{" "}
+                        <span className="text-accent">*</span>
                       </label>
                       <input
                         id="school"
@@ -178,11 +191,16 @@ function DemoRequestPage() {
                         }`}
                       />
                       {errors.school && (
-                        <p className="mt-1 text-xs text-red-500">{errors.school}</p>
+                        <p className="mt-1 text-xs text-red-500">
+                          {errors.school}
+                        </p>
                       )}
                     </div>
                     <div>
-                      <label htmlFor="contactPerson" className="text-sm font-semibold text-foreground">
+                      <label
+                        htmlFor="contactPerson"
+                        className="text-sm font-semibold text-foreground"
+                      >
                         Contact Person <span className="text-accent">*</span>
                       </label>
                       <input
@@ -194,18 +212,25 @@ function DemoRequestPage() {
                         value={contactPerson}
                         onChange={(e) => setContactPerson(e.target.value)}
                         className={`mt-2 w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring ${
-                          errors.contactPerson ? "border-red-500" : "border-input"
+                          errors.contactPerson
+                            ? "border-red-500"
+                            : "border-input"
                         }`}
                       />
                       {errors.contactPerson && (
-                        <p className="mt-1 text-xs text-red-500">{errors.contactPerson}</p>
+                        <p className="mt-1 text-xs text-red-500">
+                          {errors.contactPerson}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="email" className="text-sm font-semibold text-foreground">
+                      <label
+                        htmlFor="email"
+                        className="text-sm font-semibold text-foreground"
+                      >
                         Email <span className="text-accent">*</span>
                       </label>
                       <input
@@ -221,11 +246,16 @@ function DemoRequestPage() {
                         }`}
                       />
                       {errors.email && (
-                        <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                        <p className="mt-1 text-xs text-red-500">
+                          {errors.email}
+                        </p>
                       )}
                     </div>
                     <div>
-                      <label htmlFor="phone" className="text-sm font-semibold text-foreground">
+                      <label
+                        htmlFor="phone"
+                        className="text-sm font-semibold text-foreground"
+                      >
                         Phone <span className="text-accent">*</span>
                       </label>
                       <input
@@ -241,14 +271,19 @@ function DemoRequestPage() {
                         }`}
                       />
                       {errors.phone && (
-                        <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
+                        <p className="mt-1 text-xs text-red-500">
+                          {errors.phone}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="address" className="text-sm font-semibold text-foreground">
+                      <label
+                        htmlFor="address"
+                        className="text-sm font-semibold text-foreground"
+                      >
                         Address
                       </label>
                       <input
@@ -261,8 +296,11 @@ function DemoRequestPage() {
                         className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring"
                       />
                     </div>
-                    <div>
-                      <label htmlFor="studentCount" className="text-sm font-semibold text-foreground">
+                    {/* <div>
+                      <label
+                        htmlFor="studentCount"
+                        className="text-sm font-semibold text-foreground"
+                      >
                         Student Count
                       </label>
                       <input
@@ -274,7 +312,7 @@ function DemoRequestPage() {
                         onChange={(e) => setStudentCount(e.target.value)}
                         className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring"
                       />
-                    </div>
+                    </div> */}
                   </div>
 
                   <div>
@@ -304,12 +342,17 @@ function DemoRequestPage() {
                       })}
                     </div>
                     {errors.modules && (
-                      <p className="mt-1 text-xs text-red-500">{errors.modules}</p>
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.modules}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="text-sm font-semibold text-foreground">
+                    <label
+                      htmlFor="message"
+                      className="text-sm font-semibold text-foreground"
+                    >
                       Anything else?
                     </label>
                     <textarea
@@ -335,8 +378,8 @@ function DemoRequestPage() {
                     {!loading && <ArrowRight className="h-4 w-4" />}
                   </button>
                   <p className="text-center text-xs text-muted-foreground">
-                    By submitting, you agree to be contacted by the 360 Pathshala team about your
-                    request.
+                    By submitting, you agree to be contacted by the 360
+                    Pathshala team about your request.
                   </p>
                 </form>
               )}

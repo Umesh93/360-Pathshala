@@ -37,7 +37,12 @@ export default function AddSchoolForm({
       : ["STUDENT_MANAGEMENT", "EXAMINATION"],
   );
   const [username, setUsername] = useState(editSchool?.adminUsername || "");
-  const [password, setPassword] = useState(() => isEdit ? "********" : generatePassword());
+  const [password, setPassword] = useState(() => {
+    if (isEdit) {
+      return editSchool?.adminPassword || "";
+    }
+    return generatePassword();
+  });
   const [passwordRegenerated, setPasswordRegenerated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<CreateSchoolResponse | null>(null);
