@@ -35,24 +35,38 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
   };
 
   useEffect(() => {
-    if (data.emergencyContactPerson === "Father" && guardianData?.fatherPhone) {
-      update("emergencyContactNumber", guardianData.fatherPhone);
-    } else if (data.emergencyContactPerson === "Mother" && guardianData?.motherPhone) {
-      update("emergencyContactNumber", guardianData.motherPhone);
-    } else if (data.emergencyContactPerson === "Guardian" && guardianData?.guardianPhone) {
-      update("emergencyContactNumber", guardianData.guardianPhone);
+    const contactNumber = data.emergencyContactPerson === "Father"
+      ? guardianData?.fatherPhone
+      : data.emergencyContactPerson === "Mother"
+        ? guardianData?.motherPhone
+        : data.emergencyContactPerson === "Guardian"
+          ? guardianData?.guardianPhone
+          : undefined;
+    if (contactNumber && contactNumber !== data.emergencyContactNumber) {
+      onChange({ ...data, emergencyContactNumber: contactNumber });
     }
-  }, [data.emergencyContactPerson, guardianData]);
+  }, [
+    data.emergencyContactNumber,
+    data.emergencyContactPerson,
+    guardianData?.fatherPhone,
+    guardianData?.motherPhone,
+    guardianData?.guardianPhone,
+    onChange,
+  ]);
 
   const handleEmergencyPersonChange = (value: string) => {
-    update("emergencyContactPerson", value);
-    if (value === "Father" && guardianData?.fatherPhone) {
-      update("emergencyContactNumber", guardianData.fatherPhone);
-    } else if (value === "Mother" && guardianData?.motherPhone) {
-      update("emergencyContactNumber", guardianData.motherPhone);
-    } else if (value === "Guardian" && guardianData?.guardianPhone) {
-      update("emergencyContactNumber", guardianData.guardianPhone);
-    }
+    const contactNumber = value === "Father"
+      ? guardianData?.fatherPhone
+      : value === "Mother"
+        ? guardianData?.motherPhone
+        : value === "Guardian"
+          ? guardianData?.guardianPhone
+          : "";
+    onChange({
+      ...data,
+      emergencyContactPerson: value,
+      emergencyContactNumber: contactNumber || data.emergencyContactNumber,
+    });
   };
 
   return (

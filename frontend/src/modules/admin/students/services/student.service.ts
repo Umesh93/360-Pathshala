@@ -180,6 +180,9 @@ export const getStudentById = async (id: number): Promise<Student> => {
 
 export const createStudent = async (formData: StudentFormData): Promise<Student> => {
   const payload = buildStudentPayload(formData);
+  if (typeof payload.admissionNumber !== "string" || !payload.admissionNumber.trim()) {
+    payload.admissionNumber = await generateAdmissionNo();
+  }
 
   const response = await api.post("/people/students", payload);
   return mapStudent(response.data);
@@ -290,10 +293,10 @@ export const getGuardians = async (): Promise<{ id: number; name: string }[]> =>
   }
 };
 
-export const getSections = async (): Promise<{ id: number; name: string; classId: number }[]> => {
+export const getSections = async (classId?: number): Promise<{ id: number; name: string; classId: number }[]> => {
   try {
     const response = await api.get("/academic/sections", {
-      params: { page: 0, size: 100 },
+      params: { page: 0, size: 100, classId },
     });
     return (response.data.content as Record<string, unknown>[]).map((s) => ({
       id: (s.id as number) ?? 0,
@@ -357,13 +360,13 @@ export const loadStudentEditData = async (
   id: number
 ): Promise<{ student: Student; lookups: StudentEditLookups }> => {
   const classes = await getClasses();
-  const sections = await getSections();
   const guardians = await getGuardians();
   const provinces = await getProvinces();
   const districts = await getDistricts();
   const municipalities = await getMunicipalities();
   const wards = await getWards();
   const student = await getStudentById(id);
+  const sections = student.classId ? await getSections(student.classId) : [];
 
   return {
     student,

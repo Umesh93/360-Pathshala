@@ -86,13 +86,6 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         Promise.resolve().then(() => {
           setDistrictLoadingSafe(true);
           setDistricts([]);
-          if (provinceUserChanged.current) {
-            setMunicipalities([]);
-            setWards([]);
-            update("currentDistrict", "");
-            update("currentMunicipality", "");
-            update("currentWard", "");
-          }
         });
         getDistricts(provinceId).then((result) => {
           setDistricts(result);
@@ -100,17 +93,12 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         }).catch(() => setDistrictLoadingSafe(false));
       }
     } else if (!data.currentProvince) {
-      Promise.resolve().then(() => {
-        setDistricts([]);
-        setMunicipalities([]);
-        setWards([]);
-        update("currentDistrict", "");
-        update("currentMunicipality", "");
-        update("currentWard", "");
-      });
+      setDistricts([]);
+      setMunicipalities([]);
+      setWards([]);
     }
     provinceUserChanged.current = false;
-  }, [data.currentProvince, lookupData, provinces, update]);
+  }, [data.currentProvince, lookupData, provinces]);
 
   useEffect(() => {
     if (data.currentDistrict && districts.length > 0) {
@@ -124,11 +112,6 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         Promise.resolve().then(() => {
           setMunicipalityLoadingSafe(true);
           setMunicipalities([]);
-          if (districtUserChanged.current) {
-            setWards([]);
-            update("currentMunicipality", "");
-            update("currentWard", "");
-          }
         });
         getMunicipalities(districtId).then((result) => {
           setMunicipalities(result);
@@ -136,15 +119,11 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         }).catch(() => setMunicipalityLoadingSafe(false));
       }
     } else if (!data.currentDistrict) {
-      Promise.resolve().then(() => {
-        setMunicipalities([]);
-        setWards([]);
-        update("currentMunicipality", "");
-        update("currentWard", "");
-      });
+      setMunicipalities([]);
+      setWards([]);
     }
     districtUserChanged.current = false;
-  }, [data.currentDistrict, districts, lookupData, update]);
+  }, [data.currentDistrict, districts, lookupData]);
 
   useEffect(() => {
     if (data.currentMunicipality && municipalities.length > 0) {
@@ -158,9 +137,6 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         Promise.resolve().then(() => {
           setWardLoadingSafe(true);
           setWards([]);
-          if (municipalityUserChanged.current) {
-            update("currentWard", "");
-          }
         });
         getWards(municipalityId).then((result) => {
           setWards(result);
@@ -168,17 +144,15 @@ const AddressSection: React.FC<AddressSectionProps> = ({
         }).catch(() => setWardLoadingSafe(false));
       }
     } else if (!data.currentMunicipality) {
-      Promise.resolve().then(() => {
-        setWards([]);
-        update("currentWard", "");
-      });
+      setWards([]);
     }
     municipalityUserChanged.current = false;
-  }, [data.currentMunicipality, lookupData, municipalities, update]);
+  }, [data.currentMunicipality, lookupData, municipalities]);
 
   const copyToPermanent = () => {
     onChange({
       ...data,
+      permanentSameAsCurrent: true,
       permanentProvince: data.currentProvince,
       permanentDistrict: data.currentDistrict,
       permanentMunicipality: data.currentMunicipality,

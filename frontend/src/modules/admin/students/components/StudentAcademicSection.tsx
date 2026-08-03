@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { AcademicInfoData } from "../schemas/student.schema";
 import { getNextRollNumber, getClasses, getSections } from "../services/student.service";
 
@@ -25,6 +25,7 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
   const [rollNumberLoading, setRollNumberLoading] = useState(false);
   const [classes, setClasses] = useState<{ id: number; name: string }[]>([]);
   const [sections, setSections] = useState<{ id: number; name: string; classId: number }[]>([]);
+  const rollRequestRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (lookupData) {
@@ -32,12 +33,16 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
       setSections(lookupData.sections);
       return;
     }
-    Promise.all([getClasses(), getSections()]).then(([classList, sectionList]) => {
-      setClasses(classList);
-      setSections(sectionList);
-    }).catch(() => {
-    });
+    getClasses().then(setClasses);
   }, [lookupData]);
+
+  useEffect(() => {
+    if (lookupData || !data.class) {
+      if (!lookupData) setSections([]);
+      return;
+    }
+    getSections(Number(data.class)).then(setSections);
+  }, [data.class, lookupData]);
 
   const availableSections = data.class
     ? sections.filter((s) => s.classId === Number(data.class))
@@ -45,11 +50,19 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
 
   useEffect(() => {
     if (data.class && data.section && !data.rollNumber) {
+      const requestKey = `${data.class}:${data.section}`;
+      if (rollRequestRef.current === requestKey) return;
+      rollRequestRef.current = requestKey;
       Promise.resolve().then(() => setRollNumberLoading(true));
       getNextRollNumber(data.class, data.section).then((result) => {
         update("rollNumber", String(result.nextRollNumber));
         setRollNumberLoading(false);
+      }).catch(() => {
+        rollRequestRef.current = undefined;
+        setRollNumberLoading(false);
       });
+    } else if (!data.class || !data.section) {
+      rollRequestRef.current = undefined;
     }
   }, [data.class, data.section, data.rollNumber, update]);
 

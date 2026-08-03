@@ -217,8 +217,12 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
         clearDraft();
         navigate("/admin/students/add");
       }
-    } catch {
-      showToast("Failed to save student", "error");
+    } catch (error) {
+      const response = (error as {
+        response?: { data?: { message?: string; errors?: Record<string, string> } };
+      }).response?.data;
+      const details = response?.errors ? Object.values(response.errors).join(", ") : response?.message;
+      showToast(details || "Failed to save student", "error");
     } finally {
       setSubmitting(false);
     }

@@ -21,6 +21,7 @@ import TeacherDashboard from "../pages/teacher/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
 import ParentDashboard from "../pages/parent/Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
+import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
 
 const AppRoutes = () => {
   return (
@@ -108,6 +109,14 @@ const AppRoutes = () => {
             <EditStudentPage />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/classes"
+        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AcademicSetupPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/admin/subjects"
+        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AcademicSetupPage /></ProtectedRoute>}
       />
       <Route
         path="/admin/teachers"
