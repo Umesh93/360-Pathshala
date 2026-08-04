@@ -8,6 +8,9 @@ import type {
   SectionItem,
   AcademicYear,
 } from "../types/teacher.types";
+import api from "../../../../services/api";
+import type { TeacherFormData } from "../schemas/teacher.schema";
+import { buildTeacherPayload } from "../utils/teacherFormHelpers";
 
 const mockDepartments: Department[] = [
   { id: 1, name: "Mathematics" },
@@ -177,82 +180,66 @@ export const getTeachers = async (
   subjectFilter = "",
   statusFilter = ""
 ): Promise<PaginatedResponse<Teacher>> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  let filtered = [...mockTeachers];
-
-  if (search) {
-    const lower = search.toLowerCase();
-    filtered = filtered.filter(
-      (t) =>
-        t.firstName.toLowerCase().includes(lower) ||
-        t.lastName.toLowerCase().includes(lower) ||
-        t.teacherId.toLowerCase().includes(lower) ||
-        t.phone.includes(search) ||
-        t.email?.toLowerCase().includes(lower)
-    );
-  }
-
-  if (subjectFilter) {
-    filtered = filtered.filter((t) => t.subject === subjectFilter);
-  }
-
-  if (statusFilter) {
-    filtered = filtered.filter((t) => t.status === statusFilter);
-  }
-
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / limit);
-  const start = (page - 1) * limit;
-  const data = filtered.slice(start, start + limit);
-
+  const response = await api.get("/people/teachers", { params: { page: page - 1, size: limit, search: search || undefined, status: statusFilter || undefined, subject: subjectFilter || undefined } });
+  const value = response.data;
   return {
-    data,
-    total,
-    page,
-    limit,
-    totalPages,
+    data: value.content.map(mapTeacher), total: value.totalElements, page: value.number + 1, limit: value.size, totalPages: Math.max(value.totalPages, 1),
   };
 };
 
+const mapTeacher = (record: Record<string, unknown>): Teacher => ({
+  ...(() => { try { return record.details ? JSON.parse(record.details as string) : {}; } catch { return {}; } })(),
+  ...(record as unknown as Teacher),
+  id: record.id as number,
+  teacherId: record.employeeNumber as string,
+  employeeCode: record.employeeNumber as string,
+  fullName: `${record.firstName || ""} ${record.lastName || ""}`.trim(),
+  gender: (record.gender as Teacher["gender"]) || "other",
+  dob: (record.dateOfBirth as string) || "",
+  email: (record.email as string) || "",
+  address: "",
+  joiningDate: (record.joiningDate as string) || "",
+  status: String(record.status || "ACTIVE").toLowerCase() as Teacher["status"],
+  subject: (record.department as string) || "",
+});
+
+export const getTeacherAssignments = async (id: number) => (await api.get(`/people/teachers/${id}/assignments`)).data;
+export const getTeacherLeaves = async (id: number) => (await api.get(`/people/teachers/${id}/leaves`)).data;
+export const assignTeacher = async (payload: { teacherId: number; subjectId: number; classId: number; sectionId: number }) =>
+  (await api.post("/academic/teacher-subjects", payload)).data;
+export const exportTeachersCsv = async (): Promise<Blob> => {
+  const response = await getTeachers(1, 1000);
+  const rows = [["Teacher ID", "Name", "Phone", "Email", "Qualification", "Status"], ...response.data.map((item) => [item.teacherId, item.fullName, item.phone, item.email, item.qualification || "", item.status])];
+  return new Blob([rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n")], { type: "text/csv" });
+};
+
 export const getTeacherById = async (id: number): Promise<Teacher | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return mockTeachers.find((t) => t.id === id);
+  const response = await api.get(`/people/teachers/${id}`);
+  return mapTeacher(response.data);
 };
 
 export const createTeacher = async (
-  teacher: Omit<Teacher, "id">
+  teacher: TeacherFormData
 ): Promise<Teacher> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const newTeacher = { ...teacher, id: Date.now() } as Teacher;
-  mockTeachers.push(newTeacher);
-  return newTeacher;
+  const response = await api.post("/people/teachers", buildTeacherPayload(teacher));
+  return mapTeacher(response.data);
 };
 
 export const updateTeacher = async (
   id: number,
-  teacher: Partial<Teacher>
+  teacher: TeacherFormData
 ): Promise<Teacher | undefined> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const index = mockTeachers.findIndex((t) => t.id === id);
-  if (index === -1) return undefined;
-  mockTeachers[index] = { ...mockTeachers[index], ...teacher };
-  return mockTeachers[index];
+  const response = await api.put(`/people/teachers/${id}`, buildTeacherPayload(teacher));
+  return mapTeacher(response.data);
 };
 
 export const deleteTeacher = async (id: number): Promise<boolean> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const index = mockTeachers.findIndex((t) => t.id === id);
-  if (index === -1) return false;
-  mockTeachers.splice(index, 1);
+  await api.delete(`/people/teachers/${id}`);
   return true;
 };
 
 export const generateTeacherId = async (): Promise<string> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const year = new Date().getFullYear();
-  const count = mockTeachers.length + 1;
-  return `TCH-${year}-${String(count).padStart(3, "0")}`;
+  return `TCH-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
 };
 
 export const getDepartments = async (): Promise<Department[]> => {

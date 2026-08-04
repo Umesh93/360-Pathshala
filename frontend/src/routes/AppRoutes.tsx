@@ -17,11 +17,16 @@ import AddStudentPage from "../modules/admin/students/pages/AddStudentPage";
 import EditStudentPage from "../modules/admin/students/pages/EditStudentPage";
 import TeacherListPage from "../modules/admin/teachers/pages/TeacherListPage";
 import AddTeacherPage from "../modules/admin/teachers/pages/AddTeacherPage";
+import EditTeacherPage from "../modules/admin/teachers/pages/EditTeacherPage";
+import TeacherDetailPage from "../modules/admin/teachers/pages/TeacherDetailPage";
 import TeacherDashboard from "../pages/teacher/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
 import ParentDashboard from "../pages/parent/Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
+import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
+import SubjectFormPage from "../modules/admin/subjects/SubjectFormPage";
+import SubjectDetailPage from "../modules/admin/subjects/SubjectDetailPage";
 
 const AppRoutes = () => {
   return (
@@ -116,8 +121,11 @@ const AppRoutes = () => {
       />
       <Route
         path="/admin/subjects"
-        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AcademicSetupPage /></ProtectedRoute>}
+        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectListPage /></ProtectedRoute>}
       />
+      <Route path="/admin/subjects/add" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectFormPage /></ProtectedRoute>} />
+      <Route path="/admin/subjects/:id" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectDetailPage /></ProtectedRoute>} />
+      <Route path="/admin/subjects/:id/edit" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectFormPage /></ProtectedRoute>} />
       <Route
         path="/admin/teachers"
         element={
@@ -125,6 +133,14 @@ const AppRoutes = () => {
             <TeacherListPage />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/teachers/:id"
+        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><TeacherDetailPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/admin/teachers/:id/edit"
+        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><EditTeacherPage /></ProtectedRoute>}
       />
       <Route
         path="/admin/teachers/add"

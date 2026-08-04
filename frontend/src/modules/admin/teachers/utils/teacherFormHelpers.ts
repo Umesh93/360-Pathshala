@@ -13,7 +13,27 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
     ...formData.login,
   };
 
-  return payload;
+  return {
+    employeeNumber: payload.teacherId || payload.employeeCode,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    middleName: payload.middleName,
+    phone: payload.phone,
+    email: payload.email,
+    gender: payload.gender,
+    dateOfBirth: payload.dob || undefined,
+    photo: typeof payload.photo === "string" ? payload.photo : undefined,
+    joiningDate: payload.joiningDate || undefined,
+    employmentType: payload.employmentType,
+    department: payload.department,
+    designation: payload.designation,
+    status: payload.status,
+    qualification: payload.highestQualification,
+    experience: payload.experience,
+    basicSalary: payload.basicSalary ? Number(payload.basicSalary) : undefined,
+    details: JSON.stringify(payload),
+    assignments: [],
+  };
 };
 
 export const validateSection = <T>(

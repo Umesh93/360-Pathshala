@@ -139,6 +139,7 @@ export const useTeacherForm = () => {
     setFormData(initialFormData);
     setCurrentStep(0);
   }, []);
+  const loadTeacher = useCallback((teacher: TeacherFormData) => setFormData(teacher), []);
 
   return {
     currentStep,
@@ -153,5 +154,6 @@ export const useTeacherForm = () => {
     loadDraft,
     clearDraft,
     resetForm,
+    loadTeacher,
   };
 };

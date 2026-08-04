@@ -22,7 +22,7 @@ export interface Teacher {
   employmentType?: "permanent" | "contract" | "part-time" | "visiting" | "intern";
   department?: string;
   designation?: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "resigned" | "suspended";
   reportingManager?: string;
   primarySubject?: string;
   secondarySubjects?: string[];

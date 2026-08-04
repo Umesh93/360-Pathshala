@@ -9,6 +9,7 @@ interface TeacherFormFooterProps {
   totalSteps: number;
   onPrev?: () => void;
   onNext?: () => void;
+  submitLabel?: string;
 }
 
 const TeacherFormFooter: React.FC<TeacherFormFooterProps> = ({
@@ -20,6 +21,7 @@ const TeacherFormFooter: React.FC<TeacherFormFooterProps> = ({
   totalSteps,
   onPrev,
   onNext,
+  submitLabel = "Save Teacher",
 }) => {
   return (
     <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 mt-6 rounded-b-xl">
@@ -89,7 +91,7 @@ const TeacherFormFooter: React.FC<TeacherFormFooterProps> = ({
             {submitting && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {submitting ? "Saving..." : "Save Teacher"}
+            {submitting ? "Saving..." : submitLabel}
           </button>
         </div>
       </div>

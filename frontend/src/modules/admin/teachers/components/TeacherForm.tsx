@@ -11,7 +11,7 @@ import TeacherDocumentsSection from "./TeacherDocumentsSection";
 import TeacherLoginSection from "./TeacherLoginSection";
 import TeacherFormFooter from "./TeacherFormFooter";
 import { useTeacherForm } from "../hooks/useTeacherForm";
-import { createTeacher } from "../services/teacher.service";
+import { createTeacher, getTeacherById, updateTeacher } from "../services/teacher.service";
 import { useToast } from "../../students/components/Toast";
 import type { TeacherFormData } from "../schemas/teacher.schema";
 
@@ -26,7 +26,7 @@ const steps: { title: string; section: SectionKey }[] = [
   { title: "Bank, Docs & Login", section: "bank" },
 ];
 
-const TeacherForm: React.FC = () => {
+const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const {
@@ -40,25 +40,42 @@ const TeacherForm: React.FC = () => {
     saveDraft,
     loadDraft,
     clearDraft,
+    loadTeacher,
   } = useTeacherForm();
   const hasLoadedDraft = useRef(false);
 
   useEffect(() => {
-    if (!hasLoadedDraft.current) {
+    if (!teacherId && !hasLoadedDraft.current) {
       loadDraft();
       hasLoadedDraft.current = true;
     }
-  }, [loadDraft]);
+  }, [loadDraft, teacherId]);
+
+  useEffect(() => {
+    if (!teacherId) return;
+    getTeacherById(teacherId).then((teacher) => {
+      if (!teacher) return;
+      let details: Partial<TeacherFormData> = {};
+      try { details = teacher as unknown as Partial<TeacherFormData>; } catch { details = {}; }
+      loadTeacher({
+        ...formData,
+        ...details,
+        employment: { ...formData.employment, ...(details.employment || {}), teacherId: teacher.teacherId, employeeCode: teacher.employeeCode || "", joiningDate: teacher.joiningDate || "", employmentType: teacher.employmentType || "permanent", department: teacher.department || "", designation: teacher.designation || "", status: teacher.status, reportingManager: teacher.reportingManager || "" },
+        personal: { ...formData.personal, ...(details.personal || {}), firstName: teacher.firstName, middleName: teacher.middleName || "", lastName: teacher.lastName, fullName: teacher.fullName, gender: teacher.gender, dob: teacher.dob, phone: teacher.phone, email: teacher.email, photo: teacher.photo },
+        education: { ...formData.education, ...(details.education || {}), highestQualification: teacher.qualification || "", experience: teacher.experience || "" },
+      });
+    }).catch(() => showToast("Failed to load teacher", "error"));
+  }, [teacherId]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await createTeacher(formData as any);
-      showToast("Teacher saved successfully!", "success");
+      if (teacherId) await updateTeacher(teacherId, formData); else await createTeacher(formData);
+      showToast(`Teacher ${teacherId ? "updated" : "saved"} successfully!`, "success");
       clearDraft();
-      navigate("/admin/teachers/add");
-    } catch {
-      showToast("Failed to save teacher", "error");
+      navigate("/admin/teachers");
+    } catch (error) {
+      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to save teacher", "error");
     } finally {
       setSubmitting(false);
     }
@@ -172,6 +189,7 @@ const TeacherForm: React.FC = () => {
         totalSteps={steps.length}
         onPrev={prevStep}
         onNext={nextStep}
+        submitLabel={teacherId ? "Update Teacher" : "Save Teacher"}
       />
     </div>
   );

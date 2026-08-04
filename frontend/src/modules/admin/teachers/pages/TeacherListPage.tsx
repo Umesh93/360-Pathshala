@@ -6,11 +6,15 @@ import TeacherTable from "../components/TeacherTable";
 import TeacherSkeleton from "../components/TeacherSkeleton";
 import EmptyState from "../../students/components/EmptyState";
 import Pagination from "../../students/components/Pagination";
-import { getTeachers, deleteTeacher } from "../services/teacher.service";
+import { getTeachers, deleteTeacher, exportTeachersCsv } from "../services/teacher.service";
+import ConfirmDialog from "../../../../components/feedback/ConfirmDialog";
+import { useToast } from "../../students/components/Toast";
 import type { Teacher } from "../types/teacher.types";
 
 const TeacherListPage = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [deleteId, setDeleteId] = useState<number>();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,15 +76,16 @@ const TeacherListPage = () => {
     navigate(`/admin/teachers/${id}/edit`);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this teacher?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteTeacher(id);
-      fetchTeachers();
-    } catch {
-      alert("Failed to delete teacher");
+      await deleteTeacher(deleteId);
+      setDeleteId(undefined); await fetchTeachers(); showToast("Teacher deleted successfully", "success");
+    } catch (error) {
+      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to delete teacher", "error");
     }
   };
+  const handleExport = async () => { const blob = await exportTeachersCsv(); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "teachers.csv"; link.click(); URL.revokeObjectURL(url); };
 
   const handleAddTeacher = () => {
     navigate("/admin/teachers/add");
@@ -127,6 +132,7 @@ const TeacherListPage = () => {
           onSearch={handleSearch}
           onRefresh={handleRefresh}
           onAddTeacher={handleAddTeacher}
+          onExport={handleExport}
         />
 
         <div className="bg-white rounded-xl p-4 shadow-sm">
@@ -200,7 +206,7 @@ const TeacherListPage = () => {
               loading={loading}
               onView={handleView}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={setDeleteId}
             />
             <Pagination
               currentPage={page}
@@ -210,6 +216,7 @@ const TeacherListPage = () => {
           </>
         )}
       </div>
+      <ConfirmDialog open={deleteId !== undefined} title="Delete Teacher" description="This teacher will be soft deleted." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} onCancel={() => setDeleteId(undefined)} />
     </AdminLayout>
   );
 };

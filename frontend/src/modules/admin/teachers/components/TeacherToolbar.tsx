@@ -5,6 +5,7 @@ interface TeacherToolbarProps {
   onSearch: (value: string) => void;
   onRefresh: () => void;
   onAddTeacher: () => void;
+  onExport: () => void;
   searchPlaceholder?: string;
 }
 
@@ -12,6 +13,7 @@ const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
   onSearch,
   onRefresh,
   onAddTeacher,
+  onExport,
   searchPlaceholder = "Search teachers...",
 }) => {
   const [localSearch, setLocalSearch] = React.useState("");
@@ -40,7 +42,7 @@ const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
             />
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          <button onClick={onExport} className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <SlidersHorizontal size={16} />
             Filter
           </button>
@@ -50,10 +52,6 @@ const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
             Export
           </button>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Upload size={16} />
-            Import
-          </button>
 
           <button
             onClick={onRefresh}
