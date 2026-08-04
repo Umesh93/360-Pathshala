@@ -5,10 +5,8 @@ export interface Teacher {
   firstName: string;
   middleName?: string;
   lastName: string;
-  fullName: string;
   gender: "male" | "female" | "other";
   dob: string;
-  bloodGroup?: string;
   nationality?: string;
   religion?: string;
   maritalStatus?: string;
@@ -47,6 +45,9 @@ export interface Teacher {
   motherName?: string;
   spouseName?: string;
   emergencyContactPerson?: string;
+  emergencyContactName?: string;
+  emergencyContactNumber?: string;
+  relationship?: string;
   emergencyRelationship?: string;
   emergencyPhone?: string;
   emergencyEmail?: string;
@@ -63,12 +64,12 @@ export interface Teacher {
   permanentMunicipality?: string;
   permanentWard?: string;
   permanentStreet?: string;
+  bloodGroup?: string;
   height?: string;
   weight?: string;
   medicalConditions?: string;
   allergies?: string;
   disability?: string;
-  doctorName?: string;
   bankName?: string;
   branch?: string;
   accountNumber?: string;

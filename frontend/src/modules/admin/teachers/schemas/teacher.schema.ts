@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const employmentSchema = z.object({
   teacherId: z.string().min(1, "Teacher ID is required"),
-  employeeCode: z.string().optional(),
+  employeeCode: z.string().min(1, "Employee Code is required"),
   joiningDate: z.string().min(1, "Joining date is required"),
   employmentType: z.enum(["permanent", "contract", "part-time", "visiting", "intern"]),
   department: z.string().min(1, "Department is required"),
@@ -16,39 +16,34 @@ export const personalSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
-  fullName: z.string().optional(),
   gender: z.enum(["male", "female", "other"]),
   dob: z.string().min(1, "Date of birth is required"),
-  bloodGroup: z.string().optional(),
   nationality: z.string().optional(),
   religion: z.string().optional(),
   maritalStatus: z.string().optional(),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   alternativePhone: z.string().optional(),
-  email: z.string().email("Invalid email address"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
   citizenshipNumber: z.string().optional(),
   passportNumber: z.string().optional(),
 });
 
 export const emergencySchema = z.object({
-  fatherName: z.string().optional(),
-  fatherPhone: z.string().optional(),
-  motherName: z.string().optional(),
-  motherPhone: z.string().optional(),
-  spouseName: z.string().optional(),
-  spousePhone: z.string().optional(),
-  emergencyContactPerson: z.string().min(1, "Emergency contact person is required"),
-  relationship: z.enum(["father", "mother", "spouse", "sibling", "relative", "friend", "other"]),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  emergencyContactName: z.string().min(1, "Emergency contact name is required"),
+  relationship: z.string().min(1, "Relationship is required"),
+  emergencyContactNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  alternativePhone: z.string().optional(),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  address: z.string().optional(),
 });
 
 export const addressSchema = z.object({
   currentProvince: z.string().min(1, "Province is required"),
   currentDistrict: z.string().min(1, "District is required"),
   currentMunicipality: z.string().min(1, "Municipality is required"),
-  currentWard: z.string().min(1, "Ward is required"),
+  currentWard: z.string().min(1, "Ward number is required").refine((value) => {
+    const ward = Number(value);
+    return Number.isInteger(ward) && ward >= 1 && ward <= 35;
+  }, "Ward number must be between 1 and 35"),
   currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
   permanentProvince: z.string().optional(),
@@ -64,9 +59,6 @@ export const educationSchema = z.object({
   specialization: z.string().optional(),
   passingYear: z.string().optional(),
   experience: z.string().optional(),
-  previousOrganization: z.string().optional(),
-  teachingLicenseNumber: z.string().optional(),
-  languagesKnown: z.array(z.string()).default([]),
 });
 
 export const medicalSchema = z.object({
@@ -76,12 +68,18 @@ export const medicalSchema = z.object({
   medicalConditions: z.string().optional(),
   allergies: z.string().optional(),
   disability: z.string().optional(),
-  doctorName: z.string().optional(),
-  emergencyContact: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactNumber: z.string().optional(),
 });
 
 export const bankSchema = z.object({
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  accountHolderName: z.string().optional(),
   panNumber: z.string().optional(),
+  documents: z.any().optional(),
+  photo: z.any().optional(),
+  notes: z.string().optional(),
 });
 
 export const documentsSchema = z.object({

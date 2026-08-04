@@ -122,7 +122,7 @@ const buildStudentPayload = (formData: StudentFormData): StudentRequest => {
     dateOfBirth: flat.dob, gender: flat.gender, parentId: typeof flat.guardianId === "number" ? flat.guardianId : null,
     classId: flat.class ? Number(flat.class) : null, sectionId: flat.section ? Number(flat.section) : null,
     province: flat.currentProvinceName || undefined, district: flat.currentDistrictName || undefined,
-    municipality: flat.currentMunicipalityName || undefined, ward: flat.currentWardNumber ? Number(flat.currentWardNumber) : null,
+    municipality: flat.currentMunicipalityName || flat.currentMunicipality || undefined, ward: flat.currentWardNumber || flat.currentWard ? Number(flat.currentWardNumber || flat.currentWard) : null,
     street: flat.currentStreet || undefined, fatherName: flat.fatherName || undefined, motherName: flat.motherName || undefined,
     guardianName: selectedName && selectedName !== flat.fatherName ? selectedName : undefined, relationship: flat.guardianRelationship || undefined,
     occupation: flat.guardianOccupation || undefined, guardianPhone: selectedPhone || undefined, guardianEmail: flat.guardianEmail || undefined,
@@ -180,10 +180,6 @@ export const getStudentById = async (id: number): Promise<Student> => {
 
 export const createStudent = async (formData: StudentFormData): Promise<Student> => {
   const payload = buildStudentPayload(formData);
-  if (typeof payload.admissionNumber !== "string" || !payload.admissionNumber.trim()) {
-    payload.admissionNumber = await generateAdmissionNo();
-  }
-
   const response = await api.post("/people/students", payload);
   return mapStudent(response.data);
 };
@@ -245,26 +241,18 @@ export const getStudentResults = async (): Promise<ExamResult[]> => {
 };
 
 export const generateAdmissionNo = async (): Promise<string> => {
-  try {
-    const response = await api.get("/people/students/next-admission-no");
-    return (response.data.admissionNo as string) || `ADM-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
-  } catch {
-    return `ADM-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
-  }
+  const response = await api.get("/people/students/next-admission-no");
+  return response.data.admissionNo as string;
 };
 
 export const getNextRollNumber = async (
   classId: string,
   sectionId: string
 ): Promise<{ nextRollNumber: number }> => {
-  try {
-    const response = await api.get(`/people/students/next-roll-number`, {
-      params: { class: classId, section: sectionId },
-    });
-    return response.data as { nextRollNumber: number };
-  } catch {
-    return { nextRollNumber: 1 };
-  }
+  const response = await api.get(`/people/students/next-roll-number`, {
+    params: { classId, sectionId },
+  });
+  return response.data as { nextRollNumber: number };
 };
 
 export const getClasses = async (): Promise<{ id: number; name: string }[]> => {
@@ -330,32 +318,6 @@ export const getDistricts = async (
   }
 };
 
-export const getMunicipalities = async (
-  districtId?: number
-): Promise<{ id: number; name: string; type: string; districtId: number }[]> => {
-  try {
-    const response = await api.get("/people/students/locations/municipalities", {
-      params: districtId ? { districtId } : undefined,
-    });
-    return response.data as { id: number; name: string; type: string; districtId: number }[];
-  } catch {
-    return [];
-  }
-};
-
-export const getWards = async (
-  municipalityId?: number
-): Promise<{ id: number; number: number; name: string; municipalityId: number }[]> => {
-  try {
-    const response = await api.get("/people/students/locations/wards", {
-      params: municipalityId ? { municipalityId } : undefined,
-    });
-    return response.data as { id: number; number: number; name: string; municipalityId: number }[];
-  } catch {
-    return [];
-  }
-};
-
 export const loadStudentEditData = async (
   id: number
 ): Promise<{ student: Student; lookups: StudentEditLookups }> => {
@@ -363,14 +325,12 @@ export const loadStudentEditData = async (
   const guardians = await getGuardians();
   const provinces = await getProvinces();
   const districts = await getDistricts();
-  const municipalities = await getMunicipalities();
-  const wards = await getWards();
   const student = await getStudentById(id);
   const sections = student.classId ? await getSections(student.classId) : [];
 
   return {
     student,
-    lookups: { classes, sections, guardians, provinces, districts, municipalities, wards },
+    lookups: { classes, sections, guardians, provinces, districts },
   };
 };
 

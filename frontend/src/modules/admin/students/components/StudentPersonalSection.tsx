@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import type { PersonalInfoData } from "../schemas/student.schema";
+import RequiredLabel from "../../../../components/forms/RequiredLabel";
 
 interface StudentPersonalSectionProps {
   data: PersonalInfoData;
@@ -28,6 +29,9 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
       reader.readAsDataURL(file);
     }
   };
+
+  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -64,126 +68,91 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            First Name
-          </label>
+          <RequiredLabel required>First Name</RequiredLabel>
           <input
+            data-field="firstName"
             type="text"
             value={data.firstName}
             onChange={(e) => {
               update("firstName", e.target.value);
             }}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.firstName ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.firstName)}
+            aria-required="true"
+            aria-invalid={!!errors.firstName}
           />
-          {errors.firstName && (
-            <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
-          )}
+          {errorText(errors.firstName)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Middle Name
-          </label>
+          <RequiredLabel>Middle Name</RequiredLabel>
           <input
+            data-field="middleName"
             type="text"
             value={data.middleName}
             onChange={(e) => {
               update("middleName", e.target.value);
             }}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={fieldClass()}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Last Name
-          </label>
+          <RequiredLabel required>Last Name</RequiredLabel>
           <input
+            data-field="lastName"
             type="text"
             value={data.lastName}
             onChange={(e) => {
               update("lastName", e.target.value);
             }}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.lastName ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.lastName)}
+            aria-required="true"
+            aria-invalid={!!errors.lastName}
           />
-          {errors.lastName && (
-            <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
-          )}
+          {errorText(errors.lastName)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Date of Birth
-          </label>
+          <RequiredLabel required>Date of Birth</RequiredLabel>
           <input
+            data-field="dob"
             type="date"
             value={data.dob}
             onChange={(e) => update("dob", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.dob ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.dob)}
+            aria-required="true"
+            aria-invalid={!!errors.dob}
           />
-          {errors.dob && (
-            <p className="mt-1 text-xs text-red-600">{errors.dob}</p>
-          )}
+          {errorText(errors.dob)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Gender
-          </label>
+          <RequiredLabel required>Gender</RequiredLabel>
           <select
+            data-field="gender"
             value={data.gender}
             onChange={(e) => update("gender", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.gender ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.gender)}
+            aria-required="true"
+            aria-invalid={!!errors.gender}
           >
             <option value="">Select Gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && (
-            <p className="mt-1 text-xs text-red-600">{errors.gender}</p>
-          )}
+          {errorText(errors.gender)}
         </div>
 
-        {/* <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Blood Group
-          </label>
-          <select
-            value={data.bloodGroup}
-            onChange={(e) => update("bloodGroup", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          >
-            <option value="">Select</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
-        </div> */}
-
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Religion
-          </label>
+          <RequiredLabel required>Religion</RequiredLabel>
           <select
+            data-field="religion"
             value={data.religion}
             onChange={(e) => update("religion", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.religion ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.religion)}
+            aria-required="true"
+            aria-invalid={!!errors.religion}
           >
             <option value="">Select Religion</option>
             <option value="Hindu">Hindu</option>
@@ -196,21 +165,18 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             <option value="Bon">Bon</option>
             <option value="Other">Other</option>
           </select>
-          {errors.religion && (
-            <p className="mt-1 text-xs text-red-600">{errors.religion}</p>
-          )}
+          {errorText(errors.religion)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Caste
-          </label>
+          <RequiredLabel required>Caste</RequiredLabel>
           <select
+            data-field="caste"
             value={data.caste}
             onChange={(e) => update("caste", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.caste ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.caste)}
+            aria-required="true"
+            aria-invalid={!!errors.caste}
           >
             <option value="">Select Caste</option>
             <option value="Brahmin/Chhetri">Brahmin/Chhetri</option>
@@ -219,48 +185,59 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             <option value="Madhesi">Madhesi</option>
             <option value="Other">Other</option>
           </select>
-          {errors.caste && (
-            <p className="mt-1 text-xs text-red-600">{errors.caste}</p>
-          )}
+          {errorText(errors.caste)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Citizenship Number (Optional)
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Citizenship Number (Optional)</label>
           <input
+            data-field="citizenshipNumber"
             type="text"
             value={data.citizenshipNumber}
             onChange={(e) => update("citizenshipNumber", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={fieldClass()}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            EMIS ID / Student Registration Number (Optional)
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
           <input
-            type="text"
-            value={data.emisId}
-            onChange={(e) => update("emisId", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Nationality
-          </label>
-          <input
+            data-field="nationality"
             type="text"
             value={data.nationality}
             onChange={(e) => update("nationality", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={fieldClass()}
           />
         </div>
 
         <div>
+          <RequiredLabel required>Phone Number</RequiredLabel>
+          <input
+            data-field="phone"
+            type="tel"
+            value={data.phone}
+            onChange={(e) => update("phone", e.target.value)}
+            className={fieldClass(errors.phone)}
+            aria-required="true"
+            aria-invalid={!!errors.phone}
+          />
+          {errorText(errors.phone)}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
+          <input
+            data-field="email"
+            type="email"
+            value={data.email}
+            onChange={(e) => update("email", e.target.value)}
+            className={fieldClass(errors.email)}
+            aria-invalid={!!errors.email}
+          />
+          {errorText(errors.email)}
+        </div>
+
+        {/* <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Student ID Barcode
           </label>
@@ -271,7 +248,7 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
             placeholder="Future Ready"
             className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

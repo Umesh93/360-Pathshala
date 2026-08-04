@@ -29,7 +29,6 @@ export const personalInfoSchema = z.object({
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   citizenshipNumber: z.string().optional(),
-  emisId: z.string().optional(),
   studentIdBarcode: z.string().optional(),
   photo: z.any().optional(),
 });
@@ -63,7 +62,10 @@ export const addressSchema = z.object({
   currentDistrictName: z.string().optional(),
   currentMunicipality: z.string().min(1, "Municipality is required"),
   currentMunicipalityName: z.string().optional(),
-  currentWard: z.string().min(1, "Ward is required"),
+  currentWard: z.string().min(1, "Ward number is required").refine((value) => {
+    const ward = Number(value);
+    return Number.isInteger(ward) && ward >= 1 && ward <= 35;
+  }, "Ward number must be between 1 and 35"),
   currentWardNumber: z.string().optional(),
   currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
@@ -92,6 +94,7 @@ export const academicHistorySchema = z.object({
   previousClass: z.string().optional(),
   transferCertificateNumber: z.string().optional(),
   reasonForLeaving: z.string().optional(),
+  emisId: z.string().optional(),
 });
 
 export const hostelSchema = z.object({

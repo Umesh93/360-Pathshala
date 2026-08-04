@@ -10,6 +10,7 @@ interface StudentFormFooterProps {
   onPrev?: () => void;
   onNext?: () => void;
   submitLabel?: string;
+  onAddAnother?: () => void;
 }
 
 const StudentFormFooter: React.FC<StudentFormFooterProps> = ({
@@ -22,6 +23,7 @@ const StudentFormFooter: React.FC<StudentFormFooterProps> = ({
   onPrev,
   onNext,
   submitLabel = "Save Student",
+  onAddAnother,
 }) => {
   return (
     <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 mt-6 rounded-b-xl">
@@ -42,12 +44,24 @@ const StudentFormFooter: React.FC<StudentFormFooterProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {onAddAnother && (
+            <button
+              type="button"
+              onClick={onAddAnother}
+              disabled={submitting}
+              className="px-6 py-2.5 rounded-xl bg-[#234A91] text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              Add Another Student
+            </button>
+          )}
+
           {onPrev && currentStep > 0 && (
             <button
               type="button"
               onClick={onPrev}
-              className="px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              disabled={submitting}
+              className="px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Previous
             </button>
@@ -77,7 +91,8 @@ const StudentFormFooter: React.FC<StudentFormFooterProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-xl border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-xl border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -91,7 +106,7 @@ const StudentFormFooter: React.FC<StudentFormFooterProps> = ({
             {submitting && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {submitting ? "Saving..." : submitLabel}
+            {submitting ? "Saving Student..." : submitLabel}
           </button>
         </div>
       </div>

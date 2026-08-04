@@ -3,11 +3,11 @@ import React, { useState, createContext, useContext, useCallback } from "react";
 interface Toast {
   id: number;
   message: string;
-  type: "success" | "error";
+  type: "success" | "error" | "validation" | "server";
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: "success" | "error") => void;
+  showToast: (message: string, type?: "success" | "error" | "validation" | "server") => void;
 }
 
 const ToastContext = createContext<ToastContextType>({
@@ -19,7 +19,7 @@ export const useToast = () => useContext(ToastContext);
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+  const showToast = useCallback((message: string, type: "success" | "error" | "validation" | "server" = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
@@ -35,7 +35,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           <div
             key={toast.id}
             className={`px-6 py-3 rounded-xl shadow-lg text-white text-sm font-medium transition-all ${
-              toast.type === "success" ? "bg-green-600" : "bg-red-600"
+              toast.type === "success" ? "bg-green-600" : toast.type === "validation" ? "bg-amber-600" : toast.type === "server" ? "bg-red-700" : "bg-red-600"
             }`}
           >
             {toast.message}

@@ -1,6 +1,7 @@
 import React from "react";
 import TeacherAvatar from "./TeacherAvatar";
 import TeacherStatusBadge from "./TeacherStatusBadge";
+import ActionMenu from "@/components/common/ActionMenu";
 import type { Teacher } from "../types/teacher.types";
 
 interface TeacherTableProps {
@@ -9,6 +10,8 @@ interface TeacherTableProps {
   onView: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onPrint?: (id: number) => void;
+  onDownload?: (id: number) => void;
 }
 
 type SortKey = keyof Teacher;
@@ -20,6 +23,8 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
   onView,
   onEdit,
   onDelete,
+  onPrint,
+  onDownload,
 }) => {
   const [sortKey, setSortKey] = React.useState<SortKey>("firstName");
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
@@ -228,7 +233,14 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
                   <TeacherStatusBadge status={teacher.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <div className="space-x-3"><button onClick={() => onView(teacher.id)} className="text-[#234A91]">View</button><button onClick={() => onEdit(teacher.id)} className="text-[#234A91]">Edit</button><button onClick={() => onDelete(teacher.id)} className="text-red-600">Delete</button></div>
+                  <ActionMenu
+                    id={teacher.id}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onPrint={onPrint}
+                    onDownload={onDownload}
+                  />
                 </td>
               </tr>
             ))}

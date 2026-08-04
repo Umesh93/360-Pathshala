@@ -131,8 +131,6 @@ export interface StudentEditLookups {
   guardians: { id: number; name: string }[];
   provinces: { id: number; name: string }[];
   districts: { id: number; name: string; provinceId: number }[];
-  municipalities: { id: number; name: string; type: string; districtId: number }[];
-  wards: { id: number; number: number; name: string; municipalityId: number }[];
 }
 
 export interface Guardian {

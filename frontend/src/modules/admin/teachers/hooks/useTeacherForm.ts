@@ -19,10 +19,8 @@ const initialFormData: TeacherFormData = {
     firstName: "",
     middleName: "",
     lastName: "",
-    fullName: "",
     gender: "male",
     dob: "",
-    bloodGroup: "",
     nationality: "",
     religion: "",
     maritalStatus: "",
@@ -33,17 +31,11 @@ const initialFormData: TeacherFormData = {
     passportNumber: "",
   },
   emergency: {
-    fatherName: "",
-    fatherPhone: "",
-    motherName: "",
-    motherPhone: "",
-    spouseName: "",
-    spousePhone: "",
-    emergencyContactPerson: "",
-    relationship: "father",
-    phone: "",
+    emergencyContactName: "",
+    relationship: "",
+    emergencyContactNumber: "",
+    alternativePhone: "",
     email: "",
-    address: "",
   },
   address: {
     currentProvince: "",
@@ -64,9 +56,6 @@ const initialFormData: TeacherFormData = {
     specialization: "",
     passingYear: "",
     experience: "",
-    previousOrganization: "",
-    teachingLicenseNumber: "",
-    languagesKnown: [],
   },
   medical: {
     bloodGroup: "",
@@ -75,11 +64,17 @@ const initialFormData: TeacherFormData = {
     medicalConditions: "",
     allergies: "",
     disability: "",
-    doctorName: "",
-    emergencyContact: "",
+    emergencyContactName: "",
+    emergencyContactNumber: "",
   },
   bank: {
+    bankName: "",
+    accountNumber: "",
+    accountHolderName: "",
     panNumber: "",
+    documents: undefined,
+    photo: undefined,
+    notes: "",
   },
   documents: {
     documents: undefined,
@@ -104,15 +99,24 @@ export const useTeacherForm = () => {
     section: T,
     value: TeacherFormData[T]
   ) => {
+    if (import.meta.env.DEV) console.debug("[TeacherWizard] section update", section);
     setFormData((prev) => ({ ...prev, [section]: value }));
   }, []);
 
   const nextStep = useCallback(() => {
-    setCurrentStep((prev) => Math.min(prev + 1, 5));
+    setCurrentStep((prev) => {
+      const next = Math.min(prev + 1, 5);
+      if (import.meta.env.DEV) console.debug("[TeacherWizard] step state", { before: prev, after: next });
+      return next;
+    });
   }, []);
 
   const prevStep = useCallback(() => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => {
+      const next = Math.max(prev - 1, 0);
+      if (import.meta.env.DEV) console.debug("[TeacherWizard] step state", { before: prev, after: next });
+      return next;
+    });
   }, []);
 
   const saveDraft = useCallback(() => {

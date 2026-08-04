@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { AcademicInfoData } from "../schemas/student.schema";
 import { getNextRollNumber, getClasses, getSections } from "../services/student.service";
+import RequiredLabel from "../../../../components/forms/RequiredLabel";
 
 interface StudentAcademicSectionProps {
   data: AcademicInfoData;
@@ -10,6 +11,7 @@ interface StudentAcademicSectionProps {
     classes: { id: number; name: string }[];
     sections: { id: number; name: string; classId: number }[];
   };
+  autoGenerateRollNumber?: boolean;
 }
 
 const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
@@ -17,6 +19,7 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
   onChange,
   errors = {},
   lookupData,
+  autoGenerateRollNumber = true,
 }) => {
   const update = useCallback((field: keyof AcademicInfoData, value: string) => {
     onChange({ ...data, [field]: value });
@@ -29,8 +32,10 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
 
   useEffect(() => {
     if (lookupData) {
-      setClasses(lookupData.classes);
-      setSections(lookupData.sections);
+      Promise.resolve().then(() => {
+        setClasses(lookupData.classes);
+        setSections(lookupData.sections);
+      });
       return;
     }
     getClasses().then(setClasses);
@@ -38,7 +43,7 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
 
   useEffect(() => {
     if (lookupData || !data.class) {
-      if (!lookupData) setSections([]);
+      if (!lookupData) Promise.resolve().then(() => setSections([]));
       return;
     }
     getSections(Number(data.class)).then(setSections);
@@ -49,7 +54,7 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
     : sections;
 
   useEffect(() => {
-    if (data.class && data.section && !data.rollNumber) {
+    if (autoGenerateRollNumber && data.class && data.section) {
       const requestKey = `${data.class}:${data.section}`;
       if (rollRequestRef.current === requestKey) return;
       rollRequestRef.current = requestKey;
@@ -64,7 +69,10 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
     } else if (!data.class || !data.section) {
       rollRequestRef.current = undefined;
     }
-  }, [data.class, data.section, data.rollNumber, update]);
+  }, [autoGenerateRollNumber, data.class, data.section, update]);
+
+  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -73,36 +81,32 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Academic Year
-          </label>
+          <RequiredLabel required>Academic Year</RequiredLabel>
           <select
+            data-field="academicYear"
             value={data.academicYear}
             onChange={(e) => update("academicYear", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.academicYear ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.academicYear)}
+            aria-required="true"
+            aria-invalid={!!errors.academicYear}
           >
             <option value="">Select Year</option>
             <option value="2081/2082 BS">2081/2082 BS</option>
             <option value="2082/2083 BS">2082/2083 BS</option>
-            <option value="2083/2084 BS" selected>2083/2084 BS</option>
+            <option value="2083/2084 BS">2083/2084 BS</option>
             <option value="2084/2085 BS">2084/2085 BS</option>
             <option value="2085/2086 BS">2085/2086 BS</option>
           </select>
-          {errors.academicYear && (
-            <p className="mt-1 text-xs text-red-600">{errors.academicYear}</p>
-          )}
+          {errorText(errors.academicYear)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Medium
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Medium (Optional)</label>
           <select
+            data-field="medium"
             value={data.medium}
             onChange={(e) => update("medium", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={fieldClass()}
           >
             <option value="English">English</option>
             <option value="Nepali">Nepali</option>
@@ -110,45 +114,38 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Admission Number
-          </label>
+          <RequiredLabel required>Admission Number</RequiredLabel>
           <input
+            data-field="admissionNo"
             type="text"
             value={data.admissionNo}
-            onChange={(e) => update("admissionNo", e.target.value)}
+            readOnly
             placeholder="Auto Generated"
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.admissionNo ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.admissionNo)}
+            aria-required="true"
+            aria-invalid={!!errors.admissionNo}
           />
-          {errors.admissionNo && (
-            <p className="mt-1 text-xs text-red-600">{errors.admissionNo}</p>
-          )}
+          {errorText(errors.admissionNo)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Admission Date
-          </label>
+          <RequiredLabel required>Admission Date</RequiredLabel>
           <input
+            data-field="admissionDate"
             type="date"
             value={data.admissionDate}
             onChange={(e) => update("admissionDate", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.admissionDate ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.admissionDate)}
+            aria-required="true"
+            aria-invalid={!!errors.admissionDate}
           />
-          {errors.admissionDate && (
-            <p className="mt-1 text-xs text-red-600">{errors.admissionDate}</p>
-          )}
+          {errorText(errors.admissionDate)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Class
-          </label>
+          <RequiredLabel required>Class</RequiredLabel>
           <select
+            data-field="class"
             value={data.class}
             onChange={(e) => {
               const classId = e.target.value;
@@ -161,25 +158,22 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
                 rollNumber: "",
               });
             }}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.class ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.class)}
+            aria-required="true"
+            aria-invalid={!!errors.class}
           >
             <option value="">Select Class</option>
             {classes.map((c) => (
               <option key={c.id} value={String(c.id)}>{c.name}</option>
             ))}
           </select>
-          {errors.class && (
-            <p className="mt-1 text-xs text-red-600">{errors.class}</p>
-          )}
+          {errorText(errors.class)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Section
-          </label>
+          <RequiredLabel required>Section</RequiredLabel>
           <select
+            data-field="section"
             value={data.section}
             onChange={(e) => {
               const sectionId = e.target.value;
@@ -190,49 +184,43 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
                 rollNumber: "",
               });
             }}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.section ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.section)}
+            aria-required="true"
+            aria-invalid={!!errors.section}
           >
             <option value="">Select Section</option>
             {availableSections.map((s) => (
               <option key={s.id} value={String(s.id)}>{s.name}</option>
             ))}
           </select>
-          {errors.section && (
-            <p className="mt-1 text-xs text-red-600">{errors.section}</p>
-          )}
+          {errorText(errors.section)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Roll Number
-          </label>
+          <RequiredLabel required>Roll Number</RequiredLabel>
           <input
+            data-field="rollNumber"
             type="text"
             value={data.rollNumber}
             onChange={(e) => update("rollNumber", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.rollNumber ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.rollNumber)}
             readOnly
+            aria-required="true"
+            aria-invalid={!!errors.rollNumber}
           />
           {rollNumberLoading && (
             <p className="mt-1 text-xs text-gray-400">Generating...</p>
           )}
-          {errors.rollNumber && (
-            <p className="mt-1 text-xs text-red-600">{errors.rollNumber}</p>
-          )}
+          {errorText(errors.rollNumber)}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            House
-          </label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">House (Optional)</label>
           <select
+            data-field="house"
             value={data.house}
             onChange={(e) => update("house", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            className={fieldClass()}
           >
             <option value="">Select House</option>
             <option value="Red">Red</option>
@@ -243,23 +231,20 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Student Status
-          </label>
+          <RequiredLabel required>Student Status</RequiredLabel>
           <select
+            data-field="status"
             value={data.status}
             onChange={(e) => update("status", e.target.value)}
-            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-              errors.status ? "border-red-500" : "border-gray-200"
-            }`}
+            className={fieldClass(errors.status)}
+            aria-required="true"
+            aria-invalid={!!errors.status}
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="transfer">Transfer</option>
           </select>
-          {errors.status && (
-            <p className="mt-1 text-xs text-red-600">{errors.status}</p>
-          )}
+          {errorText(errors.status)}
         </div>
 
         {/* <div>

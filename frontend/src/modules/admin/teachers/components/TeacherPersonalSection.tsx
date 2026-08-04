@@ -56,13 +56,12 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">First Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">First Name <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={data.firstName}
             onChange={(e) => {
               update("firstName", e.target.value);
-              update("fullName", `${e.target.value} ${data.middleName || ""} ${data.lastName || ""}`.trim());
             }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.firstName ? "border-red-500" : "border-gray-200"
@@ -78,20 +77,18 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
             value={data.middleName}
             onChange={(e) => {
               update("middleName", e.target.value);
-              update("fullName", `${data.firstName || ""} ${e.target.value} ${data.lastName || ""}`.trim());
             }}
             className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Last Name <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={data.lastName}
             onChange={(e) => {
               update("lastName", e.target.value);
-              update("fullName", `${data.firstName || ""} ${data.middleName || ""} ${e.target.value}`.trim());
             }}
             className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
               errors.lastName ? "border-red-500" : "border-gray-200"
@@ -101,18 +98,7 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
-          <input
-            type="text"
-            value={data.fullName}
-            onChange={(e) => update("fullName", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Date of Birth</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Date of Birth <span className="text-red-500">*</span></label>
           <input
             type="date"
             value={data.dob}
@@ -125,7 +111,7 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Gender</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Gender <span className="text-red-500">*</span></label>
           <select
             value={data.gender}
             onChange={(e) => update("gender", e.target.value)}
@@ -141,24 +127,6 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
           {errors.gender && <p className="mt-1 text-xs text-red-600">{errors.gender}</p>}
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Blood Group</label>
-          <select
-            value={data.bloodGroup}
-            onChange={(e) => update("bloodGroup", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
-          >
-            <option value="">Select</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
-        </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
@@ -196,7 +164,7 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number <span className="text-red-500">*</span></label>
           <input
             type="tel"
             value={data.phone}
@@ -219,7 +187,7 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
           <input
             type="email"
             value={data.email}

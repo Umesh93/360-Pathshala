@@ -4,12 +4,16 @@ import type { TransportData } from "../schemas/student.schema";
 interface TransportSectionProps {
   data: TransportData;
   onChange: (data: TransportData) => void;
+  errors?: Record<string, string>;
 }
 
-const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange }) => {
+const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange, errors = {} }) => {
   const update = (field: keyof TransportData, value: string | boolean) => {
     onChange({ ...data, [field]: value });
   };
+
+  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -40,36 +44,40 @@ const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange }) =
       {data.usesTransport && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Route</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Route (Optional)</label>
             <select
+              data-field="route"
               value={data.route}
               onChange={(e) => update("route", e.target.value)}
-              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+              className={fieldClass(errors.route)}
             >
               <option value="">Select Route</option>
               <option value="Route 1">Route 1</option>
               <option value="Route 2">Route 2</option>
               <option value="Route 3">Route 3</option>
             </select>
+            {errorText(errors.route)}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Pickup Point</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Pickup Point (Optional)</label>
             <input
+              data-field="pickupPoint"
               type="text"
               value={data.pickupPoint}
               onChange={(e) => update("pickupPoint", e.target.value)}
-              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+              className={fieldClass()}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Vehicle</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Vehicle (Optional)</label>
             <input
+              data-field="vehicle"
               type="text"
               value={data.vehicle}
               onChange={(e) => update("vehicle", e.target.value)}
-              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+              className={fieldClass()}
             />
           </div>
         </div>

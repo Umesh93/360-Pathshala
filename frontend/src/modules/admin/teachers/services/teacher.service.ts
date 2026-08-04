@@ -68,111 +68,6 @@ const mockAcademicYears: AcademicYear[] = [
   { id: 2, name: "2024/2025", startDate: "2024-04-01", endDate: "2025-03-31", isCurrent: false },
 ];
 
-const mockTeachers: Teacher[] = [
-  {
-    id: 1,
-    teacherId: "TCH-2024-001",
-    firstName: "John",
-    lastName: "Doe",
-    fullName: "John Doe",
-    gender: "male",
-    dob: "1985-03-15",
-    phone: "9800000001",
-    email: "john.doe@example.com",
-    address: "Kathmandu, Nepal",
-    qualification: "M.Ed",
-    subject: "Mathematics",
-    joiningDate: "2020-01-10",
-    experience: "8 years",
-    status: "active",
-  },
-  {
-    id: 2,
-    teacherId: "TCH-2024-002",
-    firstName: "Jane",
-    lastName: "Smith",
-    fullName: "Jane Smith",
-    gender: "female",
-    dob: "1988-07-22",
-    phone: "9800000002",
-    email: "jane.smith@example.com",
-    address: "Pokhara, Nepal",
-    qualification: "M.Sc Physics",
-    subject: "Physics",
-    joiningDate: "2021-02-15",
-    experience: "6 years",
-    status: "active",
-  },
-  {
-    id: 3,
-    teacherId: "TCH-2024-003",
-    firstName: "Robert",
-    lastName: "Brown",
-    fullName: "Robert Brown",
-    gender: "male",
-    dob: "1990-11-05",
-    phone: "9800000003",
-    email: "robert.brown@example.com",
-    address: "Lalitpur, Nepal",
-    qualification: "M.A English",
-    subject: "English",
-    joiningDate: "2019-06-01",
-    experience: "10 years",
-    status: "active",
-  },
-  {
-    id: 4,
-    teacherId: "TCH-2024-004",
-    firstName: "Emily",
-    lastName: "Davis",
-    fullName: "Emily Davis",
-    gender: "female",
-    dob: "1987-09-12",
-    phone: "9800000004",
-    email: "emily.davis@example.com",
-    address: "Bhaktapur, Nepal",
-    qualification: "M.Sc Chemistry",
-    subject: "Chemistry",
-    joiningDate: "2022-03-20",
-    experience: "4 years",
-    status: "inactive",
-  },
-  {
-    id: 5,
-    teacherId: "TCH-2024-005",
-    firstName: "Michael",
-    lastName: "Wilson",
-    fullName: "Michael Wilson",
-    gender: "male",
-    dob: "1983-05-30",
-    phone: "9800000005",
-    email: "michael.wilson@example.com",
-    address: "Kathmandu, Nepal",
-    qualification: "M.A History",
-    subject: "History",
-    joiningDate: "2018-08-15",
-    experience: "12 years",
-    status: "active",
-  },
-  {
-    id: 6,
-    teacherId: "TCH-2024-006",
-    firstName: "Sarah",
-    lastName: "Johnson",
-    fullName: "Sarah Johnson",
-    gender: "female",
-    dob: "1992-01-18",
-    phone: "9800000006",
-    email: "sarah.johnson@example.com",
-    address: "Pokhara, Nepal",
-    qualification: "M.Com",
-    subject: "Economics",
-    joiningDate: "2023-01-05",
-    experience: "2 years",
-    status: "active",
-  },
-];
-
 export const getTeachers = async (
   page = 1,
   limit = 10,
@@ -192,8 +87,7 @@ const mapTeacher = (record: Record<string, unknown>): Teacher => ({
   ...(record as unknown as Teacher),
   id: record.id as number,
   teacherId: record.employeeNumber as string,
-  employeeCode: record.employeeNumber as string,
-  fullName: `${record.firstName || ""} ${record.lastName || ""}`.trim(),
+  employeeCode: (() => { try { return (JSON.parse(record.details as string || "{}").employeeCode as string) || record.employeeNumber as string; } catch { return record.employeeNumber as string; } })(),
   gender: (record.gender as Teacher["gender"]) || "other",
   dob: (record.dateOfBirth as string) || "",
   email: (record.email as string) || "",
@@ -209,7 +103,7 @@ export const assignTeacher = async (payload: { teacherId: number; subjectId: num
   (await api.post("/academic/teacher-subjects", payload)).data;
 export const exportTeachersCsv = async (): Promise<Blob> => {
   const response = await getTeachers(1, 1000);
-  const rows = [["Teacher ID", "Name", "Phone", "Email", "Qualification", "Status"], ...response.data.map((item) => [item.teacherId, item.fullName, item.phone, item.email, item.qualification || "", item.status])];
+  const rows = [["Teacher ID", "Name", "Phone", "Email", "Qualification", "Status"], ...response.data.map((item) => [item.teacherId, `${item.firstName} ${item.lastName}`.trim(), item.phone, item.email, item.qualification || "", item.status])];
   return new Blob([rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n")], { type: "text/csv" });
 };
 
@@ -221,7 +115,10 @@ export const getTeacherById = async (id: number): Promise<Teacher | undefined> =
 export const createTeacher = async (
   teacher: TeacherFormData
 ): Promise<Teacher> => {
-  const response = await api.post("/people/teachers", buildTeacherPayload(teacher));
+  console.log("Teacher Form Data", teacher);
+  const payload = buildTeacherPayload(teacher);
+  console.log("Teacher Payload:", payload);
+  const response = await api.post("/people/teachers", payload);
   return mapTeacher(response.data);
 };
 
@@ -229,7 +126,10 @@ export const updateTeacher = async (
   id: number,
   teacher: TeacherFormData
 ): Promise<Teacher | undefined> => {
-  const response = await api.put(`/people/teachers/${id}`, buildTeacherPayload(teacher));
+  console.log("Teacher Form Data", teacher);
+  const payload = buildTeacherPayload(teacher);
+  console.log("Teacher Payload:", payload);
+  const response = await api.put(`/people/teachers/${id}`, payload);
   return mapTeacher(response.data);
 };
 
@@ -239,7 +139,13 @@ export const deleteTeacher = async (id: number): Promise<boolean> => {
 };
 
 export const generateTeacherId = async (): Promise<string> => {
-  return `TCH-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+  const response = await api.get("/people/teachers/next-teacher-id");
+  return response.data.teacherId as string;
+};
+
+export const generateEmployeeCode = async (): Promise<string> => {
+  const response = await api.get("/people/teachers/next-employee-code");
+  return response.data.employeeCode as string;
 };
 
 export const getDepartments = async (): Promise<Department[]> => {
@@ -354,49 +260,6 @@ export const getDistricts = async (
     ],
   };
   return districtMap[provinceId] || [];
-};
-
-export const getMunicipalities = async (
-  districtId: number
-): Promise<{ id: number; name: string }[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const municipalityMap: Record<number, { id: number; name: string }[]> = {
-    1: [{ id: 101, name: "Mechi Municipality" }, { id: 102, name: "Ilam Municipality" }],
-    2: [{ id: 103, name: "Bhadrapur Municipality" }, { id: 104, name: "Chandragadhi Municipality" }],
-    3: [{ id: 105, name: "Kathmandu Metropolitan" }, { id: 106, name: "Lalitpur Metropolitan" }],
-    4: [{ id: 107, name: "Gorkha Municipality" }, { id: 108, name: "Tanahun Municipality" }],
-    5: [{ id: 109, name: "Tansen Municipality" }, { id: 110, name: "Palpa Municipality" }],
-    6: [{ id: 111, name: "Jumla Municipality" }, { id: 112, name: "Surkhet Municipality" }],
-    7: [{ id: 113, name: "Dhangadhi Municipality" }, { id: 114, name: "Bajhang Municipality" }],
-  };
-  return municipalityMap[districtId] || [];
-};
-
-export const getWards = async (
-  municipalityId: number
-): Promise<{ id: number; number: number }[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const wardCounts: Record<number, number> = {
-    101: 12,
-    102: 10,
-    103: 15,
-    104: 11,
-    105: 32,
-    106: 29,
-    107: 14,
-    108: 13,
-    109: 16,
-    110: 12,
-    111: 18,
-    112: 10,
-    113: 16,
-    114: 11,
-  };
-  const count = wardCounts[municipalityId] || 10;
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    number: i + 1,
-  }));
 };
 
 export const uploadDocuments = async (files: File[]): Promise<string[]> => {

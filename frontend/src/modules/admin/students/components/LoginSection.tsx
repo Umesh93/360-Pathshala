@@ -25,6 +25,8 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
     update("confirmPassword", password);
   };
 
+  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Login Account</h2>
@@ -45,33 +47,36 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
       {data.createLogin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Student Email</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Student Email (Optional)</label>
             <input
+              data-field="email"
               type="email"
               value={data.email}
               onChange={(e) => update("email", e.target.value)}
-              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+              className={fieldClass()}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Username</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Username (Optional)</label>
             <input
+              data-field="username"
               type="text"
               value={data.username}
               onChange={(e) => update("username", e.target.value)}
-              className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+              className={fieldClass()}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Password (Optional)</label>
             <div className="relative">
               <input
+                data-field="password"
                 type={showPassword ? "text" : "password"}
                 value={data.password}
                 onChange={(e) => update("password", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 pr-20 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <button
@@ -93,13 +98,14 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Confirm Password (Optional)</label>
             <div className="relative">
               <input
+                data-field="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 value={data.confirmPassword}
                 onChange={(e) => update("confirmPassword", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 pr-10 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
               <button
                 type="button"

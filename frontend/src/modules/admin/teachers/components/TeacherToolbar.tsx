@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, SlidersHorizontal, Download, Upload, RefreshCw } from "lucide-react";
+import { Search, SlidersHorizontal, Download, RefreshCw } from "lucide-react";
 
 interface TeacherToolbarProps {
   onSearch: (value: string) => void;

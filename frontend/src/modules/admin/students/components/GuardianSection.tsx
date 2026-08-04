@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import type { GuardianData } from "../schemas/student.schema";
+import RequiredLabel from "../../../../components/forms/RequiredLabel";
 
 interface GuardianSectionProps {
   data: GuardianData;
@@ -31,6 +32,9 @@ const GuardianSection: React.FC<GuardianSectionProps> = ({
     }
   };
 
+  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Parent / Guardian</h2>
@@ -60,52 +64,55 @@ const GuardianSection: React.FC<GuardianSectionProps> = ({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+              <RequiredLabel required>Father Name</RequiredLabel>
               <input
+                data-field="fatherName"
                 type="text"
                 value={data.fatherName}
                 onChange={(e) => update("fatherName", e.target.value)}
-                className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-                  errors.fatherName ? "border-red-500" : "border-gray-200"
-                }`}
+                className={fieldClass(errors.fatherName)}
+                aria-required="true"
+                aria-invalid={!!errors.fatherName}
               />
-              {errors.fatherName && <p className="mt-1 text-xs text-red-600">{errors.fatherName}</p>}
+              {errorText(errors.fatherName)}
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation (Optional)</label>
               <input
+                data-field="fatherOccupation"
                 type="text"
                 value={data.fatherOccupation}
                 onChange={(e) => update("fatherOccupation", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
+              <RequiredLabel required>Father Phone</RequiredLabel>
               <input
+                data-field="fatherPhone"
                 type="tel"
                 value={data.fatherPhone}
                 onChange={(e) => update("fatherPhone", e.target.value)}
-                className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-                  errors.fatherPhone ? "border-red-500" : "border-gray-200"
-                }`}
+                className={fieldClass(errors.fatherPhone)}
+                aria-required="true"
+                aria-invalid={!!errors.fatherPhone}
               />
-              {errors.fatherPhone && <p className="mt-1 text-xs text-red-600">{errors.fatherPhone}</p>}
+              {errorText(errors.fatherPhone)}
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
               <input
+                data-field="fatherEmail"
                 type="email"
                 value={data.fatherEmail}
                 onChange={(e) => update("fatherEmail", e.target.value)}
-                className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
-                  errors.fatherEmail ? "border-red-500" : "border-gray-200"
-                }`}
+                className={fieldClass(errors.fatherEmail)}
+                aria-invalid={!!errors.fatherEmail}
               />
-              {errors.fatherEmail && <p className="mt-1 text-xs text-red-600">{errors.fatherEmail}</p>}
+              {errorText(errors.fatherEmail)}
             </div>
           </div>
         </div>
@@ -134,42 +141,46 @@ const GuardianSection: React.FC<GuardianSectionProps> = ({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Mother Name (Optional)</label>
               <input
+                data-field="motherName"
                 type="text"
                 value={data.motherName}
                 onChange={(e) => update("motherName", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation (Optional)</label>
               <input
+                data-field="motherOccupation"
                 type="text"
                 value={data.motherOccupation}
                 onChange={(e) => update("motherOccupation", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Phone (Optional)</label>
               <input
+                data-field="motherPhone"
                 type="tel"
                 value={data.motherPhone}
                 onChange={(e) => update("motherPhone", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
               <input
+                data-field="motherEmail"
                 type="email"
                 value={data.motherEmail}
                 onChange={(e) => update("motherEmail", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
           </div>
@@ -219,60 +230,66 @@ const GuardianSection: React.FC<GuardianSectionProps> = ({
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Guardian Name</label>
               <input
+                data-field="guardianName"
                 type="text"
                 value={data.guardianName}
                 onChange={(e) => update("guardianName", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Relationship</label>
               <input
+                data-field="guardianRelationship"
                 type="text"
                 value={data.guardianRelationship}
                 onChange={(e) => update("guardianRelationship", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Occupation</label>
               <input
+                data-field="guardianOccupation"
                 type="text"
                 value={data.guardianOccupation}
                 onChange={(e) => update("guardianOccupation", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
               <input
+                data-field="guardianPhone"
                 type="tel"
                 value={data.guardianPhone}
                 onChange={(e) => update("guardianPhone", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
               <input
+                data-field="guardianEmail"
                 type="email"
                 value={data.guardianEmail}
                 onChange={(e) => update("guardianEmail", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
 
             <div className="sm:col-span-2 lg:col-span-3">
               <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
               <input
+                data-field="guardianAddress"
                 type="text"
                 value={data.guardianAddress}
                 onChange={(e) => update("guardianAddress", e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+                className={fieldClass()}
               />
             </div>
           </div>

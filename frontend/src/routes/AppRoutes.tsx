@@ -27,6 +27,9 @@ import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
 import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
 import SubjectFormPage from "../modules/admin/subjects/SubjectFormPage";
 import SubjectDetailPage from "../modules/admin/subjects/SubjectDetailPage";
+import GuardianListPage from "../modules/admin/guardians/pages/GuardianListPage";
+import GuardianDetailPage from "../modules/admin/guardians/pages/GuardianDetailPage";
+import GuardianFormPage from "../modules/admin/guardians/pages/GuardianFormPage";
 
 const AppRoutes = () => {
   return (
@@ -147,6 +150,38 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
             <AddTeacherPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/guardians"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <GuardianListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/guardians/add"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <GuardianFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/guardians/:id"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <GuardianDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/guardians/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <GuardianFormPage />
           </ProtectedRoute>
         }
       />

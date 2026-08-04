@@ -31,20 +31,6 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState("Student Photo");
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const files = Array.from(e.dataTransfer.files);
-      handleFiles(files);
-    },
-    [activeCategory]
-  );
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    handleFiles(files);
-  };
-
   const handleFiles = (files: File[]) => {
     const newFiles: FileItem[] = files.map((file) => ({
       file,
@@ -61,6 +47,20 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       documents: [...existing, ...newFiles],
       documentCategories: updatedCategories,
     });
+  };
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files);
+      handleFiles(files);
+    },
+    [activeCategory]
+  );
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    handleFiles(files);
   };
 
   const removeFile = (index: number) => {

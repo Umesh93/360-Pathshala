@@ -4,12 +4,23 @@ import type { MedicalData } from "../schemas/teacher.schema";
 interface TeacherMedicalSectionProps {
   data: MedicalData;
   onChange: (data: MedicalData) => void;
+  errors?: Record<string, string>;
 }
 
 const TeacherMedicalSection: React.FC<TeacherMedicalSectionProps> = ({
   data,
   onChange,
+  errors = {},
 }) => {
+  if (import.meta.env.DEV) console.debug("[TeacherWizard] Medical render");
+
+  React.useEffect(() => {
+    if (import.meta.env.DEV) console.debug("[TeacherWizard] Medical mount");
+    return () => {
+      if (import.meta.env.DEV) console.debug("[TeacherWizard] Medical unmount");
+    };
+  }, []);
+
   const update = (field: keyof MedicalData, value: string) => {
     onChange({ ...data, [field]: value });
   };
@@ -44,7 +55,6 @@ const TeacherMedicalSection: React.FC<TeacherMedicalSectionProps> = ({
             type="text"
             value={data.height}
             onChange={(e) => update("height", e.target.value)}
-            placeholder="e.g. 5'10&quot;"
             className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
           />
         </div>
@@ -55,7 +65,6 @@ const TeacherMedicalSection: React.FC<TeacherMedicalSectionProps> = ({
             type="text"
             value={data.weight}
             onChange={(e) => update("weight", e.target.value)}
-            placeholder="e.g. 70 kg"
             className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
           />
         </div>
@@ -91,23 +100,29 @@ const TeacherMedicalSection: React.FC<TeacherMedicalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Doctor Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact Name</label>
           <input
             type="text"
-            value={data.doctorName}
-            onChange={(e) => update("doctorName", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            value={data.emergencyContactName}
+            onChange={(e) => update("emergencyContactName", e.target.value)}
+            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
+              errors.emergencyContactName ? "border-red-500" : "border-gray-200"
+            }`}
           />
+          {errors.emergencyContactName && <p className="mt-1 text-xs text-red-600">{errors.emergencyContactName}</p>}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact Number</label>
           <input
             type="tel"
-            value={data.emergencyContact}
-            onChange={(e) => update("emergencyContact", e.target.value)}
-            className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"
+            value={data.emergencyContactNumber}
+            onChange={(e) => update("emergencyContactNumber", e.target.value)}
+            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${
+              errors.emergencyContactNumber ? "border-red-500" : "border-gray-200"
+            }`}
           />
+          {errors.emergencyContactNumber && <p className="mt-1 text-xs text-red-600">{errors.emergencyContactNumber}</p>}
         </div>
       </div>
     </div>
