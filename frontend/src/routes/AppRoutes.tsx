@@ -22,6 +22,10 @@ import TeacherDetailPage from "../modules/admin/teachers/pages/TeacherDetailPage
 import TeacherDashboard from "../pages/teacher/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
 import ParentDashboard from "../pages/parent/Dashboard";
+import AdminAttendance from "../pages/admin/Attendance";
+import TeacherAttendance from "../pages/teacher/Attendance";
+import StudentAttendance from "../pages/student/Attendance";
+import ParentAttendance from "../pages/parent/Attendance";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
 import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
@@ -86,6 +90,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/admin/attendance" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AdminAttendance /></ProtectedRoute>} />
       <Route
         path="/admin/students"
         element={
@@ -195,6 +200,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/teacher/attendance" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherAttendance /></ProtectedRoute>} />
 
       {/* Student Portal Routes */}
       <Route
@@ -205,6 +211,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/student/attendance" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentAttendance /></ProtectedRoute>} />
 
       {/* Parent / Guardian Portal Routes */}
       <Route
@@ -215,6 +222,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/parent/child-attendance" element={<ProtectedRoute allowedRoles={["PARENT"]}><ParentAttendance /></ProtectedRoute>} />
 
       {/* Unauthorized */}
       <Route path="/unauthorized" element={<h1>Unauthorized</h1>} />

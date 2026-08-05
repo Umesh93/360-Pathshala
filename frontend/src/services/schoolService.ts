@@ -1,6 +1,17 @@
 import api from "../config/axios";
 import type { School, ModuleOption } from "../types/School";
 
+interface SchoolSummaryResponse {
+  id: number; code: string; name: string; address?: string; email: string; phone?: string;
+  status?: School["status"]; modules?: string[]; adminUsername?: string; adminPassword?: string;
+}
+
+export interface SchoolPayload {
+  name: string; address: string; email: string; phone: string; modules: string[]; status: string; password?: string;
+}
+
+interface PlatformModuleResponse { code: string; name: string }
+
 export interface CreateSchoolResponse {
   id: number;
   schoolCode: string;
@@ -16,7 +27,7 @@ export const getSchools = async (): Promise<School[]> => {
   try {
     const response = await api.get("/saas/schools");
     console.log("[schoolService] getSchools response", response.data);
-    return response.data.map((school: any) => ({
+    return (response.data as SchoolSummaryResponse[]).map((school) => ({
       id: school.id,
       schoolId: school.code,
       schoolName: school.name,
@@ -37,12 +48,12 @@ export const getSchools = async (): Promise<School[]> => {
   }
 };
 
-export const createSchool = async (payload: any): Promise<CreateSchoolResponse> => {
+export const createSchool = async (payload: SchoolPayload): Promise<CreateSchoolResponse> => {
   const response = await api.post("/saas/schools", payload);
   return response.data;
 };
 
-export const updateSchool = async (id: number, payload: any): Promise<any> => {
+export const updateSchool = async (id: number, payload: SchoolPayload): Promise<SchoolSummaryResponse> => {
   const response = await api.put(`/saas/schools/${id}`, payload);
   return response.data;
 };
@@ -51,7 +62,7 @@ export const deleteSchool = async (id: number): Promise<void> => {
   await api.delete(`/saas/schools/${id}`);
 };
 
-export const toggleSchoolStatus = async (id: number, status: string): Promise<any> => {
+export const toggleSchoolStatus = async (id: number, status: string): Promise<SchoolSummaryResponse> => {
   const response = await api.patch(`/saas/schools/${id}/status`, { status });
   return response.data;
 };
@@ -83,10 +94,15 @@ export const getModules = async (): Promise<ModuleOption[]> => {
     NOTIFICATIONS: { code: "NOTIFICATIONS", name: "Notifications", price: 3000, isBase: false },
   };
 
-  return response.data.map((item: any) => moduleMap[item.code] || {
+  return (response.data as PlatformModuleResponse[]).map((item) => moduleMap[item.code] || {
     code: item.code,
     name: item.name,
     price: 0,
     isBase: false,
   });
+};
+
+export const getCurrentSchoolModuleCodes = async (): Promise<string[]> => {
+  const response = await api.get<Array<{ moduleCode: string; active: boolean }>>("/saas/school-modules/current");
+  return response.data.filter((module) => module.active).map((module) => module.moduleCode);
 };

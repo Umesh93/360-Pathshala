@@ -45,19 +45,19 @@ const SUPER_ADMIN_LINKS = [
 
 const ADMIN_LINKS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/students", label: "Students", icon: GraduationCap },
-  { to: "/admin/teachers", label: "Teachers", icon: UserCheck },
-  { to: "/admin/guardians", label: "Parents/Guardians", icon: Users },
   { to: "/admin/classes", label: "Classes", icon: School },
-  { to: "/admin/subjects", label: "Subjects", icon: BookOpen },
-  { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
-  { to: "/admin/examinations", label: "Examinations", icon: FileText },
-  { to: "/admin/assignments", label: "Assignments", icon: BookOpen },
-  { to: "/admin/fees", label: "Fee Management", icon: Wallet },
-  { to: "/admin/calendar", label: "Academic Calendar", icon: Calendar },
-  { to: "/admin/leaves", label: "Leaves", icon: CalendarClock },
+  { to: "/admin/subjects", label: "Subjects", icon: BookOpen, moduleCode: "SUBJECT_MANAGEMENT" },
+  { to: "/admin/students", label: "Students", icon: GraduationCap, moduleCode: "STUDENT_MANAGEMENT" },
+  { to: "/admin/teachers", label: "Teachers", icon: UserCheck, moduleCode: "TEACHER_MANAGEMENT" },
+  { to: "/admin/guardians", label: "Parents / Guardians", icon: Users, moduleCode: "PARENT_MANAGEMENT" },
+  { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck, moduleCode: "ATTENDANCE" },
+  { to: "/admin/examinations", label: "Examinations", icon: FileText, moduleCode: "EXAMINATION" },
+  { to: "/admin/assignments", label: "Assignments", icon: BookOpen, moduleCode: "ASSIGNMENT" },
+  { to: "/admin/fees", label: "Fee Management", icon: Wallet, moduleCode: "FEE_MANAGEMENT" },
+  { to: "/admin/calendar", label: "Academic Calendar", icon: Calendar, moduleCode: "ACADEMIC_CALENDAR" },
+  { to: "/admin/leaves", label: "Leaves", icon: CalendarClock, moduleCode: "LEAVE_MANAGEMENT" },
   { to: "/admin/certificates", label: "Certificates", icon: Award },
-  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3, moduleCode: "ANALYTICS_DASHBOARD" },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -150,7 +150,7 @@ export default function Sidebar({
 
   const filteredLinks =
     enabledModules && enabledModules.length > 0
-      ? links.filter((link) => enabledModules.includes(link.label))
+      ? links.filter((link) => !("moduleCode" in link) || enabledModules.includes(link.moduleCode))
       : links;
 
   const userLabel = getUserLabel(role);
@@ -190,9 +190,17 @@ export default function Sidebar({
 
       {/* Navigation + Logout */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {filteredLinks.map((link) => (
+        {filteredLinks.map((link) => {
+          const showAcademicHeading = role === "ADMIN" && link.to === "/admin/classes";
+          const showPeopleHeading = role === "ADMIN" && link.to === "/admin/students";
+          return (
+          <div key={link.to}>
+          {(showAcademicHeading || showPeopleHeading) && !collapsed && (
+            <p className="px-4 pb-2 pt-4 text-xs font-semibold uppercase text-gray-400">
+              {showAcademicHeading ? "Academic" : "People"}
+            </p>
+          )}
           <NavLink
-            key={link.to}
             to={link.to}
             className={({ isActive }) =>
               `block rounded-xl mb-2 transition-all ${
@@ -214,7 +222,9 @@ export default function Sidebar({
               {!collapsed && <ChevronRight size={16} />}
             </div>
           </NavLink>
-        ))}
+          </div>
+          );
+        })}
 
         <button
           onClick={handleLogout}

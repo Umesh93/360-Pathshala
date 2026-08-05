@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Copy, Check } from "lucide-react";
-import SchoolFormFields, { MODULE_OPTIONS, generatePassword } from "./SchoolFormFields";
+import SchoolFormFields, { generatePassword } from "./SchoolFormFields";
 import { useToast } from "../modules/admin/students/components/Toast";
 import { createSchool, updateSchool } from "../services/schoolService";
-import type { ModuleOption } from "../types/School";
+import type { SchoolPayload } from "../services/schoolService";
 import type { CreateSchoolResponse } from "../services/schoolService";
 
 interface AddSchoolFormProps {
@@ -99,7 +99,7 @@ export default function AddSchoolForm({
     try {
       let response;
       if (isEdit && editSchool) {
-        const updatePayload: any = {
+        const updatePayload: SchoolPayload = {
           name: schoolName,
           address,
           email,
@@ -127,10 +127,11 @@ export default function AddSchoolForm({
         showToast("School Registered Successfully", "success");
       }
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const requestError = error as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        error.response?.data?.message ||
-        error.message ||
+        requestError.response?.data?.message ||
+        requestError.message ||
         "Failed to save school";
       showToast(message, "error");
     } finally {

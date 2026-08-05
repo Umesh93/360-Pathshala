@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Copy, Check, RefreshCw, Eye, EyeOff } from "lucide-react";
 import MultiSelect from "./MultiSelect";
-import { useToast } from "../modules/admin/students/components/Toast";
 import type { ModuleOption } from "../types/School";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const MODULE_OPTIONS: ModuleOption[] = [
   {
     code: "STUDENT_MANAGEMENT",
@@ -24,6 +24,9 @@ export const MODULE_OPTIONS: ModuleOption[] = [
     price: 3000,
     isBase: false,
   },
+  { code: "TEACHER_MANAGEMENT", name: "Teacher Management", price: 3000, isBase: false },
+  { code: "SUBJECT_MANAGEMENT", name: "Subject Management", price: 3000, isBase: false },
+  { code: "PARENT_MANAGEMENT", name: "Parent / Guardian Management", price: 3000, isBase: false },
   {
     code: "STUDENT_DASHBOARD",
     name: "Student Dashboard",
@@ -37,6 +40,8 @@ export const MODULE_OPTIONS: ModuleOption[] = [
     isBase: false,
   },
   { code: "ACCOUNTS", name: "Accounts", price: 3000, isBase: false },
+  { code: "FEE_MANAGEMENT", name: "Fee Management", price: 3000, isBase: false },
+  { code: "ANALYTICS_DASHBOARD", name: "Analytics Dashboard", price: 3000, isBase: false },
   { code: "LIBRARY", name: "Library", price: 3000, isBase: false },
   { code: "TRANSPORT", name: "Transport", price: 3000, isBase: false },
   { code: "HOSTEL", name: "Hostel", price: 3000, isBase: false },
@@ -59,6 +64,7 @@ export const MODULE_OPTIONS: ModuleOption[] = [
   { code: "NOTIFICATIONS", name: "Notifications", price: 3000, isBase: false },
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const generatePassword = () => {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
@@ -121,7 +127,6 @@ export default function SchoolFormFields({
   hideCredentials = false,
   isEdit = false,
 }: SchoolFormFieldsProps) {
-  const { showToast } = useToast();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
 

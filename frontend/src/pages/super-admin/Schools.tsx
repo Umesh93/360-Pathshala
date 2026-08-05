@@ -149,7 +149,7 @@ export default function Schools() {
   const [error, setError] = useState("");
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<School | null>(null);
-  const [_deleting, setDeleting] = useState(false);
+  const [, setDeleting] = useState(false);
 
   const loadSchools = () => {
     return getSchools()
