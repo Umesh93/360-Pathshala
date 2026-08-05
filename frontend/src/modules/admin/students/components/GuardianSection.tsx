@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
-import type { GuardianData } from "../schemas/student.schema";
+import { useRef } from "react";
 import RequiredLabel from "../../../../components/forms/RequiredLabel";
+import type { GuardianData } from "../schemas/student.schema";
 
 interface GuardianSectionProps {
   data: GuardianData;
@@ -8,295 +8,163 @@ interface GuardianSectionProps {
   errors?: Record<string, string>;
 }
 
-const GuardianSection: React.FC<GuardianSectionProps> = ({
-  data,
-  onChange,
-  errors = {},
-}) => {
-  const update = (field: keyof GuardianData, value: string | boolean) => {
-    onChange({ ...data, [field]: value });
-  };
+const fieldClass = (error?: string, readOnly = false) => `h-10 w-full rounded-xl border px-3 text-sm outline-none ${readOnly ? "border-gray-200 bg-gray-50 text-gray-600" : "focus:border-[#234A91] focus:ring-2 focus:ring-blue-100"} ${error ? "border-red-500" : "border-gray-200"}`;
+const ErrorText = ({ error }: { error?: string }) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
+const fullName = (...names: (string | undefined)[]) => names.map((name) => name?.trim()).filter(Boolean).join(" ");
+
+export default function GuardianSection({ data, onChange, errors = {} }: GuardianSectionProps) {
   const fatherPhotoRef = useRef<HTMLInputElement>(null);
   const motherPhotoRef = useRef<HTMLInputElement>(null);
-  const guardianPhotoRef = useRef<HTMLInputElement>(null);
 
-  const handlePhotoChange = (ref: React.RefObject<HTMLInputElement | null>, field: "fatherPhoto" | "motherPhoto" | "guardianPhoto") => {
-    const file = ref.current?.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        update(field, reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const update = <K extends keyof GuardianData>(field: K, value: GuardianData[K]) => {
+    const next = { ...data, [field]: value };
+    if (data.guardianSelection === "father" && ["fatherFirstName", "fatherMiddleName", "fatherLastName", "fatherPhone", "fatherEmail", "fatherOccupation", "fatherCitizenship"].includes(field)) {
+      next.guardianName = fullName(next.fatherFirstName, next.fatherMiddleName, next.fatherLastName);
+      next.guardianRelationship = "Father";
+      next.guardianPhone = next.fatherPhone || "";
+      next.guardianEmail = next.fatherEmail || "";
+      next.guardianOccupation = next.fatherOccupation || "";
+      next.guardianCitizenship = next.fatherCitizenship || "";
     }
+    if (data.guardianSelection === "mother" && ["motherFirstName", "motherMiddleName", "motherLastName", "motherPhone", "motherEmail", "motherOccupation", "motherCitizenship"].includes(field)) {
+      next.guardianName = fullName(next.motherFirstName, next.motherMiddleName, next.motherLastName);
+      next.guardianRelationship = "Mother";
+      next.guardianPhone = next.motherPhone || "";
+      next.guardianEmail = next.motherEmail || "";
+      next.guardianOccupation = next.motherOccupation || "";
+      next.guardianCitizenship = next.motherCitizenship || "";
+    }
+    onChange(next);
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const selectGuardian = (selection: GuardianData["guardianSelection"]) => {
+    if (selection === "father") {
+      onChange({
+        ...data,
+        guardianSelection: selection,
+        guardianName: fullName(data.fatherFirstName, data.fatherMiddleName, data.fatherLastName),
+        guardianRelationship: "Father",
+        guardianPhone: data.fatherPhone || "",
+        guardianEmail: data.fatherEmail || "",
+        guardianOccupation: data.fatherOccupation || "",
+        guardianCitizenship: data.fatherCitizenship || "",
+        guardianAddress: "",
+      });
+      return;
+    }
+    if (selection === "mother") {
+      onChange({
+        ...data,
+        guardianSelection: selection,
+        guardianName: fullName(data.motherFirstName, data.motherMiddleName, data.motherLastName),
+        guardianRelationship: "Mother",
+        guardianPhone: data.motherPhone || "",
+        guardianEmail: data.motherEmail || "",
+        guardianOccupation: data.motherOccupation || "",
+        guardianCitizenship: data.motherCitizenship || "",
+        guardianAddress: "",
+      });
+      return;
+    }
+    onChange({
+      ...data,
+      guardianSelection: selection,
+      guardianName: "",
+      guardianRelationship: "",
+      guardianPhone: "",
+      guardianEmail: "",
+      guardianAddress: "",
+      guardianOccupation: "",
+      guardianCitizenship: "",
+    });
+  };
 
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Parent / Guardian</h2>
+  const readPhoto = (field: "fatherPhoto" | "motherPhoto", file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => update(field, String(reader.result));
+    reader.readAsDataURL(file);
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Father Information</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col items-center">
-              <div
-                onClick={() => fatherPhotoRef.current?.click()}
-                className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#234A91] overflow-hidden"
-              >
-                {data.fatherPhoto ? (
-                  <img src={data.fatherPhoto} alt="Father" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs text-gray-500 text-center px-2">Father Photo</span>
-                )}
-              </div>
-              <input
-                ref={fatherPhotoRef}
-                type="file"
-                accept="image/*"
-                onChange={() => handlePhotoChange(fatherPhotoRef, "fatherPhoto")}
-                className="hidden"
-              />
-            </div>
+  const textField = (field: keyof GuardianData, label: string, required = false, type = "text", readOnly = false) => <div>
+    <RequiredLabel required={required}>{label}</RequiredLabel>
+    <input
+      data-field={field}
+      type={type}
+      value={String(data[field] || "")}
+      onChange={(event) => update(field, event.target.value)}
+      className={fieldClass(errors[field], readOnly)}
+      required={required}
+      readOnly={readOnly}
+      aria-invalid={!!errors[field]}
+    />
+    <ErrorText error={errors[field]} />
+  </div>;
 
-            <div>
-              <RequiredLabel required>Father Name</RequiredLabel>
-              <input
-                data-field="fatherName"
-                type="text"
-                value={data.fatherName}
-                onChange={(e) => update("fatherName", e.target.value)}
-                className={fieldClass(errors.fatherName)}
-                aria-required="true"
-                aria-invalid={!!errors.fatherName}
-              />
-              {errorText(errors.fatherName)}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation (Optional)</label>
-              <input
-                data-field="fatherOccupation"
-                type="text"
-                value={data.fatherOccupation}
-                onChange={(e) => update("fatherOccupation", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <RequiredLabel required>Father Phone</RequiredLabel>
-              <input
-                data-field="fatherPhone"
-                type="tel"
-                value={data.fatherPhone}
-                onChange={(e) => update("fatherPhone", e.target.value)}
-                className={fieldClass(errors.fatherPhone)}
-                aria-required="true"
-                aria-invalid={!!errors.fatherPhone}
-              />
-              {errorText(errors.fatherPhone)}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
-              <input
-                data-field="fatherEmail"
-                type="email"
-                value={data.fatherEmail}
-                onChange={(e) => update("fatherEmail", e.target.value)}
-                className={fieldClass(errors.fatherEmail)}
-                aria-invalid={!!errors.fatherEmail}
-              />
-              {errorText(errors.fatherEmail)}
-            </div>
-          </div>
+  return <div className="space-y-4">
+    <section className="bg-white rounded-xl p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">Father Information</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <RequiredLabel>Photo</RequiredLabel>
+          <button type="button" onClick={() => fatherPhotoRef.current?.click()} className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-gray-300 text-xs text-gray-500">
+            {data.fatherPhoto ? <img src={String(data.fatherPhoto)} alt="Father" className="h-full w-full object-cover" /> : "Choose Photo"}
+          </button>
+          <input ref={fatherPhotoRef} type="file" accept="image/*" onChange={(event) => readPhoto("fatherPhoto", event.target.files?.[0])} className="hidden" />
         </div>
-
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Mother Information</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col items-center">
-              <div
-                onClick={() => motherPhotoRef.current?.click()}
-                className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#234A91] overflow-hidden"
-              >
-                {data.motherPhoto ? (
-                  <img src={data.motherPhoto} alt="Mother" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs text-gray-500 text-center px-2">Mother Photo</span>
-                )}
-              </div>
-              <input
-                ref={motherPhotoRef}
-                type="file"
-                accept="image/*"
-                onChange={() => handlePhotoChange(motherPhotoRef, "motherPhoto")}
-                className="hidden"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Mother Name (Optional)</label>
-              <input
-                data-field="motherName"
-                type="text"
-                value={data.motherName}
-                onChange={(e) => update("motherName", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation (Optional)</label>
-              <input
-                data-field="motherOccupation"
-                type="text"
-                value={data.motherOccupation}
-                onChange={(e) => update("motherOccupation", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Phone (Optional)</label>
-              <input
-                data-field="motherPhone"
-                type="tel"
-                value={data.motherPhone}
-                onChange={(e) => update("motherPhone", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
-              <input
-                data-field="motherEmail"
-                type="email"
-                value={data.motherEmail}
-                onChange={(e) => update("motherEmail", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-          </div>
-        </div>
+        {textField("fatherFirstName", "First Name", true)}
+        {textField("fatherMiddleName", "Middle Name")}
+        {textField("fatherLastName", "Last Name", true)}
+        {textField("fatherOccupation", "Occupation")}
+        {textField("fatherPhone", "Phone", true, "tel")}
+        {textField("fatherEmail", "Email", false, "email")}
+        {textField("fatherCitizenship", "Citizenship")}
       </div>
+    </section>
 
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Guardian Selection</h3>
-        <div className="flex gap-4 mb-4">
-          {(["father", "mother", "other"] as const).map((option) => (
-            <label key={option} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="guardianSelection"
-                value={option}
-                checked={data.guardianSelection === option}
-                onChange={(e) => update("guardianSelection", e.target.value)}
-                className="w-4 h-4 text-[#234A91] border-gray-300 focus:ring-[#234A91]"
-              />
-              <span className="text-sm text-gray-700 capitalize">{option}</span>
-            </label>
-          ))}
+    <section className="bg-white rounded-xl p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">Mother Information <span className="text-sm font-normal text-gray-500">(Optional)</span></h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <RequiredLabel>Photo</RequiredLabel>
+          <button type="button" onClick={() => motherPhotoRef.current?.click()} className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-gray-300 text-xs text-gray-500">
+            {data.motherPhoto ? <img src={String(data.motherPhoto)} alt="Mother" className="h-full w-full object-cover" /> : "Choose Photo"}
+          </button>
+          <input ref={motherPhotoRef} type="file" accept="image/*" onChange={(event) => readPhoto("motherPhoto", event.target.files?.[0])} className="hidden" />
         </div>
-
-        {data.guardianSelection === "other" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex flex-col items-center">
-              <div
-                onClick={() => guardianPhotoRef.current?.click()}
-                className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#234A91] overflow-hidden"
-              >
-                {data.guardianPhoto ? (
-                  <img src={data.guardianPhoto} alt="Guardian" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs text-gray-500 text-center px-2">Guardian Photo</span>
-                )}
-              </div>
-              <input
-                ref={guardianPhotoRef}
-                type="file"
-                accept="image/*"
-                onChange={() => handlePhotoChange(guardianPhotoRef, "guardianPhoto")}
-                className="hidden"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Guardian Name</label>
-              <input
-                data-field="guardianName"
-                type="text"
-                value={data.guardianName}
-                onChange={(e) => update("guardianName", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Relationship</label>
-              <input
-                data-field="guardianRelationship"
-                type="text"
-                value={data.guardianRelationship}
-                onChange={(e) => update("guardianRelationship", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Occupation</label>
-              <input
-                data-field="guardianOccupation"
-                type="text"
-                value={data.guardianOccupation}
-                onChange={(e) => update("guardianOccupation", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-              <input
-                data-field="guardianPhone"
-                type="tel"
-                value={data.guardianPhone}
-                onChange={(e) => update("guardianPhone", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-              <input
-                data-field="guardianEmail"
-                type="email"
-                value={data.guardianEmail}
-                onChange={(e) => update("guardianEmail", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
-              <input
-                data-field="guardianAddress"
-                type="text"
-                value={data.guardianAddress}
-                onChange={(e) => update("guardianAddress", e.target.value)}
-                className={fieldClass()}
-              />
-            </div>
-          </div>
-        )}
+        {textField("motherFirstName", "First Name")}
+        {textField("motherMiddleName", "Middle Name")}
+        {textField("motherLastName", "Last Name")}
+        {textField("motherOccupation", "Occupation")}
+        {textField("motherPhone", "Phone", false, "tel")}
+        {textField("motherEmail", "Email", false, "email")}
+        {textField("motherCitizenship", "Citizenship")}
       </div>
-    </div>
-  );
-};
+    </section>
 
-export default GuardianSection;
+    <section className="bg-white rounded-xl p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">Guardian Selection</h2>
+      <div data-field="guardianSelection" className={`flex flex-wrap gap-6 rounded-xl border p-4 ${errors.guardianSelection ? "border-red-500" : "border-gray-200"}`}>
+        {(["father", "mother", "other"] as const).map((selection) => <label key={selection} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+          <input type="radio" name="guardianSelection" value={selection} checked={data.guardianSelection === selection} onChange={() => selectGuardian(selection)} className="h-4 w-4 text-[#234A91]" />
+          <span className="capitalize">{selection}</span>
+        </label>)}
+      </div>
+      <ErrorText error={errors.guardianSelection} />
+
+      {data.guardianSelection && <div className="mt-6">
+        <h3 className="mb-4 text-sm font-semibold uppercase text-gray-700">Guardian Information</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {textField("guardianName", "Guardian Name", data.guardianSelection === "other", "text", data.guardianSelection !== "other")}
+          {textField("guardianRelationship", "Relationship", data.guardianSelection === "other", "text", data.guardianSelection !== "other")}
+          {textField("guardianPhone", "Phone", data.guardianSelection === "other", "tel", data.guardianSelection !== "other")}
+          {textField("guardianEmail", "Email", false, "email", data.guardianSelection !== "other")}
+          {data.guardianSelection === "other" && textField("guardianAddress", "Address")}
+          {data.guardianSelection === "other" && textField("guardianOccupation", "Occupation")}
+          {data.guardianSelection === "other" && textField("guardianCitizenship", "Citizenship")}
+        </div>
+      </div>}
+    </section>
+  </div>;
+}

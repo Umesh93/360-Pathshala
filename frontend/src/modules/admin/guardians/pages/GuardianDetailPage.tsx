@@ -1,169 +1,44 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../../../layouts/AdminLayout";
-import { formatGuardianAddress, getGuardian, getChildren, linkStudent, unlinkStudent, getStudentsForLinking } from "../services/guardian.service";
+import { decodeGuardianAddress, getGuardian, getChildren } from "../services/guardian.service";
 import type { Guardian, Child } from "../types/guardian.types";
 import GuardianStatusBadge from "../components/GuardianStatusBadge";
-import ConfirmDialog from "../../../../components/feedback/ConfirmDialog";
 import { useToast } from "../../students/components/Toast";
 
+const value = (item: unknown) => String(item || "-");
+const dateTime = (item?: string) => item ? new Date(item).toLocaleString() : "-";
+const Card = ({ title, fields }: { title: string; fields: [string, unknown][] }) => <section className="bg-white rounded-xl p-5 shadow-sm"><h2 className="font-semibold text-gray-800 mb-4">{title}</h2><dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">{fields.map(([label, item]) => <div key={label}><dt className="text-xs uppercase text-gray-500">{label}</dt><dd className="mt-1 text-sm font-medium text-gray-800 break-words">{value(item)}</dd></div>)}</dl></section>;
+
 export default function GuardianDetailPage() {
-  const { id } = useParams();
-  const guardianId = Number(id);
+  const guardianId = Number(useParams().id);
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [guardian, setGuardian] = useState<Guardian>();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const [students, setStudents] = useState<{ id: number; admissionNo: string; name: string }[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(0);
-  const [unlinkId, setUnlinkId] = useState<number>();
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
-    try {
-      const [g, c, s] = await Promise.all([getGuardian(guardianId), getChildren(guardianId), getStudentsForLinking()]);
-      setGuardian(g);
-      setChildren(c);
-      setStudents(s);
-    } catch {
-      showToast("Failed to load guardian", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, [guardianId]);
-
-  const handleLink = async () => {
-    if (!selectedStudentId) {
-      showToast("Select a student", "error");
-      return;
-    }
-    try {
-      await linkStudent(guardianId, { studentId: selectedStudentId });
-      showToast("Student linked successfully", "success");
-      setSelectedStudentId(0);
-      await load();
-    } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to link student", "error");
-    }
-  };
-
-  const handleUnlink = async () => {
-    if (!unlinkId) return;
-    try {
-      await unlinkStudent(guardianId, unlinkId);
-      showToast("Student unlinked successfully", "success");
-      setUnlinkId(undefined);
-      await load();
-    } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to unlink student", "error");
-    }
-  };
-
-  if (loading) {
-    return <AdminLayout><div className="p-8">Loading guardian...</div></AdminLayout>;
-  }
-
-  if (!guardian) {
-    return <AdminLayout><div className="p-8 text-red-600">Guardian not found</div></AdminLayout>;
-  }
-
-  const fields = [
-    ["Guardian Name", guardian.fullName],
-    ["Relationship", guardian.relationship],
-    ["Occupation", guardian.occupation],
-    ["Phone", guardian.phone],
-    ["Email", guardian.email],
-    ["Address", formatGuardianAddress(guardian.address)],
-    ["Communication Preference", guardian.communicationPreference],
-    ["Emergency Contact", guardian.emergencyContactPerson],
-    ["Emergency Number", guardian.emergencyContactNumber],
-    ["Emergency Relationship", guardian.emergencyContactRelationship],
-    ["Father Name", guardian.fatherName],
-    ["Mother Name", guardian.motherName],
-    ["Status", guardian.status],
-  ];
-
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Guardian Profile</h1>
-            <p className="text-gray-500">{guardian.fullName}</p>
-          </div>
-          <button onClick={() => navigate(`/admin/guardians/${guardian.id}/edit`)} className="px-5 py-2 rounded-xl bg-[#234A91] text-white">
-            Edit Guardian
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            ["Children", guardian.childrenCount],
-            ["Status", guardian.status],
-            ["Created", new Date(guardian.createdAt).toLocaleDateString()],
-            ["Updated", new Date(guardian.updatedAt).toLocaleDateString()],
-          ].map(([label, value]) => (
-            <div key={String(label)} className="bg-white rounded-xl p-4 shadow-sm">
-              <p className="text-xs uppercase text-gray-500">{label}</p>
-              <p className="mt-1 font-medium text-gray-800">{String(value || "-")}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {fields.map(([label, value]) => (
-            <div key={String(label)} className="bg-white rounded-xl p-4 shadow-sm">
-              <p className="text-xs uppercase text-gray-500">{label}</p>
-              <p className="mt-1 font-medium text-gray-800">{String(value || "-")}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-xl p-5 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Children ({children.length})</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <select value={selectedStudentId || ""} onChange={(event) => setSelectedStudentId(Number(event.target.value))} className="h-10 border border-gray-200 rounded-xl px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100">
-              <option value={0}>Select Student</option>
-              {students.map((s) => (
-                <option key={s.id} value={s.id}>{s.admissionNo} - {s.name}</option>
-              ))}
-            </select>
-            <button onClick={handleLink} className="h-10 rounded-xl bg-[#234A91] text-white">Link Student</button>
-          </div>
-          <div className="space-y-2">
-            {children.map((child) => (
-              <div key={child.id} className="flex justify-between border rounded-xl p-3">
-                <div>
-                  <p className="font-medium">{child.firstName} {child.lastName}</p>
-                  <p className="text-sm text-gray-500">{child.className} - {child.sectionName} | {child.admissionNumber}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <GuardianStatusBadge status={child.status} />
-                  <button onClick={() => setUnlinkId(child.id)} className="text-red-600 text-sm">Unlink</button>
-                </div>
-              </div>
-            ))}
-            {children.length === 0 && <p className="text-gray-500 text-sm">No children linked to this guardian.</p>}
-          </div>
-        </div>
-
-        <ConfirmDialog
-          open={unlinkId !== undefined}
-          title="Unlink Student"
-          description="This will remove the guardian link from this student."
-          confirmLabel="Unlink"
-          variant="destructive"
-          onConfirm={handleUnlink}
-          onCancel={() => setUnlinkId(undefined)}
-        />
-      </div>
-    </AdminLayout>
-  );
+    try { const [record, linkedChildren] = await Promise.all([getGuardian(guardianId), getChildren(guardianId)]); setGuardian(record); setChildren(linkedChildren); }
+    catch { showToast("Failed to load guardian", "error"); }
+    finally { setLoading(false); }
+  }, [guardianId, showToast]);
+  useEffect(() => { void Promise.resolve().then(load); }, [load]);
+  if (loading) return <AdminLayout><div className="p-8 text-gray-600">Loading guardian...</div></AdminLayout>;
+  if (!guardian) return <AdminLayout><div className="p-8 text-red-600">Guardian not found</div></AdminLayout>;
+  const address = decodeGuardianAddress(guardian.address);
+  return <AdminLayout><div className="space-y-6">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div className="flex items-center gap-4">{guardian.photo ? <img src={guardian.photo} alt="" className="h-16 w-16 rounded-full object-cover" /> : <div className="h-16 w-16 rounded-full bg-blue-50 text-[#234A91] flex items-center justify-center text-xl font-semibold">{guardian.firstName?.[0] || guardian.fullName[0]}</div>}<div><p className="text-sm font-medium text-[#234A91]">{guardian.guardianCode}</p><h1 className="text-2xl md:text-3xl font-bold text-gray-800">{guardian.fullName}</h1><div className="mt-1"><GuardianStatusBadge status={guardian.status} /></div></div></div><button onClick={() => navigate(`/admin/guardians/${guardian.id}/edit`)} className="px-5 py-2 rounded-xl bg-[#234A91] text-white">Edit Guardian</button></div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{[["Children", guardian.childrenCount], ["Relationship", guardian.relationship], ["Occupation", guardian.occupation], ["Preference", guardian.communicationPreference]].map(([label, item]) => <div key={String(label)} className="bg-white rounded-xl p-4 shadow-sm"><p className="text-xs uppercase text-gray-500">{label}</p><p className="mt-1 font-medium text-gray-800">{value(item)}</p></div>)}</div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <Card title="Guardian Information" fields={[["Guardian ID", guardian.id], ["Guardian Code", guardian.guardianCode], ["Full Name", guardian.fullName], ["Relationship", guardian.relationship], ["Gender", guardian.gender], ["Date of Birth", guardian.dateOfBirth], ["Nationality", guardian.nationality], ["Citizenship No.", guardian.citizenshipNumber]]} />
+      <Card title="Contact" fields={[["Mobile", guardian.mobile || guardian.phone], ["Alternate Phone", guardian.alternatePhone], ["Email", guardian.email], ["Emergency Contact", guardian.emergencyContactPerson], ["Emergency Number", guardian.emergencyContactNumber], ["Emergency Relationship", guardian.emergencyContactRelationship]]} />
+      <Card title="Occupation" fields={[["Occupation", guardian.occupation], ["Education", guardian.education], ["Employer", guardian.employer], ["Organization", guardian.organization], ["Office Address", guardian.officeAddress], ["Annual Income", guardian.annualIncome]]} />
+      <Card title="Address" fields={[["Current Province", address.currentProvinceName || guardian.province || address.currentProvince], ["Current District", address.currentDistrictName || guardian.district || address.currentDistrict], ["Municipality", address.currentMunicipality], ["Ward", address.currentWard], ["Street/Tole", address.currentStreet], ["Permanent same as current", address.permanentSameAsCurrent ? "Yes" : "No"]]} />
+      <Card title="Communication Preference" fields={[["Preferred Method", guardian.communicationPreference], ["Preferred Language", guardian.preferredLanguage]]} />
+      <Card title="Documents & Notes" fields={[["Document Type", guardian.documentType], ["Document Number", guardian.documentNumber], ["Issued Date", guardian.documentIssuedDate], ["Expiry Date", guardian.documentExpiryDate], ["Notes", guardian.notes]]} />
+    </div>
+    <section className="bg-white rounded-xl p-5 shadow-sm"><h2 className="font-semibold mb-4">Children ({children.length})</h2><div className="overflow-x-auto"><table className="w-full min-w-[760px]"><thead><tr className="border-b border-gray-200">{["Name", "Admission No.", "Class", "Section", "Roll", "Status"].map((heading) => <th key={heading} className="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">{heading}</th>)}</tr></thead><tbody className="divide-y divide-gray-100">{children.map((child) => { const href = `/admin/students/${child.id}`; return <tr key={child.id} className="hover:bg-blue-50/40"><td className="p-0"><Link to={href} className="block px-3 py-4 font-medium text-[#234A91] hover:underline">{child.firstName} {child.lastName}</Link></td><td className="p-0"><Link to={href} className="block px-3 py-4 text-sm text-gray-700">{value(child.admissionNumber)}</Link></td><td className="p-0"><Link to={href} className="block px-3 py-4 text-sm text-gray-700">{value(child.className)}</Link></td><td className="p-0"><Link to={href} className="block px-3 py-4 text-sm text-gray-700">{value(child.sectionName)}</Link></td><td className="p-0"><Link to={href} className="block px-3 py-4 text-sm text-gray-700">{value(child.rollNumber)}</Link></td><td className="p-0"><Link to={href} className="block px-3 py-4"><GuardianStatusBadge status={child.status} /></Link></td></tr>; })}</tbody></table>{children.length === 0 && <p className="py-4 text-sm text-gray-500">No children linked to this guardian.</p>}</div></section>
+    <section className="bg-white rounded-xl p-5 shadow-sm"><h2 className="font-semibold mb-4">Activity Timeline</h2><ol className="space-y-4 border-l-2 border-blue-100 ml-2 pl-5"><li><p className="font-medium text-sm">Guardian record created</p><p className="text-xs text-gray-500">{dateTime(guardian.createdAt)}{guardian.createdBy ? ` by user ${guardian.createdBy}` : ""}</p></li><li><p className="font-medium text-sm">Guardian record last updated</p><p className="text-xs text-gray-500">{dateTime(guardian.updatedAt)}{guardian.updatedBy ? ` by user ${guardian.updatedBy}` : ""}</p></li></ol></section>
+  </div></AdminLayout>;
 }

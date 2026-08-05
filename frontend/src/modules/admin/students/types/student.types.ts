@@ -11,7 +11,6 @@ export interface Student {
   className: string;
   sectionId?: number;
   sectionName: string;
-  guardianId?: number;
   guardianName: string;
   gender: "male" | "female" | "other";
   dob: string;
@@ -66,7 +65,6 @@ export interface StudentResponse {
   status: string | null;
   classId: number | null;
   sectionId: number | null;
-  guardianId: number | null;
   className: string | null;
   sectionName: string | null;
   guardianName: string | null;
@@ -87,6 +85,9 @@ export interface StudentDetailsResponse {
   academicYear: string | null; medium: string | null; admissionDate: string | null; house: string | null; scholarship: string | null;
   middleName: string | null; bloodGroup: string | null; religion: string | null; caste: string | null; nationality: string | null; motherTongue: string | null;
   studentPhone: string | null; studentEmail: string | null; citizenshipNumber: string | null; emisId: string | null; studentIdBarcode: string | null; photo: string | null;
+  fatherFirstName: string | null; fatherMiddleName: string | null; fatherLastName: string | null; fatherOccupation: string | null; fatherPhone: string | null; fatherEmail: string | null; fatherCitizenshipNumber: string | null; fatherPhoto: string | null;
+  motherFirstName: string | null; motherMiddleName: string | null; motherLastName: string | null; motherOccupation: string | null; motherPhone: string | null; motherEmail: string | null; motherCitizenshipNumber: string | null; motherPhoto: string | null;
+  guardianSelection: "father" | "mother" | "other" | null; guardianName: string | null; guardianRelationship: string | null; guardianPhone: string | null; guardianEmail: string | null; guardianAddress: string | null; guardianOccupation: string | null; guardianCitizenshipNumber: string | null;
   medicalBloodGroup: string | null; height: string | null; weight: string | null; medicalConditions: string | null; medicalConditionsOther: string | null; allergies: string | null; disability: string | null;
   emergencyContactPerson: string | null; emergencyContactNumber: string | null; previousSchool: string | null; previousAddress: string | null; previousClass: string | null;
   transferCertificateNumber: string | null; reasonForLeaving: string | null; hasHostel: boolean | null; hostel: string | null; roomNumber: string | null; bedNumber: string | null;
@@ -116,6 +117,20 @@ export interface StudentRequest {
   guardianPhone?: unknown;
   guardianEmail?: unknown;
   guardianAddress?: unknown;
+  fatherFirstName?: unknown;
+  fatherMiddleName?: unknown;
+  fatherLastName?: unknown;
+  fatherPhoto?: unknown;
+  fatherCitizenshipNumber?: unknown;
+  motherFirstName?: unknown;
+  motherMiddleName?: unknown;
+  motherLastName?: unknown;
+  motherPhoto?: unknown;
+  motherCitizenshipNumber?: unknown;
+  guardianSelection?: unknown;
+  guardianRelationship?: unknown;
+  guardianOccupation?: unknown;
+  guardianCitizenshipNumber?: unknown;
   academicYear?: unknown; medium?: unknown; admissionDate?: unknown; house?: unknown; status?: unknown; scholarship?: unknown; middleName?: unknown;
   bloodGroup?: unknown; religion?: unknown; caste?: unknown; nationality?: unknown; motherTongue?: unknown; studentPhone?: unknown; studentEmail?: unknown;
   citizenshipNumber?: unknown; emisId?: unknown; studentIdBarcode?: unknown; photo?: unknown; fatherOccupation?: unknown; fatherPhone?: unknown; fatherEmail?: unknown;
@@ -128,22 +143,30 @@ export interface StudentRequest {
 export interface StudentEditLookups {
   classes: { id: number; name: string }[];
   sections: { id: number; name: string; classId: number }[];
-  guardians: { id: number; name: string }[];
   provinces: { id: number; name: string }[];
   districts: { id: number; name: string; provinceId: number }[];
 }
 
 export interface Guardian {
   fatherName?: string;
+  fatherFirstName?: string;
+  fatherMiddleName?: string;
+  fatherLastName?: string;
   motherName?: string;
+  motherFirstName?: string;
+  motherMiddleName?: string;
+  motherLastName?: string;
   guardianName?: string;
+  guardianSelection?: "father" | "mother" | "other";
   relationship: string;
   occupation?: string;
   phone: string;
   email?: string;
   address: string;
   fatherOccupation?: string; fatherPhone?: string; fatherEmail?: string;
+  fatherPhoto?: string; fatherCitizenship?: string;
   motherOccupation?: string; motherPhone?: string; motherEmail?: string;
+  motherPhoto?: string; motherCitizenship?: string; citizenship?: string;
 }
 
 export interface AttendanceRecord {

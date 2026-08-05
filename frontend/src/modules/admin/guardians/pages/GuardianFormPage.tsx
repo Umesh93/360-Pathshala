@@ -1,237 +1,100 @@
-import { useState, useEffect } from "react";
-import React from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../../../layouts/AdminLayout";
 import AddressForm from "../../../../components/common/address/AddressForm";
+import RequiredLabel from "../../../../components/forms/RequiredLabel";
 import { useToast } from "../../students/components/Toast";
-import { createGuardian, decodeGuardianAddress, encodeGuardianAddress, updateGuardian } from "../services/guardian.service";
-import type { GuardianAddress } from "../types/guardian.types";
+import { createGuardian, decodeGuardianAddress, encodeGuardianAddress, encodeGuardianMetadata, getGuardian, updateGuardian } from "../services/guardian.service";
+import type { GuardianAddress, GuardianRequest } from "../types/guardian.types";
 
-const emptyForm = {
-  fullName: "",
-  phone: "",
-  email: "",
-  address: { currentProvince: "", currentDistrict: "", currentMunicipality: "", currentWard: "", currentStreet: "", permanentSameAsCurrent: false, permanentProvince: "", permanentDistrict: "", permanentMunicipality: "", permanentWard: "", permanentStreet: "" } as GuardianAddress,
-  relationship: "",
-  occupation: "",
-  communicationPreference: "",
-  emergencyContactPerson: "",
-  emergencyContactNumber: "",
-  emergencyContactRelationship: "",
-  photo: "",
-  documents: "",
-  notes: "",
-  fatherName: "",
-  motherName: "",
-  fatherOccupation: "",
-  fatherPhone: "",
-  fatherEmail: "",
-  motherOccupation: "",
-  motherPhone: "",
-  motherEmail: "",
-};
+const emptyAddress: GuardianAddress = { currentProvince: "", currentDistrict: "", currentMunicipality: "", currentWard: "", currentStreet: "", permanentSameAsCurrent: false, permanentProvince: "", permanentDistrict: "", permanentMunicipality: "", permanentWard: "", permanentStreet: "" };
+const emptyForm = { guardianCode: "Generating...", firstName: "", middleName: "", lastName: "", gender: "", relationship: "", mobile: "", alternatePhone: "", email: "", dateOfBirth: "", nationality: "Nepali", citizenshipNumber: "", occupation: "", education: "", employer: "", annualIncome: "", communicationPreference: "", preferredLanguage: "", emergencyContactPerson: "", emergencyContactNumber: "", emergencyContactRelationship: "", photo: "", documentType: "", documentNumber: "", documentIssuedDate: "", documentExpiryDate: "", notes: "", fatherName: "", motherName: "", fatherOccupation: "", fatherPhone: "", fatherEmail: "", motherOccupation: "", motherPhone: "", motherEmail: "", address: emptyAddress };
+type FormState = typeof emptyForm;
+
+const inputClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+const Field = ({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) => <div><RequiredLabel required={required}>{label}</RequiredLabel>{children}{error && <p className="mt-1 text-xs text-red-600">{error}</p>}</div>;
 
 export default function GuardianFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(Boolean(id));
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      import("../services/guardian.service").then(({ getGuardian }) => getGuardian(Number(id)))
-        .then((data) => setForm({
-          fullName: data.fullName,
-          phone: data.phone,
-          email: data.email,
-          address: decodeGuardianAddress(data.address),
-          relationship: data.relationship,
-          occupation: data.occupation,
-          communicationPreference: data.communicationPreference,
-          emergencyContactPerson: data.emergencyContactPerson,
-          emergencyContactNumber: data.emergencyContactNumber,
-          emergencyContactRelationship: data.emergencyContactRelationship,
-          photo: data.photo,
-          documents: data.documents,
-          notes: data.notes,
-          fatherName: data.fatherName,
-          motherName: data.motherName,
-          fatherOccupation: data.fatherOccupation,
-          fatherPhone: data.fatherPhone,
-          fatherEmail: data.fatherEmail,
-          motherOccupation: data.motherOccupation,
-          motherPhone: data.motherPhone,
-          motherEmail: data.motherEmail,
-        }))
-        .catch(() => showToast("Failed to load guardian", "error"));
-    }
+    if (!id) return;
+    getGuardian(Number(id)).then((guardian) => setForm({
+      ...emptyForm, ...guardian, guardianCode: guardian.guardianCode || `GDN-${String(guardian.id).padStart(5, "0")}`,
+      firstName: guardian.firstName || "", middleName: guardian.middleName || "", lastName: guardian.lastName || "",
+      mobile: guardian.mobile || guardian.phone || "", address: decodeGuardianAddress(guardian.address),
+    })).catch(() => showToast("Failed to load guardian", "error")).finally(() => setLoading(false));
   }, [id, showToast]);
 
-  const update = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const update = (field: keyof FormState, value: string) => {
+    setForm((previous) => ({ ...previous, [field]: value }));
+    setErrors((previous) => ({ ...previous, [field]: "" }));
   };
 
-  const updateAddress = (address: GuardianAddress) => setForm((previous) => ({ ...previous, address }));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.fullName.trim()) {
-      showToast("Guardian name is required", "error");
-      return;
-    }
-    if (!form.phone.trim()) {
-      showToast("Phone number is required", "error");
-      return;
-    }
+  const validate = () => {
+    const next: Record<string, string> = {};
+    if (!form.firstName.trim()) next.firstName = "First name is required";
+    if (!form.lastName.trim()) next.lastName = "Last name is required";
+    if (!form.gender) next.gender = "Gender is required";
+    if (!form.relationship) next.relationship = "Relationship is required";
+    if (!/^\+?[0-9 -]{7,15}$/.test(form.mobile.trim())) next.mobile = "Enter a valid mobile number";
+    if (!form.email.trim()) next.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Enter a valid email address";
+    if (!form.address.currentProvince) next.currentProvince = "Province is required";
+    if (!form.address.currentDistrict) next.currentDistrict = "District is required";
+    if (!form.address.currentMunicipality.trim()) next.currentMunicipality = "Municipality is required";
     const ward = Number(form.address.currentWard);
-    if (!form.address.currentProvince || !form.address.currentDistrict || !form.address.currentMunicipality.trim() || !Number.isInteger(ward) || ward < 1 || ward > 35) {
-      showToast("Province, district, municipality, and a ward number between 1 and 35 are required", "error");
-      return;
-    }
+    if (!Number.isInteger(ward) || ward < 1 || ward > 35) next.currentWard = "Enter a ward from 1 to 35";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (submitting || !validate()) return;
+    setSubmitting(true);
     try {
-      const payload = { ...form, address: encodeGuardianAddress(form.address) };
-      if (id) {
-        await updateGuardian(Number(id), payload);
-        showToast("Guardian updated successfully", "success");
-      } else {
-        await createGuardian(payload);
-        showToast("Guardian created successfully", "success");
-      }
+      const { address, ...metadata } = form;
+      const payload: GuardianRequest = {
+        ...metadata, fullName: [form.firstName, form.middleName, form.lastName].filter(Boolean).join(" "), phone: form.mobile,
+        mobile: form.mobile, alternativeMobile: form.alternatePhone, organization: form.employer,
+        address: encodeGuardianAddress(address), documents: "", documentMetadata: encodeGuardianMetadata(metadata),
+      };
+      if (id) await updateGuardian(Number(id), payload); else await createGuardian(payload);
+      showToast(`Guardian ${id ? "updated" : "created"} successfully`, "success");
       navigate("/admin/guardians");
     } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Operation failed", "error");
-    }
+      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to save guardian", "error");
+    } finally { setSubmitting(false); }
   };
 
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/admin/dashboard" },
-    { label: "Guardians", href: "/admin/guardians" },
-    { label: id ? "Edit Guardian" : "Add Guardian" },
-  ];
+  if (loading) return <AdminLayout><div className="p-8 text-gray-600">Loading guardian...</div></AdminLayout>;
+  const textField = (field: keyof FormState, label: string, required = false, type = "text") => <Field label={label} required={required} error={errors[field]}><input type={type} value={String(form[field] || "")} onChange={(event) => update(field, event.target.value)} className={inputClass(errors[field])} aria-invalid={!!errors[field]} /></Field>;
 
-  return (
-    <AdminLayout>
-      <div className="space-y-4 md:space-y-6">
-        <nav className="flex text-sm text-gray-500">
-          {breadcrumbs.map((crumb, index) => (
-            <React.Fragment key={index}>
-              {index > 0 && <span className="mx-2">/</span>}
-              {index === breadcrumbs.length - 1 ? (
-                <span className="text-gray-900 font-medium">{crumb.label}</span>
-              ) : (
-                <a href={crumb.href} className="hover:text-[#234A91] transition-colors">
-                  {crumb.label}
-                </a>
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
-
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-          {id ? "Edit Guardian" : "Add Guardian"}
-        </h1>
-
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Guardian Information</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Guardian Name</label>
-                <input type="text" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Relationship</label>
-                <input type="text" value={form.relationship} onChange={(e) => update("relationship", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Occupation</label>
-                <input type="text" value={form.occupation} onChange={(e) => update("occupation", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-                <input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Communication Preference</label>
-                <select value={form.communicationPreference} onChange={(e) => update("communicationPreference", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100">
-                  <option value="">Select Preference</option>
-                  <option value="SMS">SMS</option>
-                  <option value="EMAIL">Email</option>
-                  <option value="PHONE">Phone</option>
-                  <option value="WHATSAPP">WhatsApp</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Emergency Contact</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact Person</label>
-                <input type="text" value={form.emergencyContactPerson} onChange={(e) => update("emergencyContactPerson", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Contact Number</label>
-                <input type="tel" value={form.emergencyContactNumber} onChange={(e) => update("emergencyContactNumber", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Emergency Relationship</label>
-                <input type="text" value={form.emergencyContactRelationship} onChange={(e) => update("emergencyContactRelationship", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide pt-4">Father Information</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Father Name</label>
-                <input type="text" value={form.fatherName} onChange={(e) => update("fatherName", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Father Occupation</label>
-                <input type="text" value={form.fatherOccupation} onChange={(e) => update("fatherOccupation", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Father Phone</label>
-                <input type="tel" value={form.fatherPhone} onChange={(e) => update("fatherPhone", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Father Email</label>
-                <input type="email" value={form.fatherEmail} onChange={(e) => update("fatherEmail", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide pt-4">Mother Information</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Mother Name</label>
-                <input type="text" value={form.motherName} onChange={(e) => update("motherName", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Mother Occupation</label>
-                <input type="text" value={form.motherOccupation} onChange={(e) => update("motherOccupation", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Mother Phone</label>
-                <input type="tel" value={form.motherPhone} onChange={(e) => update("motherPhone", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Mother Email</label>
-                <input type="email" value={form.motherEmail} onChange={(e) => update("motherEmail", e.target.value)} className="h-10 w-full rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100" />
-              </div>
-            </div>
-          </div>
-
-          <AddressForm data={form.address} onChange={updateAddress} />
-
-          <div className="flex gap-3">
-            <button type="submit" className="px-5 py-2 bg-[#234A91] text-white rounded-xl">
-              {id ? "Update Guardian" : "Create Guardian"}
-            </button>
-            <button type="button" onClick={() => navigate("/admin/guardians")} className="px-5 py-2 border border-gray-200 rounded-xl">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </AdminLayout>
-  );
+  return <AdminLayout><div className="space-y-6">
+    <div><h1 className="text-2xl md:text-3xl font-bold text-gray-800">{id ? "Edit Guardian" : "Add Guardian"}</h1><p className="text-sm text-gray-500 mt-1">Fields marked with * are required.</p></div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <section className="bg-white rounded-xl p-6 shadow-sm"><h2 className="text-lg font-semibold mb-4">Personal & Contact Information</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Field label="Guardian ID" required><input readOnly value={id ? form.guardianCode : "Auto-generated on save"} className={`${inputClass()} bg-gray-100`} /></Field>
+          {textField("firstName", "First Name", true)}{textField("middleName", "Middle Name")}{textField("lastName", "Last Name", true)}
+          <Field label="Gender" required error={errors.gender}><select value={form.gender} onChange={(event) => update("gender", event.target.value)} className={inputClass(errors.gender)}><option value="">Select Gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select></Field>
+          <Field label="Relationship" required error={errors.relationship}><select value={form.relationship} onChange={(event) => update("relationship", event.target.value)} className={inputClass(errors.relationship)}><option value="">Select Relationship</option>{["Father", "Mother", "Guardian", "Grandparent", "Sibling", "Other"].map((value) => <option key={value}>{value}</option>)}</select></Field>
+          {textField("mobile", "Mobile", true, "tel")}{textField("alternatePhone", "Alternate Phone", false, "tel")}{textField("email", "Email", true, "email")}{textField("dateOfBirth", "Date of Birth", false, "date")}{textField("nationality", "Nationality")}{textField("citizenshipNumber", "Citizenship Number")}
+          <Field label="Photo"><input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (file && file.size <= 2_000_000) { const reader = new FileReader(); reader.onload = () => update("photo", String(reader.result)); reader.readAsDataURL(file); } else if (file) showToast("Photo must be smaller than 2 MB", "validation"); }} className="w-full text-sm" /></Field>
+        </div>
+      </section>
+      <section className="bg-white rounded-xl p-6 shadow-sm"><h2 className="text-lg font-semibold mb-4">Occupation & Preferences</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{textField("occupation", "Occupation")}{textField("education", "Education")}{textField("employer", "Employer")}{textField("annualIncome", "Annual Income")}<Field label="Communication Preference"><select value={form.communicationPreference} onChange={(event) => update("communicationPreference", event.target.value)} className={inputClass()}><option value="">Select Preference</option>{["SMS", "EMAIL", "PHONE", "WHATSAPP"].map((value) => <option key={value}>{value}</option>)}</select></Field>{textField("preferredLanguage", "Preferred Language")}</div></section>
+      <AddressForm data={form.address} onChange={(address) => setForm((previous) => ({ ...previous, address }))} errors={errors} />
+      <section className="bg-white rounded-xl p-6 shadow-sm"><h2 className="text-lg font-semibold mb-4">Emergency Contact</h2><div className="grid grid-cols-1 sm:grid-cols-3 gap-4">{textField("emergencyContactPerson", "Contact Person")}{textField("emergencyContactNumber", "Contact Number", false, "tel")}{textField("emergencyContactRelationship", "Relationship")}</div></section>
+      <section className="bg-white rounded-xl p-6 shadow-sm"><h2 className="text-lg font-semibold mb-4">Documents & Notes</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{textField("documentType", "Document Type")}{textField("documentNumber", "Document Number")}{textField("documentIssuedDate", "Issued Date", false, "date")}{textField("documentExpiryDate", "Expiry Date", false, "date")}</div><div className="mt-4"><label className="mb-1 block text-sm font-medium text-gray-700">Notes</label><textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} rows={3} className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-[#234A91]" /></div></section>
+      <div className="flex gap-3"><button disabled={submitting} type="submit" className="px-5 py-2 bg-[#234A91] text-white rounded-xl disabled:opacity-60">{submitting ? "Saving..." : id ? "Update Guardian" : "Create Guardian"}</button><button disabled={submitting} type="button" onClick={() => navigate("/admin/guardians")} className="px-5 py-2 border border-gray-200 rounded-xl">Cancel</button></div>
+    </form>
+  </div></AdminLayout>;
 }

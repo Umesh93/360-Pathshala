@@ -34,25 +34,45 @@ export const personalInfoSchema = z.object({
 });
 
 export const guardianSchema = z.object({
-  guardianId: z.number().optional(),
-  fatherName: z.string().min(1, "Father name is required"),
+  fatherFirstName: z.string().optional(),
+  fatherMiddleName: z.string().optional(),
+  fatherLastName: z.string().optional(),
   fatherOccupation: z.string().optional(),
-  fatherPhone: z.string().min(10, "Father phone is required"),
+  fatherPhone: z.string().optional(),
   fatherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   fatherPhoto: z.any().optional(),
-  motherName: z.string().optional(),
+  fatherCitizenship: z.string().optional(),
+  motherFirstName: z.string().optional(),
+  motherMiddleName: z.string().optional(),
+  motherLastName: z.string().optional(),
   motherOccupation: z.string().optional(),
   motherPhone: z.string().optional(),
   motherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   motherPhoto: z.any().optional(),
-  guardianSelection: z.enum(["father", "mother", "other"]),
+  motherCitizenship: z.string().optional(),
+  guardianSelection: z.enum(["father", "mother", "other"]).optional(),
   guardianName: z.string().optional(),
   guardianRelationship: z.string().optional(),
   guardianOccupation: z.string().optional(),
   guardianPhone: z.string().optional(),
   guardianEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   guardianAddress: z.string().optional(),
-  guardianPhoto: z.any().optional(),
+  guardianCitizenship: z.string().optional(),
+}).superRefine((value, context) => {
+  const required: [keyof typeof value, string][] = [
+    ["fatherFirstName", "Father first name is required"],
+    ["fatherLastName", "Father last name is required"],
+    ["fatherPhone", "Father phone is required"],
+    ["guardianSelection", "Guardian selection is required"],
+  ];
+  if (value.guardianSelection === "other") required.push(
+    ["guardianName", "Guardian name is required"],
+    ["guardianRelationship", "Guardian relationship is required"],
+    ["guardianPhone", "Guardian phone is required"],
+  );
+  required.forEach(([field, message]) => {
+    if (!String(value[field] ?? "").trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message });
+  });
 });
 
 export const addressSchema = z.object({

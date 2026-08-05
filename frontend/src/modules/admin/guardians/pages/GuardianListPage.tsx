@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../../layouts/AdminLayout";
 import GuardianToolbar from "../components/GuardianToolbar";
@@ -23,19 +23,23 @@ export default function GuardianListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [relationshipFilter, setRelationshipFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [communicationFilter, setCommunicationFilter] = useState("");
+  const [provinceFilter, setProvinceFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [studentFilter, setStudentFilter] = useState("");
   const [deleted, setDeleted] = useState(false);
   const [summary, setSummary] = useState({ total: 0, active: 0, inactive: 0 });
 
-  const filters: GuardianFilters = {
+  const filters = useMemo<GuardianFilters>(() => ({
     search: searchQuery || undefined,
     relationship: relationshipFilter || undefined,
-    communicationPreference: communicationFilter || undefined,
     status: statusFilter || undefined,
     deleted,
     page: page - 1,
     size: 10,
-  };
+    province: provinceFilter || undefined,
+    district: districtFilter || undefined,
+    hasStudents: studentFilter === "" ? undefined : studentFilter === "with",
+  }), [searchQuery, relationshipFilter, statusFilter, deleted, page, provinceFilter, districtFilter, studentFilter]);
 
   const fetchGuardians = useCallback(async () => {
     setLoading(true);
@@ -56,7 +60,7 @@ export default function GuardianListPage() {
   }, [filters]);
 
   useEffect(() => {
-    fetchGuardians();
+    void Promise.resolve().then(fetchGuardians);
   }, [fetchGuardians]);
 
   const handleSearch = (value: string) => {
@@ -67,6 +71,8 @@ export default function GuardianListPage() {
   const handleRefresh = () => {
     fetchGuardians();
   };
+
+  const placeholderAction = () => showToast("This action is not available yet", "validation");
 
   const handleView = (id: number) => {
     navigate(`/admin/guardians/${id}`);
@@ -150,23 +156,27 @@ export default function GuardianListPage() {
           onRefresh={handleRefresh}
           onAddGuardian={handleAddGuardian}
           onExport={handleExport}
-          relationshipFilter={relationshipFilter}
+           relationshipFilter={relationshipFilter}
           onRelationshipChange={(value) => { setRelationshipFilter(value); setPage(1); }}
           statusFilter={statusFilter}
           onStatusChange={(value) => { setStatusFilter(value); setPage(1); }}
-          communicationFilter={communicationFilter}
-          onCommunicationChange={(value) => { setCommunicationFilter(value); setPage(1); }}
-        />
+           provinceFilter={provinceFilter}
+           onProvinceChange={(value) => { setProvinceFilter(value); setPage(1); }}
+           districtFilter={districtFilter}
+           onDistrictChange={(value) => { setDistrictFilter(value); setPage(1); }}
+           studentFilter={studentFilter}
+           onStudentChange={(value) => { setStudentFilter(value); setPage(1); }}
+           deleted={deleted}
+           onDeletedChange={(value) => { setDeleted(value); setPage(1); }}
+         />
 
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={deleted}
-              onChange={(event) => { setDeleted(event.target.checked); setPage(1); }}
-            />
-            Show deleted guardians
-          </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[{ label: "Total Guardians", value: summary.total, color: "text-[#234A91]" }, { label: "Active Guardians", value: summary.active, color: "text-green-700" }, { label: "Inactive Guardians", value: summary.inactive, color: "text-gray-700" }].map((item) => (
+            <div key={item.label} className="bg-white rounded-xl p-5 shadow-sm">
+              <p className="text-sm text-gray-500">{item.label}</p>
+              <p className={`mt-2 text-2xl font-bold ${item.color}`}>{item.value}</p>
+            </div>
+          ))}
         </div>
 
         {error && (
@@ -191,11 +201,14 @@ export default function GuardianListPage() {
           <>
             <GuardianTable
               guardians={guardians}
-              loading={loading}
+               page={page}
+               pageSize={10}
               onView={handleView}
               onEdit={handleEdit}
               onDelete={setDeleteId}
-              onRestore={handleRestore}
+               onRestore={handleRestore}
+               onPrint={placeholderAction}
+               onDownload={placeholderAction}
             />
             <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </>

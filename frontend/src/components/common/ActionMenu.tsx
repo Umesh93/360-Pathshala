@@ -1,5 +1,5 @@
 import React from "react";
-import { MoreVertical, Eye, Pencil, Trash2, Printer, Download } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, Printer, Download, RotateCcw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,6 +15,7 @@ interface ActionMenuProps {
   onDelete?: (id: number) => void;
   onPrint?: (id: number) => void;
   onDownload?: (id: number) => void;
+  onRestore?: (id: number) => void;
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({
@@ -24,6 +25,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
   onDelete,
   onPrint,
   onDownload,
+  onRestore,
 }) => {
   return (
     <DropdownMenu>
@@ -62,6 +64,15 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
           >
             <Trash2 size={16} />
             Delete
+          </DropdownMenuItem>
+        )}
+        {onRestore && (
+          <DropdownMenuItem
+            onSelect={() => onRestore(id)}
+            className="cursor-pointer gap-2 text-sm text-green-700 focus:bg-green-50 focus:text-green-700"
+          >
+            <RotateCcw size={16} />
+            Restore
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

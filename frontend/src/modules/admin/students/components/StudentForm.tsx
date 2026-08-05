@@ -32,6 +32,15 @@ const sectionErrors = (errors: Record<string, string>, section: SectionKey) => O
   Object.entries(errors).filter(([path]) => path.startsWith(`${section}.`)).map(([path, message]) => [path.slice(section.length + 1), message]),
 );
 
+const splitName = (name?: string) => {
+  const parts = name?.trim().split(/\s+/).filter(Boolean) || [];
+  return {
+    firstName: parts[0] || "",
+    middleName: parts.length > 2 ? parts.slice(1, -1).join(" ") : "",
+    lastName: parts.length > 1 ? parts[parts.length - 1] : "",
+  };
+};
+
 interface SuccessDialogProps {
   admissionNo: string;
   rollNumber: string;
@@ -116,6 +125,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
   const hasLoadedDraft = useRef(false);
   const hasLoadedStudent = useRef(false);
   const hasLoadedAdmissionNumber = useRef(false);
+  const submissionLock = useRef(false);
   const [editLookups, setEditLookups] = useState<StudentEditLookups>();
   const [successData, setSuccessData] = useState<{ admissionNo: string; rollNumber: string; studentId?: number } | null>(null);
   const [errorSummary, setErrorSummary] = useState<{ step: number; title: string }[]>([]);
@@ -144,6 +154,13 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
         try {
            const { student, lookups } = await loadStudentEditData(studentId);
            if (student) {
+            const father = splitName(student.guardian.fatherName);
+            const mother = splitName(student.guardian.motherName);
+            const guardianSelection = student.guardian.guardianSelection || (student.guardian.relationship?.toLowerCase() === "father"
+              ? "father"
+              : student.guardian.relationship?.toLowerCase() === "mother"
+                ? "mother"
+                : "other");
             const formData: StudentFormData = {
               academicInfo: {
                 academicYear: student.academicYear || "2083/2084 BS",
@@ -181,29 +198,30 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
                 photo: student.photo,
               },
                 guardian: {
-                  guardianId: student.guardianId,
-                 fatherName: student.guardian.fatherName || "",
-                 fatherOccupation: student.guardian.fatherOccupation || "",
-                 fatherPhone: student.guardian.fatherPhone || student.guardian.phone || "",
-                 fatherEmail: student.guardian.fatherEmail || student.guardian.email || "",
-                 fatherPhoto: undefined,
-                 motherName: student.guardian.motherName || "",
-                 motherOccupation: student.guardian.motherOccupation || "",
-                 motherPhone: student.guardian.motherPhone || "",
-                 motherEmail: student.guardian.motherEmail || "",
-                 motherPhoto: undefined,
-                 guardianSelection: student.guardian.guardianName && student.guardian.fatherName
-                   ? (student.guardian.guardianName === student.guardian.fatherName ? "father"
-                      : student.guardian.motherName && student.guardian.guardianName === student.guardian.motherName ? "mother"
-                      : "other")
-                   : "father",
+                  fatherFirstName: student.guardian.fatherFirstName || father.firstName,
+                  fatherMiddleName: student.guardian.fatherMiddleName || father.middleName,
+                  fatherLastName: student.guardian.fatherLastName || father.lastName,
+                  fatherOccupation: student.guardian.fatherOccupation || "",
+                  fatherPhone: student.guardian.fatherPhone || student.guardian.phone || "",
+                  fatherEmail: student.guardian.fatherEmail || student.guardian.email || "",
+                  fatherPhoto: student.guardian.fatherPhoto,
+                  fatherCitizenship: student.guardian.fatherCitizenship || "",
+                  motherFirstName: student.guardian.motherFirstName || mother.firstName,
+                  motherMiddleName: student.guardian.motherMiddleName || mother.middleName,
+                  motherLastName: student.guardian.motherLastName || mother.lastName,
+                  motherOccupation: student.guardian.motherOccupation || "",
+                  motherPhone: student.guardian.motherPhone || "",
+                  motherEmail: student.guardian.motherEmail || "",
+                  motherPhoto: student.guardian.motherPhoto,
+                  motherCitizenship: student.guardian.motherCitizenship || "",
+                  guardianSelection,
                   guardianName: student.guardianName || student.guardian.guardianName || "",
-                 guardianRelationship: student.guardian.relationship || "",
-                 guardianOccupation: student.guardian.occupation || "",
-                 guardianPhone: student.guardian.phone || "",
-                 guardianEmail: student.guardian.email || "",
-                 guardianAddress: student.guardian.address || "",
-                 guardianPhoto: undefined,
+                  guardianRelationship: student.guardian.relationship || "",
+                  guardianOccupation: student.guardian.occupation || "",
+                  guardianPhone: student.guardian.phone || "",
+                  guardianEmail: student.guardian.email || "",
+                  guardianAddress: student.guardian.address || "",
+                  guardianCitizenship: student.guardian.citizenship || "",
                },
                address: {
                   currentProvince: student.provinceId ? String(student.provinceId) : "",
@@ -313,6 +331,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
   };
 
   const handleSubmit = async () => {
+    if (submissionLock.current) return;
+    submissionLock.current = true;
     setSubmitting(true);
     try {
       const { isValid, firstErrorStep, errors, errorSteps } = validateAll();
@@ -368,6 +388,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
         scrollToFirstError(errors);
       } else showToast(response?.message || "Unable to save student. Please try again.", "server");
     } finally {
+      submissionLock.current = false;
       setSubmitting(false);
     }
   };

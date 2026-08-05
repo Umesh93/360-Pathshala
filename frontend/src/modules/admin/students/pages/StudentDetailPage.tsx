@@ -21,7 +21,6 @@ import {
   Edit,
   Trash2,
   History,
-  ClipboardList,
 } from "lucide-react";
 
 const StudentDetailPage = () => {
@@ -123,12 +122,6 @@ const StudentDetailPage = () => {
   const admissionHistory = [
     { year: "2024", class: "Grade 10", section: "A", status: "Active" },
     { year: "2023", class: "Grade 9", section: "A", status: "Active" },
-  ];
-
-  const activityLog = [
-    { action: "Profile Updated", date: "2024-01-15", user: "Admin" },
-    { action: "Fee Payment", date: "2024-01-10", user: "Accountant" },
-    { action: "Attendance Marked", date: "2024-01-08", user: "Teacher" },
   ];
 
   return (
@@ -260,41 +253,26 @@ const StudentDetailPage = () => {
           </div>
         </div>
 
-        {/* Guardian Information */}
+        {/* Guardian Summary */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
             <Users size={20} className="text-[#223D5D]" />
-            Guardian Information
+            Parent / Guardian Summary
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Father Name</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.fatherName || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Mother Name</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.motherName || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Guardian Name</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.guardianName || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Relationship</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.relationship}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.phone}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.email || "N/A"}</p>
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-sm text-gray-500">Address</p>
-              <p className="text-sm font-medium text-gray-800">{student.guardian.address}</p>
-            </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {[
+              { title: "Father", values: [["Name", student.guardian.fatherName], ["Phone", student.guardian.fatherPhone], ["Email", student.guardian.fatherEmail], ["Occupation", student.guardian.fatherOccupation], ["Citizenship", student.guardian.fatherCitizenship]] },
+              { title: "Mother", values: [["Name", student.guardian.motherName], ["Phone", student.guardian.motherPhone], ["Email", student.guardian.motherEmail], ["Occupation", student.guardian.motherOccupation], ["Citizenship", student.guardian.motherCitizenship]] },
+              { title: "Guardian", values: [["Name", student.guardian.guardianName], ["Relationship", student.guardian.relationship], ["Phone", student.guardian.phone], ["Email", student.guardian.email], ["Address", student.guardian.address], ["Occupation", student.guardian.occupation], ["Citizenship", student.guardian.citizenship]] },
+            ].map((section) => <div key={section.title} className="rounded-xl border border-gray-200 p-4">
+              <h4 className="mb-3 font-semibold text-gray-800">{section.title}</h4>
+              <div className="space-y-3">
+                {section.values.map(([label, value]) => <div key={label}>
+                  <p className="text-xs text-gray-500">{label}</p>
+                  <p className="break-words text-sm font-medium text-gray-800">{value || "N/A"}</p>
+                </div>)}
+              </div>
+            </div>)}
           </div>
         </div>
 
@@ -325,25 +303,6 @@ const StudentDetailPage = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* Activity Log */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <ClipboardList size={20} className="text-[#223D5D]" />
-            Activity Log
-          </h3>
-          <div className="space-y-4">
-            {activityLog.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{activity.action}</p>
-                  <p className="text-xs text-gray-500">By {activity.user}</p>
-                </div>
-                <p className="text-xs text-gray-400">{activity.date}</p>
-              </div>
-            ))}
           </div>
         </div>
 

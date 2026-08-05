@@ -3,6 +3,31 @@ import type { Guardian, GuardianFilters, GuardianSummary, Child, PaginatedGuardi
 
 const addressPrefix = "ADDR1|";
 const legacyAddressPrefix = "ADDRESS_JSON:";
+const metadataPrefix = "GUARDIAN_META:";
+
+type GuardianMetadata = Partial<Guardian>;
+
+const parseMetadata = (documents?: string): GuardianMetadata => {
+  if (!documents?.startsWith(metadataPrefix)) return {};
+  try { return JSON.parse(documents.slice(metadataPrefix.length)) as GuardianMetadata; } catch { return {}; }
+};
+
+export const encodeGuardianMetadata = (metadata: GuardianMetadata) => `${metadataPrefix}${JSON.stringify(metadata)}`;
+
+const mapGuardian = (record: Guardian): Guardian => {
+  const metadata = parseMetadata(record.documents);
+  const names = (record.fullName || "").trim().split(/\s+/);
+  return {
+    ...record,
+    ...metadata,
+    guardianCode: record.guardianCode || metadata.guardianCode || `GDN-${String(record.id).padStart(5, "0")}`,
+    firstName: record.firstName || metadata.firstName || names[0] || "",
+    lastName: record.lastName || metadata.lastName || names.slice(1).join(" "),
+    mobile: record.mobile || metadata.mobile || record.phone || "",
+    phone: record.phone || record.mobile || metadata.mobile || "",
+    status: record.status || (record.deleted ? "DELETED" : "ACTIVE"),
+  };
+};
 
 export const encodeGuardianAddress = (address: GuardianAddress) => addressPrefix + [
   address.currentProvince, address.currentDistrict, address.currentMunicipality, address.currentWard, address.currentStreet,
@@ -33,12 +58,12 @@ export const formatGuardianAddress = (address?: string) => {
 
 export const getGuardians = async (filters: GuardianFilters = {}): Promise<PaginatedGuardians> => {
   const response = await api.get<PaginatedGuardians>("/people/guardians", { params: filters });
-  return response.data;
+  return { ...response.data, content: response.data.content.map(mapGuardian) };
 };
 
 export const getGuardian = async (id: number): Promise<Guardian> => {
   const response = await api.get<Guardian>(`/people/guardians/${id}`);
-  return response.data;
+  return mapGuardian(response.data);
 };
 
 export const getGuardianSummary = async (): Promise<GuardianSummary> => {
@@ -48,12 +73,12 @@ export const getGuardianSummary = async (): Promise<GuardianSummary> => {
 
 export const createGuardian = async (payload: GuardianRequest): Promise<Guardian> => {
   const response = await api.post<Guardian>("/people/guardians", payload);
-  return response.data;
+  return mapGuardian(response.data);
 };
 
 export const updateGuardian = async (id: number, payload: GuardianRequest): Promise<Guardian> => {
   const response = await api.put<Guardian>(`/people/guardians/${id}`, payload);
-  return response.data;
+  return mapGuardian(response.data);
 };
 
 export const deleteGuardian = async (id: number): Promise<boolean> => {
@@ -62,8 +87,8 @@ export const deleteGuardian = async (id: number): Promise<boolean> => {
 };
 
 export const restoreGuardian = async (id: number): Promise<Guardian> => {
-  const response = await api.put<Guardian>(`/people/guardians/${id}/restore`);
-  return response.data;
+  const response = await api.post<Guardian>(`/people/guardians/${id}/restore`);
+  return mapGuardian(response.data);
 };
 
 export const linkStudent = async (guardianId: number, payload: LinkStudentRequest): Promise<Guardian> => {

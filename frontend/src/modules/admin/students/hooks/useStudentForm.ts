@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { StudentFormData } from "../schemas/student.schema";
+import { studentFormSchema, type StudentFormData } from "../schemas/student.schema";
 import { generateAdmissionNo } from "../services/student.service";
 
 const STORAGE_KEY = "student_form_draft";
@@ -37,25 +37,30 @@ const initialFormData: StudentFormData = {
     photo: undefined,
   },
   guardian: {
-    guardianId: undefined,
-    fatherName: "",
+    fatherFirstName: "",
+    fatherMiddleName: "",
+    fatherLastName: "",
     fatherOccupation: "",
     fatherPhone: "",
     fatherEmail: "",
     fatherPhoto: undefined,
-    motherName: "",
+    fatherCitizenship: "",
+    motherFirstName: "",
+    motherMiddleName: "",
+    motherLastName: "",
     motherOccupation: "",
     motherPhone: "",
     motherEmail: "",
     motherPhoto: undefined,
-    guardianSelection: "father",
+    motherCitizenship: "",
+    guardianSelection: undefined,
     guardianName: "",
     guardianRelationship: "",
     guardianOccupation: "",
     guardianPhone: "",
     guardianEmail: "",
     guardianAddress: "",
-    guardianPhoto: undefined,
+    guardianCitizenship: "",
   },
   address: {
     currentProvince: "",
@@ -125,7 +130,7 @@ type SectionKey = keyof StudentFormData;
 const SECTION_FIELDS: Record<SectionKey, string[]> = {
   academicInfo: ["academicYear", "admissionNo", "admissionDate", "class", "section", "rollNumber"],
   personalInfo: ["firstName", "lastName", "dob", "gender", "religion", "caste", "phone"],
-  guardian: ["guardianSelection", "fatherName", "fatherPhone"],
+  guardian: [],
   address: ["currentProvince", "currentDistrict", "currentMunicipality", "currentWard"],
   medical: ["emergencyContactPerson", "emergencyContactNumber"],
   academicHistory: [],
@@ -172,20 +177,20 @@ export const useStudentForm = () => {
         newErrors[`${section}.${field}`] = "This field is required";
       }
     });
-    setFieldErrors((prev) => {
-      const next = { ...prev };
-      requiredFields.forEach((field) => {
-        delete next[`${section}.${field}`];
+    if (section === "guardian") {
+      const result = studentFormSchema.shape.guardian.safeParse(sectionData);
+      if (!result.success) result.error.issues.forEach((issue) => {
+        newErrors[`guardian.${String(issue.path[0])}`] = issue.message;
       });
+    }
+    setFieldErrors((prev) => {
+      const next = Object.fromEntries(Object.entries(prev).filter(([path]) => !path.startsWith(`${section}.`)));
       Object.entries(newErrors).forEach(([key, message]) => {
         next[key] = message;
       });
       return next;
     });
-    const hasErrors = requiredFields.some((field) => {
-      const value = (sectionData as Record<string, unknown>)[field];
-      return value === undefined || value === null || value === "";
-    });
+    const hasErrors = Object.keys(newErrors).length > 0;
     setStepErrors((prev) => {
       const next = new Set(prev);
       if (hasErrors) next.add(stepIndex); else next.delete(stepIndex);
@@ -215,6 +220,12 @@ export const useStudentForm = () => {
       });
       if (hasErrors) newStepErrors.add(index);
     });
+    const guardianResult = studentFormSchema.shape.guardian.safeParse(formData.guardian);
+    if (!guardianResult.success) {
+      if (firstErrorStep === -1) firstErrorStep = 2;
+      guardianResult.error.issues.forEach((issue) => { newErrors[`guardian.${String(issue.path[0])}`] = issue.message; });
+      newStepErrors.add(2);
+    }
     setFieldErrors(newErrors);
     setStepErrors(newStepErrors);
     return { isValid: firstErrorStep === -1, firstErrorStep, errors: newErrors, errorSteps: newStepErrors };
@@ -238,7 +249,14 @@ export const useStudentForm = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as StudentFormData;
-        setFormData(parsed);
+        setFormData({
+          ...initialFormData,
+          ...parsed,
+          guardian: {
+            ...initialFormData.guardian,
+            ...parsed.guardian,
+          },
+        });
       } catch {
         // ignore parse error
       }

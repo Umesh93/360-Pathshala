@@ -29,6 +29,32 @@ export interface Guardian {
   updatedAt: string;
   createdBy: number;
   updatedBy: number;
+  guardianCode?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  gender?: string;
+  mobile?: string;
+  alternativeMobile?: string;
+  landline?: string;
+  alternatePhone?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  citizenshipNumber?: string;
+  education?: string;
+  employer?: string;
+  organization?: string;
+  officeAddress?: string;
+  religion?: string;
+  annualIncome?: string;
+  preferredLanguage?: string;
+  province?: string;
+  district?: string;
+  documentType?: string;
+  documentNumber?: string;
+  documentIssuedDate?: string;
+  documentExpiryDate?: string;
+  documentMetadata?: string;
 }
 
 export interface GuardianSummary {
@@ -58,6 +84,9 @@ export interface GuardianFilters {
   deleted?: boolean;
   page?: number;
   size?: number;
+  province?: string;
+  district?: string;
+  hasStudents?: boolean;
 }
 
 export interface GuardianRequest {
@@ -82,6 +111,33 @@ export interface GuardianRequest {
   motherOccupation: string;
   motherPhone: string;
   motherEmail: string;
+  guardianCode?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  gender?: string;
+  mobile?: string;
+  alternativeMobile?: string;
+  landline?: string;
+  alternatePhone?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  citizenshipNumber?: string;
+  education?: string;
+  employer?: string;
+  organization?: string;
+  officeAddress?: string;
+  religion?: string;
+  annualIncome?: string;
+  preferredLanguage?: string;
+  province?: string;
+  district?: string;
+  documentType?: string;
+  documentNumber?: string;
+  documentIssuedDate?: string;
+  documentExpiryDate?: string;
+  documentMetadata?: string;
+  status?: string;
 }
 
 export interface GuardianAddress {
