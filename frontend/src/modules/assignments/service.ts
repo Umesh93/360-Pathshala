@@ -38,6 +38,31 @@ const list = (value: unknown) => {
   return array(item.content ?? item.items ?? item.data ?? value);
 };
 
+export const ASSIGNMENT_FILE_ACCEPT = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip";
+const supportedAssignmentExtensions = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "jpg",
+  "jpeg",
+  "png",
+  "zip",
+]);
+
+export const unsupportedAssignmentFiles = (files: File[]) =>
+  files.filter((file) => {
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    return !extension || !supportedAssignmentExtensions.has(extension);
+  });
+
+const requireSupportedAssignmentFiles = (files: File[]) => {
+  const unsupported = unsupportedAssignmentFiles(files);
+  if (unsupported.length)
+    throw new Error(
+      `Unsupported file type: ${unsupported.map((file) => file.name).join(", ")}. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG, ZIP.`,
+    );
+};
+
 export function assignmentError(error: unknown) {
   const request = object(error);
   const data = object(object(request.response).data);
@@ -67,7 +92,7 @@ export const mapAssignment = (value: unknown): Assignment => {
   return {
     id: number(item.id),
     academicSessionId: number(item.academicSessionId),
-    teacherId: number(item.teacherId),
+    teacherId: optionalNumber(item.teacherId),
     classId: number(item.classId),
     sectionIds: array(item.sectionIds)
       .map((id) => number(id))
@@ -166,7 +191,6 @@ export const getAssignment = async (id: number) =>
 
 const payloadBody = (payload: AssignmentPayload) => ({
   ...payload,
-  teacherId: payload.teacherId || null,
   publishAt: payload.publishAt || null,
   maximumMarks: payload.maximumMarks ?? null,
   lateSubmissionDeadline: payload.allowLateSubmission
@@ -186,6 +210,14 @@ export const deleteAssignment = (id: number) =>
   api.delete(`/assignments/${id}`);
 export const publishAssignment = async (id: number) =>
   mapAssignment((await api.post(`/assignments/${id}/publish`)).data);
+export const reopenAssignment = async (id: number, dueAt: string) =>
+  mapAssignment(
+    (
+      await api.put(`/assignments/${id}/reopen`, undefined, {
+        params: { dueAt },
+      })
+    ).data,
+  );
 export const getTeacherAssignments = async () =>
   list((await api.get("/assignments/teachers/self")).data).map(mapAssignment);
 
@@ -256,6 +288,7 @@ export async function submitFiles(
   comments: string,
   files: File[],
 ) {
+  requireSupportedAssignmentFiles(files);
   const form = new FormData();
   form.append(
     "request",
@@ -291,7 +324,6 @@ export const getReports = async (
       return {
         assignmentId: number(item.assignmentId),
         assignmentTitle: text(item.assignmentTitle),
-        teacherId: number(item.teacherId),
         subjectId: number(item.subjectId),
         studentId: number(item.studentId),
         studentName: text(item.studentName),
@@ -315,6 +347,7 @@ export async function exportReport(
   ).data as Blob;
 }
 export async function uploadAssignmentFiles(id: number, files: File[]) {
+  requireSupportedAssignmentFiles(files);
   const form = new FormData();
   files.forEach((file) => form.append("files", file));
   return mapAssignment(
@@ -358,7 +391,6 @@ export async function getLookups(): Promise<AssignmentLookups> {
       "/academic/classes",
       "/academic/sections",
       "/academic/subjects",
-      "/people/teachers",
     ].map((url) => api.get(url, { params: { page: 0, size: 500 } })),
   );
   const options = (index: number) =>
@@ -377,7 +409,7 @@ export async function getLookups(): Promise<AssignmentLookups> {
               item.subjectName ??
               item.fullName ??
               item.code,
-            `#${item.id}`,
+            "Unknown",
           ),
           ...(item.classId ? { classId: number(item.classId) } : {}),
         };
@@ -388,42 +420,90 @@ export async function getLookups(): Promise<AssignmentLookups> {
     classes: options(1),
     sections: options(2),
     subjects: options(3),
-    teachers: options(4),
     teacherScopes: [],
   };
 }
 
-export async function getTeacherLookups(): Promise<AssignmentLookups> {
-  const [sessionsResponse, response] = await Promise.all([
-    api.get("/academic/years", { params: { page: 0, size: 500 } }),
-    api.get("/assignments/teachers/self/lookups"),
-  ]);
-  const teacherScopes: TeacherAssignmentScope[] = list(response.data).map((value) => {
-    const item = object(value);
-    return {
-      classId: number(item.classId),
-      className: text(item.className),
-      sectionId: number(item.sectionId),
-      sectionName: text(item.sectionName),
-      subjectId: number(item.subjectId),
-      subjectName: text(item.subjectName),
-    };
+const mapAcademicOption = (value: unknown): Option => {
+  const item = object(value);
+  return {
+    id: number(item.id),
+    name: text(
+      item.name ?? item.title ?? item.subjectName ?? item.code,
+      "Unknown",
+    ),
+    ...(item.classId ? { classId: number(item.classId) } : {}),
+  };
+};
+
+export async function getClassSections(classId: number): Promise<Option[]> {
+  const response = await api.get("/academic/sections", {
+    params: { classId, page: 0, size: 500 },
   });
+  return list(response.data)
+    .map(mapAcademicOption)
+    .filter((item) => item.id > 0 && item.classId === classId);
+}
+
+export async function getClassSubjects(classId: number): Promise<Option[]> {
+  const response = await api.get("/academic/subjects", {
+    params: { classId, status: "ACTIVE", page: 0, size: 500 },
+  });
+  return list(response.data)
+    .filter((value) => {
+      const item = object(value);
+      return !item.status || text(item.status).toUpperCase() === "ACTIVE";
+    })
+    .map(mapAcademicOption)
+    .filter((item) => item.id > 0 && item.classId === classId);
+}
+
+export async function getTeacherLookups(): Promise<AssignmentLookups> {
+  const response = await api.get("/assignments/teachers/self/lookups");
+  const teacherScopes: TeacherAssignmentScope[] = list(response.data).map(
+    (value) => {
+      const item = object(value);
+      return {
+        academicSessionId: number(item.academicSessionId),
+        academicSessionName: text(item.academicSessionName, "Unknown"),
+        classId: number(item.classId),
+        className: text(item.className),
+        sectionId: number(item.sectionId),
+        sectionName: text(item.sectionName),
+        subjectId: number(item.subjectId),
+        subjectName: text(item.subjectName),
+      };
+    },
+  );
   const unique = (items: Option[]) =>
     Array.from(new Map(items.map((item) => [item.id, item])).values());
-  const sessions = list(sessionsResponse.data).map((value) => {
-    const item = object(value);
-    return {
-      id: number(item.id),
-      name: text(item.name ?? item.title ?? item.code, `#${item.id}`),
-    };
-  }).filter((item) => item.id > 0);
   return {
-    sessions,
-    classes: unique(teacherScopes.map((scope) => ({ id: scope.classId, name: scope.className }))),
-    sections: unique(teacherScopes.map((scope) => ({ id: scope.sectionId, name: scope.sectionName, classId: scope.classId }))),
-    subjects: unique(teacherScopes.map((scope) => ({ id: scope.subjectId, name: scope.subjectName, classId: scope.classId }))),
-    teachers: [],
+    sessions: unique(
+      teacherScopes.map((scope) => ({
+        id: scope.academicSessionId,
+        name: scope.academicSessionName,
+      })),
+    ),
+    classes: unique(
+      teacherScopes.map((scope) => ({
+        id: scope.classId,
+        name: scope.className,
+      })),
+    ),
+    sections: unique(
+      teacherScopes.map((scope) => ({
+        id: scope.sectionId,
+        name: scope.sectionName,
+        classId: scope.classId,
+      })),
+    ),
+    subjects: unique(
+      teacherScopes.map((scope) => ({
+        id: scope.subjectId,
+        name: scope.subjectName,
+        classId: scope.classId,
+      })),
+    ),
     teacherScopes,
   };
 }

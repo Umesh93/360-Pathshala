@@ -7,6 +7,7 @@ import {
   Pencil,
   Plus,
   Send,
+  RotateCcw,
   Trash2,
   X,
 } from "lucide-react";
@@ -50,12 +51,16 @@ const emptyLookups: AssignmentLookups = {
   classes: [],
   sections: [],
   subjects: [],
-  teachers: [],
   teacherScopes: [],
 };
 const display = (options: Option[], id: number) =>
-  options.find((item) => item.id === id)?.name || `#${id}`;
+  options.find((item) => item.id === id)?.name || "Unknown";
 const localDate = (value?: string) => (value ? value.slice(0, 16) : "");
+const localNow = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 16);
+};
 const initialForm = (): AssignmentPayload => ({
   academicSessionId: 0,
   classId: 0,
@@ -121,7 +126,6 @@ function AssignmentForm({
     assignment
       ? {
           academicSessionId: assignment.academicSessionId,
-          teacherId: assignment.teacherId || undefined,
           classId: assignment.classId,
           sectionIds: [...assignment.sectionIds],
           subjectId: assignment.subjectId,
@@ -139,21 +143,75 @@ function AssignmentForm({
   );
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
-  const sections = lookups.sections.filter(
-    (item) => !item.classId || item.classId === form.classId,
+  const [adminSections, setAdminSections] = useState<Option[]>([]);
+  const [adminSubjects, setAdminSubjects] = useState<Option[]>([]);
+  const [classOptionsLoading, setClassOptionsLoading] = useState(false);
+  const [classOptionsError, setClassOptionsError] = useState("");
+  const sessionScopes = lookups.teacherScopes.filter(
+    (scope) => scope.academicSessionId === form.academicSessionId,
   );
-  const subjects = lookups.subjects.filter((item) => {
+  const teacherClasses = lookups.classes.filter((item) =>
+    sessionScopes.some((scope) => scope.classId === item.id),
+  );
+  const teacherSections = lookups.sections.filter((item) =>
+    sessionScopes.some(
+      (scope) => scope.classId === form.classId && scope.sectionId === item.id,
+    ),
+  );
+  const teacherSubjects = lookups.subjects.filter((item) => {
     if (item.classId && item.classId !== form.classId) return false;
-    if (role !== "teacher" || !form.sectionIds.length) return true;
+    if (
+      !sessionScopes.some(
+        (scope) =>
+          scope.classId === form.classId && scope.subjectId === item.id,
+      )
+    )
+      return false;
+    if (!form.sectionIds.length) return true;
     return form.sectionIds.every((sectionId) =>
       lookups.teacherScopes.some(
         (scope) =>
+          scope.academicSessionId === form.academicSessionId &&
           scope.classId === form.classId &&
           scope.sectionId === sectionId &&
           scope.subjectId === item.id,
       ),
     );
   });
+  const sections = role === "admin" ? adminSections : teacherSections;
+  const subjects = role === "admin" ? adminSubjects : teacherSubjects;
+  const classes = role === "admin" ? lookups.classes : teacherClasses;
+  const loadAdminClassOptions = async (classId: number) => {
+    if (!classId) {
+      setAdminSections([]);
+      setAdminSubjects([]);
+      return;
+    }
+    setClassOptionsLoading(true);
+    setClassOptionsError("");
+    try {
+      const [nextSections, nextSubjects] = await Promise.all([
+        service.getClassSections(classId),
+        service.getClassSubjects(classId),
+      ]);
+      setAdminSections(nextSections);
+      setAdminSubjects(nextSubjects);
+    } catch (error) {
+      setAdminSections([]);
+      setAdminSubjects([]);
+      setClassOptionsError(service.assignmentError(error));
+    } finally {
+      setClassOptionsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (role !== "admin" || !assignment?.classId) return;
+    const timer = window.setTimeout(
+      () => void loadAdminClassOptions(assignment.classId),
+      0,
+    );
+    return () => window.clearTimeout(timer);
+  }, [assignment?.classId, role]);
   const update = <K extends keyof AssignmentPayload>(
     key: K,
     value: AssignmentPayload[K],
@@ -165,19 +223,20 @@ function AssignmentForm({
       !form.classId ||
       !form.subjectId ||
       !form.title.trim() ||
+      !form.category ||
+      !form.publishAt ||
       !form.dueAt ||
-      !form.sectionIds.length ||
-      (role === "admin" && !form.teacherId)
+      !form.sectionIds.length
     )
       return showToast(
         "Complete all required assignment fields.",
         "validation",
       );
-    if (new Date(form.dueAt) <= new Date())
+    if (!assignment && new Date(form.dueAt) <= new Date())
       return showToast("Due date must be in the future.", "validation");
-    if (form.publishAt && new Date(form.publishAt) >= new Date(form.dueAt))
+    if (new Date(form.publishAt) > new Date(form.dueAt))
       return showToast(
-        "Publish date must be before the due date.",
+        "Publish date cannot be after the due date.",
         "validation",
       );
     if (form.maximumMarks != null && form.maximumMarks <= 0)
@@ -196,10 +255,7 @@ function AssignmentForm({
       );
     setSaving(true);
     try {
-      const result = await service.saveAssignment(
-        { ...form, teacherId: role === "admin" ? form.teacherId : undefined },
-        assignment?.id,
-      );
+      const result = await service.saveAssignment(form, assignment?.id);
       if (files.length) await service.uploadAssignmentFiles(result.id, files);
       showToast(assignment ? "Assignment updated." : "Assignment created.");
       saved();
@@ -221,9 +277,17 @@ function AssignmentForm({
             <select
               className={input}
               value={form.academicSessionId || ""}
-              onChange={(e) =>
-                update("academicSessionId", Number(e.target.value))
-              }
+              required
+              onChange={(e) => {
+                const academicSessionId = Number(e.target.value);
+                setForm((current) => ({
+                  ...current,
+                  academicSessionId,
+                  ...(role === "teacher"
+                    ? { classId: 0, sectionIds: [], subjectId: 0 }
+                    : {}),
+                }));
+              }}
             >
               <option value="">Select session</option>
               {lookups.sessions.map((item) => (
@@ -233,38 +297,25 @@ function AssignmentForm({
               ))}
             </select>
           </label>
-          {role === "admin" && (
-            <label>
-              <FieldLabel name="Teacher" required />
-              <select
-                className={input}
-                value={form.teacherId || ""}
-                onChange={(e) =>
-                  update("teacherId", Number(e.target.value) || undefined)
-                }
-              >
-                <option value="">Select teacher</option>
-                {lookups.teachers.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
           <label>
             <FieldLabel name="Class" required />
             <select
               className={input}
               value={form.classId || ""}
+              required
               onChange={(e) => {
-                update("classId", Number(e.target.value));
-                update("sectionIds", []);
-                update("subjectId", 0);
+                const classId = Number(e.target.value);
+                setForm((current) => ({
+                  ...current,
+                  classId,
+                  sectionIds: [],
+                  subjectId: 0,
+                }));
+                if (role === "admin") void loadAdminClassOptions(classId);
               }}
             >
               <option value="">Select class</option>
-              {lookups.classes.map((item) => (
+              {classes.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -276,10 +327,20 @@ function AssignmentForm({
             <select
               className={input}
               value={form.subjectId || ""}
+              required
+              disabled={!form.classId || classOptionsLoading}
               onChange={(e) => update("subjectId", Number(e.target.value))}
             >
-              <option value="">Select subject</option>
-               {subjects.map((item) => (
+              <option value="">
+                {!form.classId
+                  ? "Select a class first"
+                  : classOptionsLoading
+                    ? "Loading subjects..."
+                    : subjects.length
+                      ? "Select subject"
+                      : "No active subjects available"}
+              </option>
+              {subjects.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -291,6 +352,7 @@ function AssignmentForm({
             <input
               className={input}
               maxLength={255}
+              required
               value={form.title}
               onChange={(e) => update("title", e.target.value)}
             />
@@ -300,6 +362,7 @@ function AssignmentForm({
             <select
               className={input}
               value={form.category}
+              required
               onChange={(e) =>
                 update(
                   "category",
@@ -315,36 +378,23 @@ function AssignmentForm({
             </select>
           </label>
           <label>
-            <FieldLabel name="Maximum marks" />
-            <input
-              className={input}
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={form.maximumMarks ?? ""}
-              onChange={(e) =>
-                update(
-                  "maximumMarks",
-                  e.target.value ? Number(e.target.value) : undefined,
-                )
-              }
-            />
-          </label>
-          <label>
-            <FieldLabel name="Publish at" />
+            <FieldLabel name="Publish date" required />
             <input
               className={input}
               type="datetime-local"
               value={form.publishAt || ""}
+              required
               onChange={(e) => update("publishAt", e.target.value)}
             />
           </label>
           <label>
-            <FieldLabel name="Due at" required />
+            <FieldLabel name="Due date" required />
             <input
               className={input}
               type="datetime-local"
               value={form.dueAt}
+              required
+              min={assignment ? undefined : localNow()}
               onChange={(e) => update("dueAt", e.target.value)}
             />
           </label>
@@ -370,7 +420,11 @@ function AssignmentForm({
             Sections <span className="text-red-600">*</span>
           </legend>
           <div className="mt-2 grid max-h-40 grid-cols-2 gap-2 overflow-y-auto rounded-lg border p-3 sm:grid-cols-3">
-            {sections.length ? (
+            {classOptionsLoading ? (
+              <p className="col-span-full text-sm text-gray-500">
+                Loading sections...
+              </p>
+            ) : sections.length ? (
               sections.map((item) => (
                 <label
                   key={item.id}
@@ -394,45 +448,87 @@ function AssignmentForm({
               ))
             ) : (
               <p className="col-span-full text-sm text-gray-500">
-                Select a class with sections.
+                {form.classId
+                  ? "No sections are available for this class."
+                  : "Select a class to load sections."}
               </p>
             )}
           </div>
+          {classOptionsError && (
+            <p className="mt-2 text-sm text-red-600">{classOptionsError}</p>
+          )}
         </fieldset>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex items-center gap-2 pt-6 text-sm font-medium">
-            <input
-              type="checkbox"
-              checked={form.allowLateSubmission}
-              onChange={(e) => update("allowLateSubmission", e.target.checked)}
-            />
-            Allow late submission
-          </label>
-          {form.allowLateSubmission && (
+        <fieldset className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <legend className="px-1 text-sm font-semibold text-gray-700">
+            Optional grading and late submission settings
+          </legend>
+          <div className="grid gap-4 sm:grid-cols-2">
             <label>
-              <FieldLabel name="Late submission deadline" required />
+              <FieldLabel name="Maximum marks" />
               <input
                 className={input}
-                type="datetime-local"
-                value={form.lateSubmissionDeadline || ""}
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.maximumMarks ?? ""}
                 onChange={(e) =>
-                  update("lateSubmissionDeadline", e.target.value)
+                  update(
+                    "maximumMarks",
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
                 }
               />
             </label>
-          )}
-        </div>
+            <label className="flex items-center gap-2 pt-6 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={form.allowLateSubmission}
+                onChange={(e) =>
+                  update("allowLateSubmission", e.target.checked)
+                }
+              />
+              Allow late submission
+            </label>
+            {form.allowLateSubmission && (
+              <label>
+                <FieldLabel name="Late submission deadline" required />
+                <input
+                  className={input}
+                  type="datetime-local"
+                  value={form.lateSubmissionDeadline || ""}
+                  onChange={(e) =>
+                    update("lateSubmissionDeadline", e.target.value)
+                  }
+                />
+              </label>
+            )}
+          </div>
+        </fieldset>
         <label>
           <FieldLabel name="Attachments" />
           <input
             className={input}
             type="file"
             multiple
-            accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
-            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+            accept={service.ASSIGNMENT_FILE_ACCEPT}
+            onChange={(e) => {
+              const selectedFiles = Array.from(e.target.files ?? []);
+              const unsupported =
+                service.unsupportedAssignmentFiles(selectedFiles);
+              if (unsupported.length) {
+                e.target.value = "";
+                setFiles([]);
+                showToast(
+                  `Unsupported file type: ${unsupported.map((file) => file.name).join(", ")}. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG, ZIP.`,
+                  "validation",
+                );
+                return;
+              }
+              setFiles(selectedFiles);
+            }}
           />
           <span className="mt-1 block text-xs text-gray-500">
-            JPG, PNG, GIF, WebP, BMP, PDF, Office documents, or ZIP. Multiple files allowed.
+            PDF, DOC, DOCX, JPG, JPEG, PNG, or ZIP. Multiple files allowed.
           </span>
         </label>
         {assignment?.attachments.length ? (
@@ -492,6 +588,9 @@ function AssignmentList({
     type: "delete" | "publish";
     item: Assignment;
   }>();
+  const [reopening, setReopening] = useState<Assignment>();
+  const [reopenDueAt, setReopenDueAt] = useState("");
+  const [reopenSaving, setReopenSaving] = useState(false);
   const load = async (next = filters) => {
     setLoading(true);
     setError("");
@@ -549,6 +648,25 @@ function AssignmentList({
       showToast(service.assignmentError(e), "error");
     }
   };
+  const reopen = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!reopening || !reopenDueAt) return;
+    if (new Date(reopenDueAt) <= new Date())
+      return showToast("The new due date must be in the future.", "validation");
+    setReopenSaving(true);
+    try {
+      await service.reopenAssignment(reopening.id, reopenDueAt);
+      showToast("Assignment reopened.");
+      setReopening(undefined);
+      setReopenDueAt("");
+      await load();
+      changed();
+    } catch (error) {
+      showToast(service.assignmentError(error), "error");
+    } finally {
+      setReopenSaving(false);
+    }
+  };
   const options = (
     items: Option[],
     key: keyof AssignmentFilters,
@@ -591,7 +709,7 @@ function AssignmentList({
           </button>
         </div>
         {role === "admin" && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {options(lookups.sessions, "sessionId", "sessions")}
             {options(lookups.classes, "classId", "classes")}
             {options(
@@ -605,7 +723,6 @@ function AssignmentList({
               "sections",
             )}
             {options(lookups.subjects, "subjectId", "subjects")}
-            {options(lookups.teachers, "teacherId", "teachers")}
             <select
               className={input}
               value={filters.status || ""}
@@ -656,12 +773,11 @@ function AssignmentList({
         </div>
       ) : (
         <div className={`${card} overflow-x-auto`}>
-          <table className="w-full min-w-[980px] text-left text-sm">
+          <table className="w-full min-w-[860px] text-left text-sm">
             <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
               <tr>
                 <th className="p-4">Assignment</th>
                 <th>Class / sections</th>
-                <th>Teacher</th>
                 <th>Schedule</th>
                 <th>Status</th>
                 <th>Files</th>
@@ -687,11 +803,6 @@ function AssignmentList({
                     </p>
                   </td>
                   <td>
-                    {role === "admin"
-                      ? display(lookups.teachers, item.teacherId)
-                      : "You"}
-                  </td>
-                  <td>
                     <p>Due {formatDate(item.dueAt)}</p>
                     <p className="text-xs text-gray-500">
                       Publish {formatDate(item.publishAt)}
@@ -708,13 +819,25 @@ function AssignmentList({
                   </td>
                   <td className="pr-4">
                     <div className="flex justify-end gap-1">
-                      {item.status === "DRAFT" && (
+                      {item.status !== "ARCHIVED" && (
                         <button
                           className="rounded p-2 text-gray-600 hover:bg-gray-100"
                           title="Edit"
                           onClick={() => setEditing(item)}
                         >
                           <Pencil className="h-4 w-4" />
+                        </button>
+                      )}
+                      {role === "admin" && item.status === "CLOSED" && (
+                        <button
+                          className="rounded p-2 text-emerald-700 hover:bg-emerald-50"
+                          title="Reopen"
+                          onClick={() => {
+                            setReopening(item);
+                            setReopenDueAt("");
+                          }}
+                        >
+                          <RotateCcw className="h-4 w-4" />
                         </button>
                       )}
                       {item.status === "DRAFT" && (
@@ -790,6 +913,38 @@ function AssignmentList({
           }}
         />
       )}
+      {reopening && (
+        <Dialog title="Reopen assignment" close={() => setReopening(undefined)}>
+          <form className="space-y-5" onSubmit={reopen}>
+            <p className="text-sm text-gray-600">
+              Set a new due date for <strong>{reopening.title}</strong>.
+            </p>
+            <label>
+              <FieldLabel name="New due date" required />
+              <input
+                className={input}
+                type="datetime-local"
+                required
+                min={localNow()}
+                value={reopenDueAt}
+                onChange={(event) => setReopenDueAt(event.target.value)}
+              />
+            </label>
+            <div className="flex justify-end gap-3 border-t pt-4">
+              <button
+                type="button"
+                className={secondary}
+                onClick={() => setReopening(undefined)}
+              >
+                Cancel
+              </button>
+              <button className={primary} disabled={reopenSaving}>
+                {reopenSaving ? "Reopening..." : "Reopen assignment"}
+              </button>
+            </div>
+          </form>
+        </Dialog>
+      )}
       <ConfirmDialog
         open={Boolean(confirm)}
         title={
@@ -863,6 +1018,7 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
     }));
   const valid = (draft: ReviewDraft) =>
     (draft.status !== "GRADED" || draft.marks != null) &&
+    (draft.marks == null || draft.marks >= 0) &&
     (draft.marks == null ||
       !assignment?.maximumMarks ||
       draft.marks <= assignment.maximumMarks);
@@ -872,7 +1028,9 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
       return showToast(
         draft.status === "GRADED" && draft.marks == null
           ? "Marks are required when grading."
-          : `Marks cannot exceed ${assignment?.maximumMarks}.`,
+          : assignment?.maximumMarks
+            ? `Marks must be between 0 and ${assignment.maximumMarks}.`
+            : "Marks cannot be negative.",
         "validation",
       );
     try {
@@ -898,7 +1056,7 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
       );
     if (selected.some(([, value]) => !valid(value)))
       return showToast(
-        "Graded reviews require marks, and marks cannot exceed the assignment maximum.",
+        "Graded reviews require marks, and marks must be non-negative and within the assignment maximum.",
         "validation",
       );
     try {
@@ -967,23 +1125,20 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
         </div>
       ) : (
         <div className={`${card} overflow-x-auto`}>
-          <table className="w-full min-w-[1100px] text-left text-sm">
+          <table className="w-full min-w-[980px] text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500">
               <tr>
-                <th className="p-3">Select</th>
-                <th>Roll / admission</th>
+                <th className="p-3">Roll</th>
                 <th>Student</th>
-                <th>Status / submitted</th>
-                <th>Files</th>
+                <th>Submitted</th>
                 <th>
                   Marks{" "}
                   {assignment?.maximumMarks
                     ? `/ ${assignment.maximumMarks}`
                     : ""}
                 </th>
+                <th>Status</th>
                 <th>Feedback</th>
-                <th>Review status</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -994,20 +1149,6 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
                 return (
                   <tr key={row.studentId}>
                     <td className="p-3">
-                      <input
-                        type="checkbox"
-                        disabled={!id}
-                        checked={draft?.selected || false}
-                        onChange={(e) =>
-                          id &&
-                          update(id, {
-                            selected: e.target.checked,
-                            modified: draft?.modified || false,
-                          })
-                        }
-                      />
-                    </td>
-                    <td>
                       <p>{row.rollNumber || "-"}</p>
                       <p className="text-xs text-gray-500">
                         {row.admissionNumber || "-"}
@@ -1015,20 +1156,19 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
                     </td>
                     <td className="font-medium">{row.studentName}</td>
                     <td>
-                      <StatusBadge status={submission?.status} />
-                      <p className="mt-1 text-xs text-gray-500">
-                        {formatDate(submission?.submittedAt)}
-                      </p>
-                    </td>
-                    <td>
                       {submission ? (
-                        <AttachmentLinks
-                          assignmentId={assignmentId}
-                          submission={submission}
-                          attachments={submission.attachments}
-                        />
+                        <div className="space-y-2">
+                          <p>{formatDate(submission.submittedAt)}</p>
+                          <AttachmentLinks
+                            assignmentId={assignmentId}
+                            submission={submission}
+                            attachments={submission.attachments}
+                          />
+                        </div>
                       ) : (
-                        "-"
+                        <span className="font-medium text-red-600">
+                          Not Submitted
+                        </span>
                       )}
                     </td>
                     <td>
@@ -1051,6 +1191,47 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
                       />
                     </td>
                     <td>
+                      {id ? (
+                        <div className="flex min-w-40 items-center gap-2">
+                          <input
+                            type="checkbox"
+                            aria-label={`Select ${row.studentName} for bulk review`}
+                            checked={draft?.selected || false}
+                            onChange={(e) =>
+                              update(id, {
+                                selected: e.target.checked,
+                                modified: draft?.modified || false,
+                              })
+                            }
+                          />
+                          <select
+                            className={`${input} mt-0`}
+                            value={draft?.status || "REVIEWED"}
+                            onChange={(e) =>
+                              update(id, {
+                                status: e.target.value as Review["status"],
+                              })
+                            }
+                          >
+                            <option value="REVIEWED">Reviewed</option>
+                            <option value="RETURNED">Returned</option>
+                            <option value="GRADED">Graded</option>
+                          </select>
+                          <button
+                            className={secondary}
+                            type="button"
+                            onClick={() => saveOne(id)}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="font-medium text-gray-500">
+                          Missing
+                        </span>
+                      )}
+                    </td>
+                    <td>
                       <input
                         className={`${input} mt-0 min-w-48`}
                         disabled={!id}
@@ -1059,32 +1240,6 @@ function Reviews({ assignments }: { assignments: Assignment[] }) {
                           id && update(id, { feedback: e.target.value })
                         }
                       />
-                    </td>
-                    <td>
-                      <select
-                        className={`${input} mt-0`}
-                        disabled={!id}
-                        value={draft?.status || "REVIEWED"}
-                        onChange={(e) =>
-                          id &&
-                          update(id, {
-                            status: e.target.value as Review["status"],
-                          })
-                        }
-                      >
-                        <option value="REVIEWED">Reviewed</option>
-                        <option value="RETURNED">Returned</option>
-                        <option value="GRADED">Graded</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button
-                        className={secondary}
-                        disabled={!id}
-                        onClick={() => id && saveOne(id)}
-                      >
-                        Save
-                      </button>
                     </td>
                   </tr>
                 );
@@ -1276,7 +1431,7 @@ function Reports({ lookups }: { lookups: AssignmentLookups }) {
   }, []);
   return (
     <div className="space-y-4">
-      <div className={`${card} grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5`}>
+      <div className={`${card} grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4`}>
         <label>
           <FieldLabel name="Report type" />
           <select
@@ -1285,9 +1440,12 @@ function Reports({ lookups }: { lookups: AssignmentLookups }) {
             onChange={(e) => setFilters({ ...filters, type: e.target.value })}
           >
             <option value="completion">Completion</option>
-            <option value="student-performance">Student performance (graded)</option>
-            <option value="teacher-workload">Teacher workload</option>
-            <option value="subject-performance">Subject performance (graded)</option>
+            <option value="student-performance">
+              Student performance (graded)
+            </option>
+            <option value="subject-performance">
+              Subject performance (graded)
+            </option>
             <option value="late">Late submissions</option>
           </select>
         </label>
@@ -1305,26 +1463,6 @@ function Reports({ lookups }: { lookups: AssignmentLookups }) {
           >
             <option value="">All sessions</option>
             {lookups.sessions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <FieldLabel name="Teacher" />
-          <select
-            className={input}
-            value={filters.teacherId || ""}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                teacherId: Number(e.target.value) || undefined,
-              })
-            }
-          >
-            <option value="">All teachers</option>
-            {lookups.teachers.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>
@@ -1390,7 +1528,6 @@ function Reports({ lookups }: { lookups: AssignmentLookups }) {
               <tr>
                 <th className="p-4">Assignment</th>
                 <th>Student</th>
-                <th>Teacher</th>
                 <th>Subject</th>
                 <th>Status</th>
                 <th>Submitted</th>
@@ -1403,7 +1540,6 @@ function Reports({ lookups }: { lookups: AssignmentLookups }) {
                 <tr key={`${row.assignmentId}-${row.studentId}-${index}`}>
                   <td className="p-4 font-medium">{row.assignmentTitle}</td>
                   <td>{row.studentName}</td>
-                  <td>{display(lookups.teachers, row.teacherId)}</td>
                   <td>{display(lookups.subjects, row.subjectId)}</td>
                   <td>
                     <StatusBadge status={row.status} />

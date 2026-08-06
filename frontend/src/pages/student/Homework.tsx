@@ -322,14 +322,28 @@ export default function StudentHomework() {
                         type="file"
                         multiple
                         disabled={!canSubmit}
-                        accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
-                        onChange={(e) =>
-                          setFiles(Array.from(e.target.files ?? []))
-                        }
+                        accept={service.ASSIGNMENT_FILE_ACCEPT}
+                        onChange={(e) => {
+                          const selectedFiles = Array.from(
+                            e.target.files ?? [],
+                          );
+                          const unsupported =
+                            service.unsupportedAssignmentFiles(selectedFiles);
+                          if (unsupported.length) {
+                            e.target.value = "";
+                            setFiles([]);
+                            showToast(
+                              `Unsupported file type: ${unsupported.map((file) => file.name).join(", ")}. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG, ZIP.`,
+                              "validation",
+                            );
+                            return;
+                          }
+                          setFiles(selectedFiles);
+                        }}
                       />
                       <span className="mt-1 flex items-center gap-1 text-xs text-gray-500">
                         <Paperclip className="h-3 w-3" />
-                        Multiple supported files may be uploaded.
+                        PDF, DOC, DOCX, JPG, JPEG, PNG, or ZIP.
                       </span>
                     </label>
                     {canSubmit ? (

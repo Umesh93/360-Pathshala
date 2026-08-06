@@ -9,7 +9,8 @@ export const ASSIGNMENT_CATEGORIES = [
 ] as const;
 
 export type AssignmentCategory = (typeof ASSIGNMENT_CATEGORIES)[number];
-export type AssignmentStatus = "DRAFT" | "PUBLISHED" | "ACTIVE" | "CLOSED" | "ARCHIVED";
+export type AssignmentStatus =
+  "DRAFT" | "PUBLISHED" | "ACTIVE" | "CLOSED" | "ARCHIVED";
 export type SubmissionStatus =
   "PENDING" | "SUBMITTED" | "LATE" | "REVIEWED" | "RETURNED" | "GRADED";
 
@@ -23,7 +24,7 @@ export interface Attachment {
 export interface Assignment {
   id: number;
   academicSessionId: number;
-  teacherId: number;
+  teacherId?: number;
   classId: number;
   sectionIds: number[];
   subjectId: number;
@@ -44,7 +45,7 @@ export interface Assignment {
 export type AssignmentPayload = Omit<
   Assignment,
   "id" | "status" | "attachments" | "reminderSentAt" | "teacherId"
-> & { teacherId?: number };
+>;
 
 export interface Submission {
   id?: number;
@@ -100,7 +101,6 @@ export interface AssignmentDashboard {
 export interface ReportRow {
   assignmentId: number;
   assignmentTitle: string;
-  teacherId: number;
   subjectId: number;
   studentId: number;
   studentName: string;
@@ -121,11 +121,12 @@ export interface AssignmentLookups {
   classes: Option[];
   sections: Option[];
   subjects: Option[];
-  teachers: Option[];
   teacherScopes: TeacherAssignmentScope[];
 }
 
 export interface TeacherAssignmentScope {
+  academicSessionId: number;
+  academicSessionName: string;
   classId: number;
   className: string;
   sectionId: number;
@@ -139,7 +140,6 @@ export interface AssignmentFilters {
   classId?: number;
   sectionId?: number;
   subjectId?: number;
-  teacherId?: number;
   status?: AssignmentStatus;
   search?: string;
   page?: number;
@@ -165,6 +165,5 @@ export interface ReportFilters {
   type?: string;
   sessionId?: number;
   studentId?: number;
-  teacherId?: number;
   subjectId?: number;
 }
