@@ -36,7 +36,7 @@ import StudentAssignments from "../pages/student/Homework";
 import ParentAssignments from "../pages/parent/Assignments";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
-import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
+import SubjectsWorkspace from "../modules/admin/subjects/SubjectsWorkspace";
 import SubjectFormPage from "../modules/admin/subjects/SubjectFormPage";
 import SubjectDetailPage from "../modules/admin/subjects/SubjectDetailPage";
 import GuardianListPage from "../modules/admin/guardians/pages/GuardianListPage";
@@ -166,7 +166,7 @@ const AppRoutes = () => {
         path="/admin/subjects"
         element={
           <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
-            <SubjectListPage />
+            <SubjectsWorkspace />
           </ProtectedRoute>
         }
       />
