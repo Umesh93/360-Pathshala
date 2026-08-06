@@ -28,6 +28,7 @@ export default function MultiSelect({
         !wrapperRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
+        setSearch("");
       }
     };
 
@@ -42,10 +43,13 @@ export default function MultiSelect({
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
-    } else {
-      setSearch("");
     }
   }, [open]);
+
+  const close = () => {
+    setOpen(false);
+    setSearch("");
+  };
 
   const toggleOption = (option: string) => {
     if (selected.includes(option)) {
@@ -79,7 +83,7 @@ export default function MultiSelect({
     <div ref={wrapperRef} className="relative">
       {/* Input */}
       <div
-        onClick={() => setOpen(!open)}
+        onClick={() => open ? close() : setOpen(true)}
         className={`min-h-[56px] w-full rounded-xl border bg-white px-4 py-3 transition cursor-pointer ${
           open
             ? "border-teal-500 ring-2 ring-teal-100"

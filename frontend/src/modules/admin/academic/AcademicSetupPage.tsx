@@ -43,7 +43,7 @@ export default function AcademicSetupPage() {
   }, [page, selectedClassId]);
 
   const refresh = useCallback(() => tab === "classes" ? loadClasses() : loadSections(), [loadClasses, loadSections, tab]);
-  useEffect(() => { refresh().catch((error) => showToast(message(error), "error")); }, [refresh, showToast]);
+  useEffect(() => { queueMicrotask(() => refresh().catch((error) => showToast(message(error), "error"))); }, [refresh, showToast]);
   const reset = () => { setEditingId(undefined); setName(""); setCode(""); setCapacity("40"); };
 
   const submit = async () => {

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import CreateDemoAccountForm from "./CreateDemoAccountForm";
-import type { DemoRequest } from "@/types";
+import type { DemoRequest } from "@/types/DemoRequest";
 import type { CreateDemoAccountPayload } from "@/types/DemoSchool";
 
 interface Props {

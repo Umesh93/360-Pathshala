@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useToast } from "@/modules/admin/students/components/Toast";
-import type { DemoSchool, ConvertToPaidResult } from "@/types";
+import type { DemoSchool } from "@/types/DemoSchool";
 
 interface Props {
   account: DemoSchool;

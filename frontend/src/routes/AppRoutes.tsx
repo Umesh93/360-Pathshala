@@ -23,9 +23,13 @@ import TeacherDashboard from "../pages/teacher/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
 import ParentDashboard from "../pages/parent/Dashboard";
 import AdminAttendance from "../pages/admin/Attendance";
+import AdminExaminations from "../pages/admin/Examinations";
 import TeacherAttendance from "../pages/teacher/Attendance";
 import StudentAttendance from "../pages/student/Attendance";
 import ParentAttendance from "../pages/parent/Attendance";
+import TeacherExams from "../pages/teacher/Exams";
+import StudentExams from "../pages/student/Exams";
+import ParentResults from "../pages/parent/Results";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
 import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
@@ -91,6 +95,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="/admin/attendance" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AdminAttendance /></ProtectedRoute>} />
+      <Route path="/admin/examinations" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AdminExaminations /></ProtectedRoute>} />
       <Route
         path="/admin/students"
         element={
@@ -201,6 +206,8 @@ const AppRoutes = () => {
         }
       />
       <Route path="/teacher/attendance" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherAttendance /></ProtectedRoute>} />
+      <Route path="/teacher/marks" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherExams /></ProtectedRoute>} />
+      <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherExams /></ProtectedRoute>} />
 
       {/* Student Portal Routes */}
       <Route
@@ -212,6 +219,8 @@ const AppRoutes = () => {
         }
       />
       <Route path="/student/attendance" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentAttendance /></ProtectedRoute>} />
+      <Route path="/student/results" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentExams /></ProtectedRoute>} />
+      <Route path="/student/exams" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentExams /></ProtectedRoute>} />
 
       {/* Parent / Guardian Portal Routes */}
       <Route
@@ -223,6 +232,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="/parent/child-attendance" element={<ProtectedRoute allowedRoles={["PARENT"]}><ParentAttendance /></ProtectedRoute>} />
+      <Route path="/parent/child-results" element={<ProtectedRoute allowedRoles={["PARENT"]}><ParentResults /></ProtectedRoute>} />
 
       {/* Unauthorized */}
       <Route path="/unauthorized" element={<h1>Unauthorized</h1>} />

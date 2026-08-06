@@ -24,6 +24,8 @@ export interface StudentAttendanceRow {
   remarks: string;
   existing: boolean;
   date?: string;
+  checkIn?: string;
+  checkOut?: string;
   className?: string;
   sectionName?: string;
 }

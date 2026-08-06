@@ -81,7 +81,7 @@ const TeacherDashboard = () => {
           />
           <StatCard
             title="Attendance (Today)"
-            value={String((charts?.attendanceSummary?.present as number) || 0)}
+            value={String(charts.attendanceSummary?.present || 0)}
             icon={<ClipboardCheck />}
             iconBg="bg-purple-500"
           />

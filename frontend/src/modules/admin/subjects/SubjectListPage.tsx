@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
@@ -17,9 +17,9 @@ export default function SubjectListPage() {
   const [page, setPage] = useState(1); const [totalPages, setTotalPages] = useState(1); const [loading, setLoading] = useState(true); const [deleteId, setDeleteId] = useState<number>();
   const [search, setSearch] = useState(""); const [classId, setClassId] = useState(""); const [teacherId, setTeacherId] = useState(""); const [subjectType, setSubjectType] = useState(""); const [optional, setOptional] = useState(""); const [status, setStatus] = useState(""); const [deleted, setDeleted] = useState(false); const [sort, setSort] = useState("subjectName,asc");
   useEffect(() => { Promise.all([getAcademicClasses(0, 100), getTeachers(1, 100)]).then(([classPage, teacherPage]) => { setClasses(classPage.content); setTeachers(teacherPage.data.map((item) => ({ id: item.id, fullName: `${item.firstName} ${item.lastName}`.trim() }))); }); }, []);
-  const filters = { search: search || undefined, classId: classId ? Number(classId) : undefined, teacherId: teacherId ? Number(teacherId) : undefined, subjectType: subjectType || undefined, optional: optional === "" ? undefined : optional === "true", status: status || undefined, deleted, page: page - 1, size: 10, sort };
-  const load = useCallback(async () => { setLoading(true); try { const response = await getSubjects(filters); setItems(response.content); setTotalPages(Math.max(response.totalPages, 1)); } catch (error) { showToast(errorMessage(error), "error"); } finally { setLoading(false); } }, [search, classId, teacherId, subjectType, optional, status, deleted, page, sort]);
-  useEffect(() => { load(); }, [load]);
+  const filters = useMemo(() => ({ search: search || undefined, classId: classId ? Number(classId) : undefined, teacherId: teacherId ? Number(teacherId) : undefined, subjectType: subjectType || undefined, optional: optional === "" ? undefined : optional === "true", status: status || undefined, deleted, page: page - 1, size: 10, sort }), [search, classId, teacherId, subjectType, optional, status, deleted, page, sort]);
+  const load = useCallback(async () => { setLoading(true); try { const response = await getSubjects(filters); setItems(response.content); setTotalPages(Math.max(response.totalPages, 1)); } catch (error) { showToast(errorMessage(error), "error"); } finally { setLoading(false); } }, [filters, showToast]);
+  useEffect(() => { queueMicrotask(load); }, [load]);
   const remove = async () => { if (!deleteId) return; try { await deleteSubject(deleteId); setDeleteId(undefined); showToast("Subject deleted successfully", "success"); await load(); } catch (error) { showToast(errorMessage(error), "error"); } };
   const restore = async (id: number) => { try { await restoreSubject(id); showToast("Subject restored successfully", "success"); await load(); } catch (error) { showToast(errorMessage(error), "error"); } };
   const exportCsv = async () => { const blob = await exportSubjectsCsv(filters); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "subjects.csv"; link.click(); URL.revokeObjectURL(url); };

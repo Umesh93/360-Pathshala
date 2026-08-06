@@ -5,7 +5,7 @@ export interface DashboardMetrics {
 }
 
 export interface DashboardCharts {
-  [key: string]: unknown;
+  [key: string]: Record<string, unknown> | undefined;
 }
 
 export interface DashboardResponse {

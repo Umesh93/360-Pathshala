@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../../layouts/AdminLayout";
 import { useToast } from "../students/components/Toast";
@@ -10,8 +10,8 @@ import type { Subject, TeacherAssignment } from "./subject.types";
 export default function SubjectDetailPage() {
   const { id } = useParams(); const subjectId = Number(id); const navigate = useNavigate(); const { showToast } = useToast();
   const [subject, setSubject] = useState<Subject>(); const [assignments, setAssignments] = useState<TeacherAssignment[]>([]); const [teachers, setTeachers] = useState<{ id: number; fullName: string }[]>([]); const [sections, setSections] = useState<{ id: number; name: string }[]>([]); const [teacherId, setTeacherId] = useState(0); const [sectionId, setSectionId] = useState(0);
-  const load = async () => { const item = await getSubject(subjectId); setSubject(item); const [assigned, teacherPage, sectionPage] = await Promise.all([getSubjectTeachers(subjectId), getTeachers(1, 100), getAcademicSections(item.classId, 0, 100)]); setAssignments(assigned); setTeachers(teacherPage.data.map((value) => ({ id: value.id, fullName: `${value.firstName} ${value.lastName}`.trim() }))); setSections(sectionPage.content); };
-  useEffect(() => { load().catch(() => showToast("Failed to load subject", "error")); }, [subjectId]);
+  const load = useCallback(async () => { const item = await getSubject(subjectId); setSubject(item); const [assigned, teacherPage, sectionPage] = await Promise.all([getSubjectTeachers(subjectId), getTeachers(1, 100), getAcademicSections(item.classId, 0, 100)]); setAssignments(assigned); setTeachers(teacherPage.data.map((value) => ({ id: value.id, fullName: `${value.firstName} ${value.lastName}`.trim() }))); setSections(sectionPage.content); }, [subjectId]);
+  useEffect(() => { queueMicrotask(() => load().catch(() => showToast("Failed to load subject", "error"))); }, [load, showToast]);
   if (!subject) return <AdminLayout><div className="p-8">Loading subject...</div></AdminLayout>;
   const assign = async () => { if (!teacherId || !sectionId) { showToast("Select teacher and section", "error"); return; } try { await assignSubjectTeacher(subjectId, { teacherId, sectionId }); showToast("Teacher assigned successfully", "success"); await load(); } catch (error) { showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Assignment failed", "error"); } };
   const teacherName = (teacher: number) => teachers.find((item) => item.id === teacher)?.fullName || `Teacher ${teacher}`; const sectionName = (section: number) => sections.find((item) => item.id === section)?.name || `Section ${section}`;

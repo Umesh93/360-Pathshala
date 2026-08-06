@@ -75,7 +75,7 @@ const StudentDashboard = () => {
           />
           <StatCard
             title="Attendance (Today)"
-            value={String((charts?.attendance?.present as number) || 0)}
+            value={String(charts.attendance?.present || 0)}
             icon={<ClipboardCheck />}
             iconBg="bg-green-500"
           />

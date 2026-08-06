@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/modules/admin/students/components/Toast";
 import {
   getConversionHistory,
@@ -8,13 +7,13 @@ import {
   exportConversionsExcel,
   exportConversionsPDF,
 } from "@/services/conversionHistoryService";
-import type { ConversionHistory, ConversionDetail } from "@/types";
+import type { ConversionHistory as ConversionHistoryRecord, ConversionDetail } from "@/types/ConversionHistory";
 import SuperAdminLayout from "@/layouts/SuperAdminLayout";
+import ConversionDetailModal from "./ConversionDetailModal";
 
 export default function ConversionHistory() {
   const { showToast } = useToast();
-  const navigate = useNavigate();
-  const [conversions, setConversions] = useState<ConversionHistory[]>([]);
+  const [conversions, setConversions] = useState<ConversionHistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailId, setDetailId] = useState<number | null>(null);
   const [detail, setDetail] = useState<ConversionDetail | null>(null);
@@ -22,7 +21,7 @@ export default function ConversionHistory() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  const loadConversions = async () => {
+  const loadConversions = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getConversionHistory();
@@ -32,11 +31,11 @@ export default function ConversionHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
-    loadConversions();
-  }, []);
+    queueMicrotask(loadConversions);
+  }, [loadConversions]);
 
   const handleViewDetail = async (id: number) => {
     setDetailId(id);

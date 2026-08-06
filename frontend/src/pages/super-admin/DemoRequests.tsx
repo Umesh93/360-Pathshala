@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/modules/admin/students/components/Toast";
 import {
   getAdminDemoRequests,
-  approveDemoRequest,
   rejectDemoRequest,
   deleteAdminDemoRequest,
 } from "@/services/demoRequestService";
@@ -14,14 +13,8 @@ import {
   deleteDemoAccount,
   createDemoAccount,
 } from "@/services/demoAccountService";
-import type {
-  DemoRequest,
-  DemoSchool,
-  RequestStatus,
-  DemoStatus,
-  CreateDemoAccountPayload,
-  ConvertToPaidResult,
-} from "@/types";
+import type { DemoRequest } from "@/types/DemoRequest";
+import type { CreateDemoAccountPayload, ConvertToPaidResult, DemoSchool } from "@/types/DemoSchool";
 import SuperAdminLayout from "@/layouts/SuperAdminLayout";
 import CreateDemoAccountForm from "./CreateDemoAccountForm";
 import ConvertToPaidModal from "./ConvertToPaidModal";
@@ -48,7 +41,7 @@ export default function DemoRequests() {
   const [requestSearch, setRequestSearch] = useState("");
   const [accountSearch, setAccountSearch] = useState("");
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getAdminDemoRequests();
@@ -58,9 +51,9 @@ export default function DemoRequests() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
-  const loadAccounts = async () => {
+  const loadAccounts = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getDemoAccounts();
@@ -70,15 +63,15 @@ export default function DemoRequests() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     if (activeTab === "requests") {
-      loadRequests();
+      queueMicrotask(loadRequests);
     } else {
-      loadAccounts();
+      queueMicrotask(loadAccounts);
     }
-  }, [activeTab]);
+  }, [activeTab, loadAccounts, loadRequests]);
 
   const handleApprove = (request: DemoRequest) => {
     setSelectedRequest(request);
@@ -130,10 +123,11 @@ export default function DemoRequests() {
         setShowForm(false);
         loadAccounts();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        err?.response?.data?.message ||
-        err.message ||
+        error.response?.data?.message ||
+        error.message ||
         "Failed to create demo account";
       showToast(message, "error");
       throw err;

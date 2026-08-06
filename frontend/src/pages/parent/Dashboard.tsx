@@ -75,7 +75,7 @@ const ParentDashboard = () => {
           />
           <StatCard
             title="Child Attendance (Today)"
-            value={String((charts?.childAttendance?.present as number) || 0)}
+            value={String(charts.childAttendance?.present || 0)}
             icon={<ClipboardCheck />}
             iconBg="bg-green-500"
           />

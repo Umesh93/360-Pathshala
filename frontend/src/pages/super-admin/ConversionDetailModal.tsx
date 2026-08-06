@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ConversionDetail } from "@/types";
+import type { ConversionDetail } from "@/types/ConversionHistory";
 
 interface Props {
   detail: ConversionDetail;

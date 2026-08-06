@@ -150,7 +150,7 @@ export default function Sidebar({
 
   const filteredLinks =
     enabledModules && enabledModules.length > 0
-      ? links.filter((link) => !("moduleCode" in link) || enabledModules.includes(link.moduleCode))
+      ? links.filter((link) => !("moduleCode" in link) || typeof link.moduleCode !== "string" || enabledModules.includes(link.moduleCode))
       : links;
 
   const userLabel = getUserLabel(role);

@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react";
-import { RefreshCw, Copy, Check } from "lucide-react";
+import { useState } from "react";
 import { useToast } from "@/modules/admin/students/components/Toast";
-import SchoolFormFields, {
-  MODULE_OPTIONS,
-} from "@/components/SchoolFormFields";
-import type { DemoRequest } from "@/types";
+import SchoolFormFields from "@/components/SchoolFormFields";
+import type { DemoRequest } from "@/types/DemoRequest";
 import type { CreateDemoAccountPayload } from "@/types/DemoSchool";
 
 interface Props {
@@ -50,12 +47,11 @@ export default function CreateDemoAccountForm({
   onCancel,
 }: Props) {
   const { showToast } = useToast();
-  const isFromRequest = !!demoRequest;
   const [schoolName, setSchoolName] = useState(demoRequest?.schoolName || "");
   const [address, setAddress] = useState(demoRequest?.address || "");
   const [email, setEmail] = useState(demoRequest?.email || "");
   const [phone, setPhone] = useState(demoRequest?.phone || "");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(demoRequest?.email.split("@")[0] || "");
   const [password, setPassword] = useState(generatePassword());
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(
@@ -64,14 +60,6 @@ export default function CreateDemoAccountForm({
   const [duration, setDuration] = useState(30);
   const [remarks, setRemarks] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (email) {
-      const prefix = email.split("@")[0];
-      setUsername(prefix);
-    }
-  }, [email]);
 
   const expiryDate = (() => {
     if (!startDate) return "";
@@ -79,16 +67,6 @@ export default function CreateDemoAccountForm({
     expiry.setDate(expiry.getDate() + duration);
     return expiry.toISOString().split("T")[0];
   })();
-
-  const handleCopy = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(field);
-    setTimeout(() => setCopied(null), 2000);
-  };
-
-  const handleRegenerate = () => {
-    setPassword(generatePassword());
-  };
 
   const handleSubmit = async () => {
     if (!schoolName.trim()) {
@@ -182,7 +160,10 @@ export default function CreateDemoAccountForm({
             selectedModules={selectedModules}
             onSchoolNameChange={setSchoolName}
             onAddressChange={setAddress}
-            onEmailChange={setEmail}
+            onEmailChange={(value) => {
+              setEmail(value);
+              setUsername(value.split("@")[0]);
+            }}
             onPhoneChange={setPhone}
             onUsernameChange={setUsername}
             onPasswordChange={setPassword}

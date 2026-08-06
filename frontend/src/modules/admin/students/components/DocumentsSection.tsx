@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import type { DocumentsData } from "../schemas/student.schema";
 
 interface DocumentsSectionProps {
@@ -49,14 +49,10 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     });
   };
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const files = Array.from(e.dataTransfer.files);
-      handleFiles(files);
-    },
-    [activeCategory]
-  );
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    handleFiles(Array.from(e.dataTransfer.files));
+  };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

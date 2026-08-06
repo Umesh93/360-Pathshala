@@ -47,6 +47,7 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
       onChange({ ...data, emergencyContactNumber: contactNumber });
     }
   }, [
+    data,
     data.emergencyContactNumber,
     data.emergencyContactPerson,
     guardianData?.fatherPhone,

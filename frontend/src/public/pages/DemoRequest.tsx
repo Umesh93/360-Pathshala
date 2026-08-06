@@ -90,10 +90,11 @@ function DemoRequestPage() {
       setSubmitted(true);
       showToast("Demo request submitted successfully!", "success");
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        err?.response?.data?.message ||
-        err.message ||
+        error.response?.data?.message ||
+        error.message ||
         "Something went wrong. Please try again.";
       showToast(message, "error");
     } finally {
