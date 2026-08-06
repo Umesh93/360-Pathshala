@@ -30,6 +30,10 @@ import ParentAttendance from "../pages/parent/Attendance";
 import TeacherExams from "../pages/teacher/Exams";
 import StudentExams from "../pages/student/Exams";
 import ParentResults from "../pages/parent/Results";
+import AdminAssignments from "../pages/admin/Assignments";
+import TeacherAssignments from "../pages/teacher/Assignments";
+import StudentAssignments from "../pages/student/Homework";
+import ParentAssignments from "../pages/parent/Assignments";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
 import SubjectListPage from "../modules/admin/subjects/SubjectListPage";
@@ -94,8 +98,30 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/admin/attendance" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AdminAttendance /></ProtectedRoute>} />
-      <Route path="/admin/examinations" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AdminExaminations /></ProtectedRoute>} />
+      <Route
+        path="/admin/attendance"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <AdminAttendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/examinations"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <AdminExaminations />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/assignments"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <AdminAssignments />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/students"
         element={
@@ -130,15 +156,44 @@ const AppRoutes = () => {
       />
       <Route
         path="/admin/classes"
-        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><AcademicSetupPage /></ProtectedRoute>}
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <AcademicSetupPage />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/admin/subjects"
-        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectListPage /></ProtectedRoute>}
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SubjectListPage />
+          </ProtectedRoute>
+        }
       />
-      <Route path="/admin/subjects/add" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectFormPage /></ProtectedRoute>} />
-      <Route path="/admin/subjects/:id" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectDetailPage /></ProtectedRoute>} />
-      <Route path="/admin/subjects/:id/edit" element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><SubjectFormPage /></ProtectedRoute>} />
+      <Route
+        path="/admin/subjects/add"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SubjectFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/subjects/:id"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SubjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/subjects/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SubjectFormPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/teachers"
         element={
@@ -149,11 +204,19 @@ const AppRoutes = () => {
       />
       <Route
         path="/admin/teachers/:id"
-        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><TeacherDetailPage /></ProtectedRoute>}
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <TeacherDetailPage />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/admin/teachers/:id/edit"
-        element={<ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}><EditTeacherPage /></ProtectedRoute>}
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <EditTeacherPage />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/admin/teachers/add"
@@ -205,9 +268,38 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/teacher/attendance" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherAttendance /></ProtectedRoute>} />
-      <Route path="/teacher/marks" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherExams /></ProtectedRoute>} />
-      <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={["TEACHER"]}><TeacherExams /></ProtectedRoute>} />
+      <Route
+        path="/teacher/attendance"
+        element={
+          <ProtectedRoute allowedRoles={["TEACHER"]}>
+            <TeacherAttendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/marks"
+        element={
+          <ProtectedRoute allowedRoles={["TEACHER"]}>
+            <TeacherExams />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/exams"
+        element={
+          <ProtectedRoute allowedRoles={["TEACHER"]}>
+            <TeacherExams />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/assignments"
+        element={
+          <ProtectedRoute allowedRoles={["TEACHER"]}>
+            <TeacherAssignments />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Student Portal Routes */}
       <Route
@@ -218,9 +310,38 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/student/attendance" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentAttendance /></ProtectedRoute>} />
-      <Route path="/student/results" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentExams /></ProtectedRoute>} />
-      <Route path="/student/exams" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentExams /></ProtectedRoute>} />
+      <Route
+        path="/student/attendance"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentAttendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/results"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentExams />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/exams"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentExams />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/assignments"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentAssignments />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Parent / Guardian Portal Routes */}
       <Route
@@ -231,8 +352,30 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/parent/child-attendance" element={<ProtectedRoute allowedRoles={["PARENT"]}><ParentAttendance /></ProtectedRoute>} />
-      <Route path="/parent/child-results" element={<ProtectedRoute allowedRoles={["PARENT"]}><ParentResults /></ProtectedRoute>} />
+      <Route
+        path="/parent/child-attendance"
+        element={
+          <ProtectedRoute allowedRoles={["PARENT"]}>
+            <ParentAttendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/parent/child-results"
+        element={
+          <ProtectedRoute allowedRoles={["PARENT"]}>
+            <ParentResults />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/parent/child-assignments"
+        element={
+          <ProtectedRoute allowedRoles={["PARENT"]}>
+            <ParentAssignments />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Unauthorized */}
       <Route path="/unauthorized" element={<h1>Unauthorized</h1>} />
