@@ -9,9 +9,12 @@ import type {
   GradingSystem,
   MarkRow,
   MeritRow,
+  PublicationScope,
   ReportRow,
   RoutineItem,
+  SubjectAcademicConfigRow,
 } from "./examination.types";
+import type { ExamResult, SubjectResult } from "../../examinations/types";
 
 type Json = Record<string, unknown>;
 const object = (value: unknown): Json =>
@@ -22,6 +25,14 @@ const text = (value: unknown, fallback = "") =>
   value == null ? fallback : String(value);
 const number = (value: unknown, fallback = 0) =>
   Number.isFinite(Number(value)) ? Number(value) : fallback;
+const nullableNumber = (value: unknown) =>
+  value == null || value === ""
+    ? null
+    : Number.isFinite(Number(value))
+      ? Number(value)
+      : null;
+const nullableText = (value: unknown) =>
+  value == null || value === "" ? null : String(value);
 const items = (value: unknown) => {
   const data = object(value);
   return array(data.content ?? data.items ?? data.data ?? value);
@@ -67,6 +78,7 @@ const mapExam = (value: unknown): Examination => {
     description: text(item.description),
     status: text(item.status, "UPCOMING").toUpperCase(),
     published: Boolean(item.published),
+    includeInCgpa: Boolean(item.includeInCgpa),
   };
 };
 
@@ -157,6 +169,87 @@ const mapReport = (value: unknown): ReportRow => {
   };
 };
 
+const mapSubjectResult = (value: unknown): SubjectResult => {
+  const item = object(value);
+  return {
+    examSubjectId: number(item.examSubjectId),
+    subjectId: number(item.subjectId),
+    subjectCode: nullableText(item.subjectCode),
+    subjectName: text(item.subjectName),
+    fullMarks: number(item.fullMarks),
+    passMarks: number(item.passMarks),
+    obtainedMarks: nullableNumber(item.obtainedMarks),
+    percentage: nullableNumber(item.percentage),
+    absent: Boolean(item.absent),
+    grade: nullableText(item.grade),
+    gradePoint: nullableNumber(item.gradePoint),
+    gpa: nullableNumber(item.gpa),
+    creditHours: nullableNumber(item.creditHours),
+    qualityPoints: nullableNumber(item.qualityPoints),
+    status: nullableText(item.status),
+    remarks: nullableText(item.remarks),
+  };
+};
+
+const mapResult = (value: unknown): ExamResult => {
+  const item = object(value);
+  return {
+    examId: number(item.examId),
+    examName: text(item.examName),
+    studentId: number(item.studentId),
+    studentName: text(item.studentName),
+    schoolName: text(item.schoolName),
+    schoolAddress: nullableText(item.schoolAddress),
+    schoolPhone: nullableText(item.schoolPhone),
+    schoolEmail: nullableText(item.schoolEmail),
+    schoolLogoUrl: nullableText(item.schoolLogoUrl),
+    studentPhoto: nullableText(item.studentPhoto),
+    admissionNumber: nullableText(item.admissionNumber),
+    rollNumber: nullableText(item.rollNumber),
+    academicSessionId: number(item.academicSessionId),
+    academicSessionName: text(item.academicSessionName),
+    examStartsOn: nullableText(item.examStartsOn),
+    examEndsOn: nullableText(item.examEndsOn),
+    resultPublishDate: nullableText(item.resultPublishDate),
+    classId: number(item.classId),
+    className: text(item.className),
+    sectionId: number(item.sectionId),
+    sectionName: text(item.sectionName),
+    total: nullableNumber(item.total),
+    fullMarks: nullableNumber(item.fullMarks),
+    percentage: nullableNumber(item.percentage),
+    totalCreditHours: nullableNumber(item.totalCreditHours),
+    gpa: nullableNumber(item.gpa),
+    cgpa: nullableNumber(item.cgpa),
+    cgpaPeriods: nullableNumber(item.cgpaPeriods),
+    grade: nullableText(item.grade),
+    status: nullableText(item.status),
+    remarks: nullableText(item.remarks),
+    classRank: nullableNumber(item.classRank),
+    sectionRank: nullableNumber(item.sectionRank),
+    schoolRank: nullableNumber(item.schoolRank),
+    published: Boolean(item.published),
+    subjects: array(item.subjects).map(mapSubjectResult),
+  };
+};
+
+const mapPublicationScope = (value: unknown): PublicationScope => {
+  const item = object(value);
+  return {
+    examId: number(item.examId),
+    classId: number(item.classId),
+    className: text(item.className),
+    sectionId: number(item.sectionId),
+    sectionName: text(item.sectionName),
+    routineCount: number(item.routineCount),
+    studentCount: number(item.studentCount),
+    missingMarksCount: number(item.missingMarksCount),
+    complete: Boolean(item.complete),
+    published: Boolean(item.published),
+    publishedAt: nullableText(item.publishedAt),
+  };
+};
+
 export async function getDashboard(sessionId: number): Promise<ExamDashboard> {
   const value = object(
     (await api.get("/examinations/dashboard", { params: { sessionId } })).data,
@@ -199,6 +292,7 @@ export async function saveExamination(
     resultPublishDate: payload.resultPublishDate || null,
     description: payload.description,
     status: payload.status,
+    includeInCgpa: payload.includeInCgpa ?? false,
   };
   return mapExam(
     (
@@ -208,6 +302,54 @@ export async function saveExamination(
     ).data,
   );
 }
+
+const mapSubjectAcademicConfig = (value: unknown): SubjectAcademicConfigRow => {
+  const item = object(value);
+  return {
+    academicSessionId: number(item.academicSessionId),
+    classId: number(item.classId),
+    subjectId: number(item.subjectId),
+    subjectCode: text(item.subjectCode),
+    subjectName: text(item.subjectName),
+    creditHours: nullableNumber(item.creditHours),
+    includeInGpa: Boolean(item.includeInGpa),
+    includeInCgpa: Boolean(item.includeInCgpa),
+    configured: Boolean(item.configured),
+    usingLegacyCreditHours: Boolean(item.usingLegacyCreditHours),
+  };
+};
+
+export const getSubjectAcademicConfig = async (
+  academicSessionId: number,
+  classId: number,
+) =>
+  items(
+    (
+      await api.get("/examinations/subject-academic-config", {
+        params: { academicSessionId, classId },
+      })
+    ).data,
+  ).map(mapSubjectAcademicConfig);
+
+export const saveSubjectAcademicConfig = async (
+  academicSessionId: number,
+  classId: number,
+  configs: SubjectAcademicConfigRow[],
+) =>
+  items(
+    (
+      await api.put("/examinations/subject-academic-config", {
+        academicSessionId,
+        classId,
+        configs: configs.map((row) => ({
+          subjectId: row.subjectId,
+          creditHours: row.creditHours ?? null,
+          includeInGpa: row.includeInGpa,
+          includeInCgpa: row.includeInCgpa,
+        })),
+      })
+    ).data,
+  ).map(mapSubjectAcademicConfig);
 
 export const getExamTypes = async (): Promise<ExamType[]> =>
   items(
@@ -243,6 +385,14 @@ export const updateExamTypeStatus = (id: number, active: boolean) =>
 
 export const getExamClasses = async (examId: number) =>
   items((await api.get(`/examinations/${examId}/classes`)).data).map(option);
+export const getClassSections = async (classId: number) =>
+  items(
+    (
+      await api.get("/academic/sections", {
+        params: { classId, page: 0, size: 200 },
+      })
+    ).data,
+  ).map(option);
 export const saveExamClasses = async (examId: number, classIds: number[]) =>
   api.put(`/examinations/${examId}/classes`, { classIds });
 
@@ -382,29 +532,44 @@ export const saveMarks = (
 
 export const publishResults = (examId: number, publish: boolean) =>
   api.post(`/examinations/${examId}/${publish ? "publish" : "unpublish"}`);
+export const getPublicationScopes = async (
+  examId: number,
+): Promise<PublicationScope[]> =>
+  items((await api.get(`/examinations/${examId}/publication-scopes`)).data).map(
+    mapPublicationScope,
+  );
+export const publishScope = (
+  examId: number,
+  classId: number,
+  sectionId: number,
+  publish: boolean,
+) =>
+  api.post(
+    `/examinations/${examId}/publication-scopes/${classId}/${sectionId}/${publish ? "publish" : "unpublish"}`,
+  );
+export const getStudentResults = async (
+  examId: number,
+  params: { classId?: number; sectionId?: number } = {},
+): Promise<ExamResult[]> =>
+  items(
+    (await api.get(`/examinations/${examId}/student-results`, { params })).data,
+  ).map(mapResult);
+export const getStudentResult = async (
+  examId: number,
+  studentId: number,
+): Promise<ExamResult> =>
+  mapResult(
+    (await api.get(`/examinations/${examId}/results/${studentId}`)).data,
+  );
 export const getReport = async (examId: number) =>
   items((await api.get(`/examinations/${examId}/reports`)).data).map(mapReport);
-export const getMeritList = async (examId: number): Promise<MeritRow[]> =>
-  items((await api.get(`/examinations/${examId}/merit`)).data).map((value) => {
-    const item = object(value);
-    return {
-      studentId: number(item.studentId),
-      studentName: text(item.studentName),
-      className: text(item.className),
-      sectionName: text(item.sectionName),
-      admissionNumber: text(item.admissionNumber),
-      rollNumber: text(item.rollNumber),
-      total: number(item.total),
-      fullMarks: number(item.fullMarks),
-      percentage: number(item.percentage),
-      grade: text(item.grade),
-      gpa: number(item.gpa),
-      status: text(item.status),
-      classRank: number(item.classRank),
-      sectionRank: number(item.sectionRank),
-      schoolRank: number(item.schoolRank),
-    };
-  });
+export const getMeritList = async (
+  examId: number,
+  params: { classId?: number; sectionId?: number } = {},
+): Promise<MeritRow[]> =>
+  items((await api.get(`/examinations/${examId}/merit`, { params })).data).map(
+    mapResult,
+  );
 export const exportExaminationReport = (
   examId: number,
   format: "csv" | "pdf" | "xlsx",

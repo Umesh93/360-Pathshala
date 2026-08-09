@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   BarChart3,
@@ -9,9 +9,11 @@ import {
   FileSpreadsheet,
   FileText,
   GraduationCap,
+  Eye,
   Pencil,
   Plus,
   Save,
+  SlidersHorizontal,
   Tags,
   Trash2,
   Users,
@@ -21,6 +23,8 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
 import PageHeader from "../../../components/layout/PageHeader";
 import { useToast } from "../students/components/Toast";
+import { ResultCard } from "../../examinations/components";
+import type { ExamResult } from "../../examinations/types";
 import * as service from "./examination.service";
 import type {
   ExamDashboard,
@@ -32,8 +36,9 @@ import type {
   MarkRow,
   MeritRow,
   Option,
-  ReportRow,
+  PublicationScope,
   RoutineItem,
+  SubjectAcademicConfigRow,
 } from "./examination.types";
 
 const card = "rounded-lg border border-gray-100 bg-white shadow-sm";
@@ -67,6 +72,7 @@ function Select({
   onChange,
   required = false,
   disabled = false,
+  emptyLabel,
 }: {
   name: string;
   value?: number;
@@ -74,6 +80,7 @@ function Select({
   onChange: (value?: number) => void;
   required?: boolean;
   disabled?: boolean;
+  emptyLabel?: string;
 }) {
   return (
     <label className="min-w-[150px] flex-1">
@@ -84,7 +91,7 @@ function Select({
         disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value) || undefined)}
       >
-        <option value="">Select {name.toLowerCase()}</option>
+        <option value="">{emptyLabel || `Select ${name.toLowerCase()}`}</option>
         {options.map((option) => (
           <option key={option.id} value={option.id}>
             {option.name}
@@ -98,10 +105,12 @@ function Dialog({
   title,
   close,
   children,
+  wide = false,
 }: {
   title: string;
   close: () => void;
   children: React.ReactNode;
+  wide?: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/40 p-4">
@@ -109,7 +118,7 @@ function Dialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-5 shadow-2xl"
+        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white p-5 shadow-2xl ${wide ? "max-w-6xl" : "max-w-2xl"}`}
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{title}</h2>
@@ -385,7 +394,13 @@ function Examinations({
         </button>
         <button
           className={primary}
-          onClick={() => setEditing({ status: "UPCOMING", description: "" })}
+          onClick={() =>
+            setEditing({
+              status: "UPCOMING",
+              description: "",
+              includeInCgpa: false,
+            })
+          }
         >
           <Plus size={16} />
           New exam
@@ -573,6 +588,16 @@ function Examinations({
                   setEditing({ ...editing, description: e.target.value })
                 }
               />
+            </label>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={editing.includeInCgpa ?? false}
+                onChange={(e) =>
+                  setEditing({ ...editing, includeInCgpa: e.target.checked })
+                }
+              />
+              Include in CGPA
             </label>
           </div>
           <div className="mt-5 flex justify-end">
@@ -1828,40 +1853,154 @@ function Results({
   refreshLookups: () => Promise<void>;
 }) {
   const { showToast } = useToast();
+  const [sessionId, setSessionId] = useState<number>();
   const [examId, setExamId] = useState<number>();
-  const [rows, setRows] = useState<ReportRow[]>([]);
-  const [merit, setMerit] = useState<MeritRow[]>([]);
+  const [classId, setClassId] = useState<number>();
+  const [sectionId, setSectionId] = useState<number>();
+  const [scopes, setScopes] = useState<PublicationScope[]>([]);
+  const [examClasses, setExamClasses] = useState<Option[]>([]);
+  const [classSections, setClassSections] = useState<Option[]>([]);
+  const [rows, setRows] = useState<ExamResult[]>([]);
+  const [detail, setDetail] = useState<ExamResult>();
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [mutation, setMutation] = useState<"publish" | "unpublish">();
-  const [confirm, setConfirm] = useState<"publish" | "unpublish">();
-  const exam = lookups.exams.find((item) => item.id === examId);
+  const [scopesLoading, setScopesLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState<number>();
+  const [error, setError] = useState("");
+  const [scopeError, setScopeError] = useState("");
+  const [mutation, setMutation] = useState<string>();
+  const scopeRequest = useRef(0);
+  const [confirm, setConfirm] = useState<{
+    action: "publish" | "unpublish";
+    scope: PublicationScope;
+  }>();
+  const exams = lookups.exams.filter(
+    (item) => item.academicSessionId === sessionId,
+  );
+  const uniqueOptions = (
+    values: Array<{ id: number; name: string }>,
+  ): Option[] =>
+    Array.from(new Map(values.map((item) => [item.id, item])).values());
+  const sections = uniqueOptions(
+    scopes
+      .filter((scope) => !classId || scope.classId === classId)
+      .map((scope) => ({ id: scope.sectionId, name: scope.sectionName })),
+  );
+  const filteredScopes = scopes.filter(
+    (scope) =>
+      (!classId || scope.classId === classId) &&
+      (!sectionId || scope.sectionId === sectionId),
+  );
+
+  const chooseExam = async (id?: number) => {
+    const request = ++scopeRequest.current;
+    setExamId(id);
+    setClassId(undefined);
+    setSectionId(undefined);
+    setScopes([]);
+    setExamClasses([]);
+    setClassSections([]);
+    setRows([]);
+    setLoaded(false);
+    setError("");
+    setScopeError("");
+    setDetail(undefined);
+    if (!id) return;
+    setScopesLoading(true);
+    try {
+      const [items, assignedClasses] = await Promise.all([
+        service.getPublicationScopes(id),
+        service.getExamClasses(id),
+      ]);
+      if (request === scopeRequest.current) {
+        setScopes(items);
+        setExamClasses(assignedClasses);
+      }
+    } catch (requestError) {
+      if (request === scopeRequest.current) {
+        const message = service.errorMessage(requestError);
+        setScopes([]);
+        setScopeError(message);
+        showToast(message, "error");
+      }
+    } finally {
+      if (request === scopeRequest.current) setScopesLoading(false);
+    }
+  };
+
+  const resultParams = () => ({
+    classId,
+    sectionId,
+  });
   const load = async () => {
     if (!examId) return;
     setLoading(true);
+    setError("");
     try {
-      const [reportRows, meritRows] = await Promise.all([
-        service.getReport(examId),
-        service.getMeritList(examId),
-      ]);
-      setRows(reportRows);
-      setMerit(meritRows);
+      setRows(await service.getStudentResults(examId, resultParams()));
       setLoaded(true);
     } catch (e) {
-      showToast(service.errorMessage(e), "error");
+      const message = service.errorMessage(e);
+      setRows([]);
+      setLoaded(false);
+      setError(message);
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }
   };
+
+  const refreshScopes = async () => {
+    if (!examId) return;
+    setScopes(await service.getPublicationScopes(examId));
+  };
+
+  const selectClass = async (id?: number) => {
+    setClassId(id);
+    setSectionId(undefined);
+    setClassSections([]);
+    setRows([]);
+    setLoaded(false);
+    setError("");
+    setDetail(undefined);
+    if (!id) return;
+    try {
+      setClassSections(await service.getClassSections(id));
+    } catch (requestError) {
+      showToast(service.errorMessage(requestError), "error");
+    }
+  };
+
+  const sectionOptions = classId
+    ? uniqueOptions([
+        ...classSections,
+        ...scopes
+          .filter((scope) => scope.classId === classId)
+          .map((scope) => ({ id: scope.sectionId, name: scope.sectionName })),
+      ])
+    : sections;
+
   const mutate = async () => {
     if (!examId || !confirm) return;
-    const action = confirm;
-    setMutation(action);
+    const { action, scope } = confirm;
+    const mutationKey = `${scope.classId}-${scope.sectionId}`;
+    setMutation(mutationKey);
     try {
-      await service.publishResults(examId, action === "publish");
-      await Promise.all([load(), refreshLookups()]);
+      await service.publishScope(
+        examId,
+        scope.classId,
+        scope.sectionId,
+        action === "publish",
+      );
+      await Promise.all([
+        refreshScopes(),
+        loaded
+          ? service.getStudentResults(examId, resultParams()).then(setRows)
+          : Promise.resolve(),
+        refreshLookups(),
+      ]);
       showToast(
-        action === "publish" ? "Results published." : "Results unpublished.",
+        `${scope.className} - ${scope.sectionName} results ${action === "publish" ? "published" : "unpublished"}.`,
       );
       setConfirm(undefined);
     } catch (e) {
@@ -1870,131 +2009,303 @@ function Results({
       setMutation(undefined);
     }
   };
+
+  const viewResult = async (studentId: number) => {
+    if (!examId) return;
+    setDetailLoading(studentId);
+    try {
+      setDetail(await service.getStudentResult(examId, studentId));
+    } catch (requestError) {
+      showToast(service.errorMessage(requestError), "error");
+    } finally {
+      setDetailLoading(undefined);
+    }
+  };
+
+  const meritTitle = classId
+    ? sectionId
+      ? `Merit list: ${examClasses.find((item) => item.id === classId)?.name || "Class"} - ${sectionOptions.find((item) => item.id === sectionId)?.name || "Section"}`
+      : `Merit list: ${examClasses.find((item) => item.id === classId)?.name || "Class"}`
+    : "Merit list: All classes and sections";
+
   return (
     <div className="space-y-4">
-      <div className={`${card} flex flex-wrap items-end gap-3 p-4`}>
+      <div className={`${card} grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5`}>
+        <Select
+          name="Academic session"
+          value={sessionId}
+          options={lookups.sessions}
+          onChange={(id) => {
+            scopeRequest.current += 1;
+            setSessionId(id);
+            setExamId(undefined);
+            setClassId(undefined);
+            setSectionId(undefined);
+            setScopes([]);
+            setRows([]);
+            setLoaded(false);
+            setError("");
+            setScopeError("");
+            setScopesLoading(false);
+            setDetail(undefined);
+          }}
+          required
+        />
         <Select
           name="Examination"
           value={examId}
-          options={lookups.exams}
+          options={exams}
+          disabled={!sessionId}
+          onChange={(id) => void chooseExam(id)}
+          required
+        />
+        <Select
+          name="Class"
+          value={classId}
+          options={examClasses}
+          disabled={!examId || scopesLoading}
+          emptyLabel="All Classes"
+          onChange={(id) => void selectClass(id)}
+        />
+        <Select
+          name="Section"
+          value={sectionId}
+          options={sectionOptions}
+          disabled={!examId || scopesLoading}
+          emptyLabel="All Sections"
           onChange={(id) => {
-            setExamId(id);
+            setSectionId(id);
+            setRows([]);
             setLoaded(false);
+            setError("");
+            setDetail(undefined);
           }}
         />
         <button
-          className={primary}
-          disabled={!examId || loading}
+          className={`${primary} mt-5`}
+          disabled={!sessionId || !examId || loading || scopesLoading}
           onClick={load}
         >
           {loading ? "Loading..." : "Load results"}
         </button>
-        <button
-          className={secondary}
-          disabled={!examId || Boolean(mutation) || exam?.published}
-          onClick={() => setConfirm("publish")}
-        >
-          <CheckCircle2 size={16} />
-          {mutation === "publish" ? "Publishing..." : "Publish"}
-        </button>
-        <button
-          className={secondary}
-          disabled={!examId || Boolean(mutation) || !exam?.published}
-          onClick={() => setConfirm("unpublish")}
-        >
-          {mutation === "unpublish" ? "Unpublishing..." : "Unpublish"}
-        </button>
       </div>
+      {scopeError && <Notice text={scopeError} error />}
+      {error && <Notice text={error} error />}
+      {examId && (
+        <section className={`${card} overflow-hidden`}>
+          <div className="border-b p-4">
+            <h2 className="font-semibold">Publication status</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Results are published independently for each class and section.
+            </p>
+          </div>
+          {scopesLoading ? (
+            <Empty text="Loading publication scopes..." />
+          ) : filteredScopes.length ? (
+            <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredScopes.map((scope) => {
+                const mutationKey = `${scope.classId}-${scope.sectionId}`;
+                const mutating = mutation === mutationKey;
+                return (
+                  <article
+                    className="rounded-lg border border-gray-200 p-4"
+                    key={mutationKey}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          {scope.className} - {scope.sectionName}
+                        </h3>
+                        <span
+                          className={`mt-2 inline-flex rounded px-2 py-1 text-xs font-semibold ${scope.published ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-700"}`}
+                        >
+                          {scope.published ? "Published" : "Not Published"}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-xs font-semibold ${scope.complete ? "text-green-700" : "text-amber-700"}`}
+                      >
+                        {scope.complete ? "Complete" : "Incomplete"}
+                      </span>
+                    </div>
+                    <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <dt className="text-xs text-gray-500">Students</dt>
+                        <dd className="font-semibold">{scope.studentCount}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-gray-500">Routines</dt>
+                        <dd className="font-semibold">{scope.routineCount}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-gray-500">Missing marks</dt>
+                        <dd className="font-semibold">
+                          {scope.missingMarksCount}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        type="button"
+                        className={scope.published ? secondary : primary}
+                        disabled={
+                          Boolean(mutation) ||
+                          (!scope.published && !scope.complete)
+                        }
+                        onClick={() =>
+                          setConfirm({
+                            action: scope.published ? "unpublish" : "publish",
+                            scope,
+                          })
+                        }
+                      >
+                        {mutating
+                          ? "Updating..."
+                          : scope.published
+                            ? "Unpublish"
+                            : "Publish"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <Empty text="No publication scopes match this selection." />
+          )}
+        </section>
+      )}
       {loaded && (
         <>
-          <ReportTable rows={rows} lookups={lookups} />
-          <MeritTable rows={merit} />
+          <StudentResultsTable
+            rows={rows}
+            detailLoading={detailLoading}
+            onView={viewResult}
+          />
+          <MeritTable rows={rows} title={meritTitle} />
         </>
       )}
       <ConfirmDialog
         open={Boolean(confirm)}
         title={
-          confirm === "publish"
-            ? "Publish examination results"
-            : "Unpublish examination results"
+          confirm?.action === "publish"
+            ? "Publish scoped results"
+            : "Unpublish scoped results"
         }
         description={
-          confirm === "publish"
-            ? "Published marks become read-only and visible to students and parents."
-            : "Results will no longer be visible to students and parents, and marks become editable."
+          confirm
+            ? `${confirm.scope.className} - ${confirm.scope.sectionName}: ${confirm.action === "publish" ? "results become visible to students and parents, and marks become read-only." : "results will no longer be visible to students and parents, and marks become editable."}`
+            : undefined
         }
         confirmLabel={
           mutation
             ? "Updating..."
-            : confirm === "publish"
+            : confirm?.action === "publish"
               ? "Publish"
               : "Unpublish"
         }
-        variant={confirm === "unpublish" ? "destructive" : "default"}
+        variant={confirm?.action === "unpublish" ? "destructive" : "default"}
         onConfirm={mutate}
         onCancel={() => !mutation && setConfirm(undefined)}
       />
+      {detail && (
+        <Dialog title="Student result" close={() => setDetail(undefined)} wide>
+          <div className="max-h-[78vh] overflow-auto">
+            <ResultCard result={detail} />
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 }
-function ReportTable({
+
+const resultNumber = (value: number | null | undefined, suffix = "") =>
+  value == null ? "-" : `${value}${suffix}`;
+const resultRank = (value: number | null | undefined) =>
+  value == null ? "-" : `#${value}`;
+
+function StudentResultsTable({
   rows,
-  lookups,
+  detailLoading,
+  onView,
 }: {
-  rows: ReportRow[];
-  lookups: ExaminationLookups;
+  rows: ExamResult[];
+  detailLoading?: number;
+  onView: (studentId: number) => void;
 }) {
   return (
     <div className={`${card} overflow-x-auto`}>
-      <table className="w-full min-w-[1000px] text-left text-sm">
+      <div className="border-b p-4">
+        <h2 className="font-semibold">Student results</h2>
+      </div>
+      <table className="w-full min-w-[1350px] text-left text-sm">
         <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
           <tr>
-            <th className="p-4">Class</th>
+            <th className="p-4">Student Name</th>
+            <th>Admission No.</th>
+            <th>Roll</th>
+            <th>Class</th>
             <th>Section</th>
-            <th>Subject</th>
-            <th>Grade</th>
             <th>Total</th>
-            <th>Passed</th>
-            <th>Failed</th>
-            <th>Pass %</th>
-            <th>Average</th>
-            <th>Highest</th>
-            <th>Lowest</th>
+            <th>Full Marks</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>GPA</th>
+            <th>Result</th>
+            <th>Rank</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <tr
-              className="border-b"
-              key={`${row.subjectId}-${row.classId}-${row.sectionId}-${row.grade}-${index}`}
-            >
-              <td className="p-4">{display(lookups.classes, row.classId)}</td>
-              <td>{display(lookups.sections, row.sectionId)}</td>
-              <td>{row.subjectName}</td>
+          {rows.map((row) => (
+            <tr className="border-b" key={row.studentId}>
+              <td className="p-4 font-medium">{row.studentName}</td>
+              <td>{row.admissionNumber ?? "-"}</td>
+              <td>{row.rollNumber ?? "-"}</td>
+              <td>{row.className}</td>
+              <td>{row.sectionName}</td>
+              <td>{resultNumber(row.total)}</td>
+              <td>{resultNumber(row.fullMarks)}</td>
+              <td>{resultNumber(row.percentage, "%")}</td>
               <td>{row.grade || "-"}</td>
-              <td>{row.total}</td>
-              <td>{row.passed}</td>
-              <td>{row.failed}</td>
-              <td>{row.passPercentage}</td>
-              <td>{row.average}</td>
-              <td>{row.highest}</td>
-              <td>{row.lowest}</td>
+              <td>{resultNumber(row.gpa)}</td>
+              <td>{row.status || "-"}</td>
+              <td className="whitespace-nowrap text-xs">
+                Sec {resultRank(row.sectionRank)} / Class{" "}
+                {resultRank(row.classRank)} / School{" "}
+                {resultRank(row.schoolRank)}
+              </td>
+              <td>
+                <button
+                  type="button"
+                  className={secondary}
+                  disabled={detailLoading != null}
+                  onClick={() => onView(row.studentId)}
+                >
+                  <Eye size={16} />
+                  {detailLoading === row.studentId
+                    ? "Loading..."
+                    : "View Result"}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {!rows.length && <Empty text="No report rows found." />}
+      {!rows.length && (
+        <Empty text="No student results found for this selection." />
+      )}
     </div>
   );
 }
-function MeritTable({ rows }: { rows: MeritRow[] }) {
+function MeritTable({ rows, title }: { rows: MeritRow[]; title: string }) {
   return (
     <div className={`${card} overflow-x-auto`}>
       <div className="border-b p-4">
-        <h2 className="font-semibold">Merit list and ranking</h2>
+        <h2 className="font-semibold">{title}</h2>
         <p className="text-sm text-gray-500">
-          School rank is based on normalized percentage across all assigned
-          classes.
+          School, class, and section ranks are supplied by the examination
+          results service.
         </p>
       </div>
       <table className="w-full min-w-[900px] text-left text-sm">
@@ -2015,7 +2326,7 @@ function MeritTable({ rows }: { rows: MeritRow[] }) {
         <tbody>
           {rows.map((row) => (
             <tr className="border-b" key={row.studentId}>
-              <td className="p-4 font-bold">#{row.schoolRank}</td>
+              <td className="p-4 font-bold">{resultRank(row.schoolRank)}</td>
               <td>{row.studentName}</td>
               <td>
                 {row.admissionNumber || "-"} / {row.rollNumber || "-"}
@@ -2024,13 +2335,13 @@ function MeritTable({ rows }: { rows: MeritRow[] }) {
                 {row.className} / {row.sectionName}
               </td>
               <td>
-                {row.total} / {row.fullMarks}
+                {resultNumber(row.total)} / {resultNumber(row.fullMarks)}
               </td>
-              <td>{row.percentage}%</td>
-              <td>{row.grade}</td>
-              <td>{row.gpa}</td>
-              <td>#{row.classRank}</td>
-              <td>#{row.sectionRank}</td>
+              <td>{resultNumber(row.percentage, "%")}</td>
+              <td>{row.grade || "-"}</td>
+              <td>{resultNumber(row.gpa)}</td>
+              <td>{resultRank(row.classRank)}</td>
+              <td>{resultRank(row.sectionRank)}</td>
             </tr>
           ))}
         </tbody>
@@ -2102,12 +2413,190 @@ function Reports({ lookups }: { lookups: ExaminationLookups }) {
   );
 }
 
+function CreditGpaConfiguration({ lookups }: { lookups: ExaminationLookups }) {
+  const { showToast } = useToast();
+  const [sessionId, setSessionId] = useState<number>();
+  const [classId, setClassId] = useState<number>();
+  const [rows, setRows] = useState<SubjectAcademicConfigRow[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = async () => {
+    if (!sessionId || !classId) return;
+    setLoading(true);
+    setError("");
+    try {
+      setRows(await service.getSubjectAcademicConfig(sessionId, classId));
+      setLoaded(true);
+    } catch (requestError) {
+      setRows([]);
+      setLoaded(false);
+      setError(service.errorMessage(requestError));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const save = async () => {
+    if (!sessionId || !classId) return;
+    if (
+      rows.some(
+        (row) =>
+          row.creditHours != null &&
+          (!Number.isFinite(row.creditHours) || row.creditHours <= 0),
+      )
+    ) {
+      showToast(
+        "Credit hours must be greater than zero when supplied.",
+        "validation",
+      );
+      return;
+    }
+    setSaving(true);
+    try {
+      setRows(
+        await service.saveSubjectAcademicConfig(sessionId, classId, rows),
+      );
+      showToast("Credit and GPA configuration saved.");
+    } catch (requestError) {
+      showToast(service.errorMessage(requestError), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const update = (index: number, values: Partial<SubjectAcademicConfigRow>) =>
+    setRows(
+      rows.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, ...values } : row,
+      ),
+    );
+
+  return (
+    <div className="space-y-4">
+      <div className={`${card} flex flex-wrap items-end gap-3 p-4`}>
+        <Select
+          name="Academic session"
+          value={sessionId}
+          options={lookups.sessions}
+          onChange={(value) => {
+            setSessionId(value);
+            setRows([]);
+            setLoaded(false);
+          }}
+          required
+        />
+        <Select
+          name="Class"
+          value={classId}
+          options={lookups.classes}
+          onChange={(value) => {
+            setClassId(value);
+            setRows([]);
+            setLoaded(false);
+          }}
+          required
+        />
+        <button
+          type="button"
+          className={primary}
+          disabled={!sessionId || !classId || loading}
+          onClick={load}
+        >
+          {loading ? "Loading..." : "Load subjects"}
+        </button>
+      </div>
+      {error && <Notice text={error} error />}
+      {loaded && (
+        <div className={`${card} overflow-x-auto`}>
+          <table className="w-full min-w-[700px] text-left text-sm">
+            <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+              <tr>
+                <th className="p-4">Subject</th>
+                <th>Credit Hours</th>
+                <th>Include in GPA</th>
+                <th>Include in CGPA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr className="border-b last:border-0" key={row.subjectId}>
+                  <td className="p-4 font-medium">
+                    {row.subjectName}
+                    {row.subjectCode && (
+                      <span className="ml-2 text-xs font-normal text-gray-500">
+                        {row.subjectCode}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      className="h-9 w-32 rounded border border-gray-200 px-2"
+                      value={row.creditHours ?? ""}
+                      onChange={(event) =>
+                        update(index, {
+                          creditHours:
+                            event.target.value === ""
+                              ? null
+                              : Number(event.target.value),
+                        })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={row.includeInGpa}
+                      onChange={(event) =>
+                        update(index, { includeInGpa: event.target.checked })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={row.includeInCgpa}
+                      onChange={(event) =>
+                        update(index, { includeInCgpa: event.target.checked })
+                      }
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {rows.length ? (
+            <div className="flex justify-end p-4">
+              <button
+                type="button"
+                className={primary}
+                disabled={saving}
+                onClick={save}
+              >
+                <Save size={16} /> {saving ? "Saving..." : "Save All"}
+              </button>
+            </div>
+          ) : (
+            <Empty text="No active subjects are available for this session and class." />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const tabs = [
   ["dashboard", "Dashboard", BarChart3],
   ["examinations", "Examinations", FileText],
   ["exam-types", "Exam Types", Tags],
   ["routine", "Routine", CalendarDays],
   ["grading", "Grading", GraduationCap],
+  ["credit-gpa", "Credit/GPA Configuration", SlidersHorizontal],
   ["marks", "Marks entry", ClipboardList],
   ["results", "Results", CheckCircle2],
   ["reports", "Reports", FileDown],
@@ -2196,6 +2685,7 @@ export default function ExaminationWorkspace() {
       {active === "exam-types" && <ExamTypes refreshLookups={refreshLookups} />}
       {active === "routine" && <Routine lookups={lookups} />}
       {active === "grading" && <Grading sessions={lookups.sessions} />}
+      {active === "credit-gpa" && <CreditGpaConfiguration lookups={lookups} />}
       {active === "marks" && <Marks lookups={lookups} />}
       {active === "results" && (
         <Results lookups={lookups} refreshLookups={refreshLookups} />

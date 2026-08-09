@@ -1,3 +1,5 @@
+import type { ExamResult } from "../../examinations/types";
+
 export interface Option {
   id: number;
   name: string;
@@ -21,6 +23,20 @@ export interface Examination {
   description: string;
   status: string;
   published: boolean;
+  includeInCgpa: boolean;
+}
+
+export interface SubjectAcademicConfigRow {
+  academicSessionId: number;
+  classId: number;
+  subjectId: number;
+  subjectCode: string;
+  subjectName: string;
+  creditHours?: number | null;
+  includeInGpa: boolean;
+  includeInCgpa: boolean;
+  configured: boolean;
+  usingLegacyCreditHours: boolean;
 }
 
 export interface ExamType {
@@ -93,22 +109,20 @@ export interface ReportRow {
   lowest: number;
 }
 
-export interface MeritRow {
-  studentId: number;
-  studentName: string;
+export type MeritRow = ExamResult;
+
+export interface PublicationScope {
+  examId: number;
+  classId: number;
   className: string;
+  sectionId: number;
   sectionName: string;
-  admissionNumber: string;
-  rollNumber: string;
-  total: number;
-  fullMarks: number;
-  percentage: number;
-  grade: string;
-  gpa: number;
-  status: string;
-  classRank: number;
-  sectionRank: number;
-  schoolRank: number;
+  routineCount: number;
+  studentCount: number;
+  missingMarksCount: number;
+  complete: boolean;
+  published: boolean;
+  publishedAt: string | null;
 }
 
 export interface ExamDashboard {

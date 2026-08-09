@@ -12,6 +12,7 @@ export interface School {
   totalAmount: number;
   paymentStatus: string;
   referenceNumber: string;
+  logoUrl?: string | null;
 }
 
 export interface ModuleOption {

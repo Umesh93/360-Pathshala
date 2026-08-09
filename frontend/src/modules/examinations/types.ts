@@ -14,8 +14,8 @@ export interface TeacherExamAssignment {
 export interface MarkEntryRow {
   id?: number;
   studentId: number;
-  admissionNumber: string;
-  rollNumber: string;
+  admissionNumber: string | null;
+  rollNumber: string | null;
   studentName: string;
   obtainedMarks?: number;
   absent: boolean;
@@ -27,15 +27,20 @@ export interface MarkEntryRow {
 export interface SubjectResult {
   examSubjectId: number;
   subjectId: number;
+  subjectCode: string | null;
   subjectName: string;
   fullMarks: number;
   passMarks: number;
-  obtainedMarks?: number;
+  obtainedMarks?: number | null;
+  percentage?: number | null;
   absent: boolean;
-  grade: string;
-  gpa?: number;
-  status: string;
-  remarks: string;
+  grade: string | null;
+  gradePoint?: number | null;
+  gpa?: number | null;
+  creditHours?: number | null;
+  qualityPoints?: number | null;
+  status: string | null;
+  remarks: string | null;
 }
 
 export interface ExamResult {
@@ -44,21 +49,35 @@ export interface ExamResult {
   studentId: number;
   studentName: string;
   schoolName: string;
-  studentPhoto?: string;
-  admissionNumber: string;
-  rollNumber: string;
+  schoolAddress: string | null;
+  schoolPhone: string | null;
+  schoolEmail: string | null;
+  schoolLogoUrl?: string | null;
+  studentPhoto?: string | null;
+  admissionNumber: string | null;
+  rollNumber: string | null;
+  academicSessionId: number;
+  academicSessionName: string;
+  examStartsOn: string | null;
+  examEndsOn: string | null;
+  resultPublishDate: string | null;
+  classId: number;
   className: string;
+  sectionId: number;
   sectionName: string;
-  total: number;
-  fullMarks: number;
-  percentage: number;
-  gpa?: number;
-  grade: string;
-  status: string;
-  remarks: string;
-  classRank?: number;
-  sectionRank?: number;
-  schoolRank?: number;
+  total?: number | null;
+  fullMarks?: number | null;
+  percentage?: number | null;
+  totalCreditHours?: number | null;
+  gpa?: number | null;
+  cgpa?: number | null;
+  cgpaPeriods?: number | null;
+  grade: string | null;
+  status: string | null;
+  remarks: string | null;
+  classRank?: number | null;
+  sectionRank?: number | null;
+  schoolRank?: number | null;
   published: boolean;
   subjects: SubjectResult[];
 }
@@ -66,7 +85,7 @@ export interface ExamResult {
 export interface ChildResults {
   studentId: number;
   studentName: string;
-  admissionNumber: string;
+  admissionNumber: string | null;
   className: string;
   sectionName: string;
   results: ExamResult[];

@@ -1,54 +1,16 @@
 import api from "./api";
-import type { DashboardData } from "../types/dashboard";
+import type { AdminDashboardResponse } from "../types/dashboard";
 
-export const getAdminDashboard = async (): Promise<DashboardData> => {
-  const response = await api.get("/dashboards/school-admin");
-  const { metrics, charts } = response.data;
+export const localDateString = (value = new Date()): string =>
+  `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 
-  return {
-    schoolName: metrics.schoolName || "School",
-    statistics: {
-      totalStudents: metrics.totalStudents || 0,
-      totalTeachers: metrics.totalTeachers || 0,
-      totalParents: 0,
-      totalClasses: 0,
-      attendanceToday: (charts?.attendance?.present as number) || 0,
-      feeCollectionThisMonth: metrics.feeCollection || 0,
-      pendingFees: (charts?.fees?.expected as number) - (charts?.fees?.collected as number) || 0,
-      upcomingExams: 0,
-      upcomingEvents: 0,
-    },
-    attendance: {
-      present: (charts?.attendance?.present as number) || 0,
-      absent: 0,
-      late: 0,
-      leave: 0,
-      halfDay: 0,
-      total: metrics.totalStudents || 0,
-      trend: [],
-    },
-    revenue: {
-      monthlyFeeCollection: metrics.feeCollection || 0,
-      pendingCollection: 0,
-      collectedAmount: metrics.feeCollection || 0,
-      monthlyData: [],
-    },
-    notices: [],
-    leaves: [],
-    calendar: [],
-    events: [],
-    topStudents: [],
-    topTeachers: [],
-    recentActivities: [],
-    admissions: [],
-    userOverview: {
-      students: metrics.totalStudents || 0,
-      teachers: metrics.totalTeachers || 0,
-      parents: 0,
-      staff: 0,
-    },
-    birthdayStudents: [],
-    upcomingFeeDues: [],
-    recentNotifications: [],
-  };
+export const getAdminDashboard = async (
+  academicSessionId?: number,
+  signal?: AbortSignal,
+): Promise<AdminDashboardResponse> => {
+  const response = await api.get<AdminDashboardResponse>(
+    "/dashboards/school-admin",
+    { params: { academicSessionId }, signal },
+  );
+  return response.data;
 };

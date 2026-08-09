@@ -227,50 +227,52 @@ export default function Schools() {
 
   return (
     <SuperAdminLayout>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Schools</h1>
-          <p className="text-gray-500">Manage schools</p>
+      <div className="min-w-0 max-w-full">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold">Schools</h1>
+            <p className="text-gray-500">Manage schools</p>
+          </div>
+
+          <button
+            onClick={showForm ? handleBackToList : handleAddNew}
+            className="self-start whitespace-nowrap rounded-lg bg-[#234A91] px-5 py-3 text-white transition hover:bg-[#1d3d78] sm:self-auto"
+          >
+            {showForm ? "Back to List" : "Add New School"}
+          </button>
         </div>
 
-        <button
-          onClick={showForm ? handleBackToList : handleAddNew}
-          className="bg-[#234A91] text-white px-5 py-3 rounded-lg hover:bg-[#1d3d78] transition"
-        >
-          {showForm ? "Back to List" : "Add New School"}
-        </button>
-      </div>
+        {showForm ? (
+          <AddSchoolForm
+            editSchool={editingSchool}
+            onSuccess={handleFormSuccess}
+          />
+        ) : (
+          <>
+            {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      {showForm ? (
-        <AddSchoolForm
-          editSchool={editingSchool}
-          onSuccess={handleFormSuccess}
+            {loading ? (
+              <div className="text-center text-gray-500 py-12">
+                Loading schools...
+              </div>
+            ) : (
+              <SchoolTable
+                schools={schools}
+                onEdit={handleEdit}
+                onDelete={handleDeleteClick}
+                onToggleStatus={handleToggleStatus}
+              />
+            )}
+          </>
+        )}
+
+        <DeleteConfirmationModal
+          isOpen={!!deletingSchool}
+          schoolName={deletingSchool?.schoolName || ""}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeletingSchool(null)}
         />
-      ) : (
-        <>
-          {error && <p className="text-red-600 mb-4">{error}</p>}
-
-          {loading ? (
-            <div className="text-center text-gray-500 py-12">
-              Loading schools...
-            </div>
-          ) : (
-            <SchoolTable
-              schools={schools}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onToggleStatus={handleToggleStatus}
-            />
-          )}
-        </>
-      )}
-
-      <DeleteConfirmationModal
-        isOpen={!!deletingSchool}
-        schoolName={deletingSchool?.schoolName || ""}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeletingSchool(null)}
-      />
+      </div>
     </SuperAdminLayout>
   );
 }

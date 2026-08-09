@@ -42,6 +42,12 @@ import SubjectDetailPage from "../modules/admin/subjects/SubjectDetailPage";
 import GuardianListPage from "../modules/admin/guardians/pages/GuardianListPage";
 import GuardianDetailPage from "../modules/admin/guardians/pages/GuardianDetailPage";
 import GuardianFormPage from "../modules/admin/guardians/pages/GuardianFormPage";
+import AdminTimetablePage from "../modules/timetables/AdminTimetablePage";
+import {
+  ParentTimetablePage,
+  StudentTimetablePage,
+  TeacherTimetablePage,
+} from "../modules/timetables/PortalTimetablePages";
 
 const AppRoutes = () => {
   return (
@@ -95,6 +101,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/timetable"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <AdminTimetablePage />
           </ProtectedRoute>
         }
       />
@@ -269,6 +283,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/teacher/timetable"
+        element={
+          <ProtectedRoute allowedRoles={["TEACHER"]}>
+            <TeacherTimetablePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/teacher/attendance"
         element={
           <ProtectedRoute allowedRoles={["TEACHER"]}>
@@ -311,6 +333,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/student/timetable"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentTimetablePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/student/attendance"
         element={
           <ProtectedRoute allowedRoles={["STUDENT"]}>
@@ -349,6 +379,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["PARENT"]}>
             <ParentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/parent/timetable"
+        element={
+          <ProtectedRoute allowedRoles={["PARENT"]}>
+            <ParentTimetablePage />
           </ProtectedRoute>
         }
       />

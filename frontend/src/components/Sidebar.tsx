@@ -31,13 +31,22 @@ interface SidebarProps {
   collapsed: boolean;
   role?: string;
   enabledModules?: string[];
+  modulesLoaded?: boolean;
 }
 
 const SUPER_ADMIN_LINKS = [
   { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/super-admin/schools", label: "Schools", icon: School },
-  { to: "/super-admin/demo-requests", label: "Demo Requests", icon: ClipboardList },
-  { to: "/super-admin/demo-conversions", label: "Conversion History", icon: FileCheck },
+  {
+    to: "/super-admin/demo-requests",
+    label: "Demo Requests",
+    icon: ClipboardList,
+  },
+  {
+    to: "/super-admin/demo-conversions",
+    label: "Conversion History",
+    icon: FileCheck,
+  },
   { to: "/super-admin/payments", label: "Payments", icon: Wallet },
   { to: "/super-admin/users", label: "Users", icon: Users },
   { to: "/super-admin/settings", label: "Settings", icon: Settings },
@@ -46,18 +55,79 @@ const SUPER_ADMIN_LINKS = [
 const ADMIN_LINKS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/classes", label: "Classes", icon: School },
-  { to: "/admin/subjects", label: "Subjects", icon: BookOpen, moduleCode: "SUBJECT_MANAGEMENT" },
-  { to: "/admin/students", label: "Students", icon: GraduationCap, moduleCode: "STUDENT_MANAGEMENT" },
-  { to: "/admin/teachers", label: "Teachers", icon: UserCheck, moduleCode: "TEACHER_MANAGEMENT" },
-  { to: "/admin/guardians", label: "Parents / Guardians", icon: Users, moduleCode: "PARENT_MANAGEMENT" },
-  { to: "/admin/attendance", label: "Attendance", icon: ClipboardCheck, moduleCode: "ATTENDANCE" },
-  { to: "/admin/examinations", label: "Examinations", icon: FileText, moduleCode: "EXAMINATION" },
-  { to: "/admin/assignments", label: "Assignments", icon: BookOpen, moduleCode: "ASSIGNMENT" },
-  { to: "/admin/fees", label: "Fee Management", icon: Wallet, moduleCode: "FEE_MANAGEMENT" },
-  { to: "/admin/calendar", label: "Academic Calendar", icon: Calendar, moduleCode: "ACADEMIC_CALENDAR" },
-  { to: "/admin/leaves", label: "Leaves", icon: CalendarClock, moduleCode: "LEAVE_MANAGEMENT" },
+  {
+    to: "/admin/subjects",
+    label: "Subjects",
+    icon: BookOpen,
+    moduleCode: "SUBJECT_MANAGEMENT",
+  },
+  {
+    to: "/admin/students",
+    label: "Students",
+    icon: GraduationCap,
+    moduleCode: "STUDENT_MANAGEMENT",
+  },
+  {
+    to: "/admin/teachers",
+    label: "Teachers",
+    icon: UserCheck,
+    moduleCode: "TEACHER_MANAGEMENT",
+  },
+  {
+    to: "/admin/guardians",
+    label: "Parents / Guardians",
+    icon: Users,
+    moduleCode: "PARENT_MANAGEMENT",
+  },
+  {
+    to: "/admin/attendance",
+    label: "Attendance",
+    icon: ClipboardCheck,
+    moduleCode: "ATTENDANCE",
+  },
+  {
+    to: "/admin/examinations",
+    label: "Examinations",
+    icon: FileText,
+    moduleCode: "EXAMINATION",
+  },
+  {
+    to: "/admin/assignments",
+    label: "Assignments",
+    icon: BookOpen,
+    moduleCode: "ASSIGNMENT",
+  },
+  {
+    to: "/admin/timetable",
+    label: "Timetable",
+    icon: Calendar,
+    moduleCode: "TIMETABLE",
+  },
+  {
+    to: "/admin/fees",
+    label: "Fee Management",
+    icon: Wallet,
+    moduleCode: "FEE_MANAGEMENT",
+  },
+  {
+    to: "/admin/calendar",
+    label: "Academic Calendar",
+    icon: Calendar,
+    moduleCode: "ACADEMIC_CALENDAR",
+  },
+  {
+    to: "/admin/leaves",
+    label: "Leaves",
+    icon: CalendarClock,
+    moduleCode: "LEAVE_MANAGEMENT",
+  },
   { to: "/admin/certificates", label: "Certificates", icon: Award },
-  { to: "/admin/reports", label: "Reports", icon: BarChart3, moduleCode: "ANALYTICS_DASHBOARD" },
+  {
+    to: "/admin/reports",
+    label: "Reports",
+    icon: BarChart3,
+    moduleCode: "ANALYTICS_DASHBOARD",
+  },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -68,6 +138,7 @@ const TEACHER_LINKS = [
   { to: "/teacher/assignments", label: "Assignments", icon: FileText },
   { to: "/teacher/marks", label: "Marks Entry", icon: CheckSquare },
   { to: "/teacher/exams", label: "Exams", icon: FileText },
+  { to: "/teacher/timetable", label: "My Timetable", icon: Calendar },
   { to: "/teacher/leaves", label: "Leave Requests", icon: CalendarClock },
   { to: "/teacher/notifications", label: "Notifications", icon: Bell },
   { to: "/teacher/settings", label: "Settings", icon: Settings },
@@ -87,10 +158,18 @@ const STUDENT_LINKS = [
 
 const PARENT_LINKS = [
   { to: "/parent/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/parent/child-attendance", label: "Child Attendance", icon: ClipboardCheck },
+  {
+    to: "/parent/child-attendance",
+    label: "Child Attendance",
+    icon: ClipboardCheck,
+  },
   { to: "/parent/child-fees", label: "Child Fees", icon: Wallet },
   { to: "/parent/child-results", label: "Child Results", icon: Award },
-  { to: "/parent/child-assignments", label: "Child Assignments", icon: FileText },
+  {
+    to: "/parent/child-assignments",
+    label: "Child Assignments",
+    icon: FileText,
+  },
   { to: "/parent/leave", label: "Leave Request", icon: CalendarClock },
   { to: "/parent/timetable", label: "Child Timetable", icon: Calendar },
   { to: "/parent/notifications", label: "Notifications", icon: Bell },
@@ -137,6 +216,7 @@ export default function Sidebar({
   collapsed,
   role = "SUPER_ADMIN",
   enabledModules,
+  modulesLoaded = true,
 }: SidebarProps) {
   const navigate = useNavigate();
 
@@ -148,18 +228,25 @@ export default function Sidebar({
 
   const links = getLinksForRole(role);
 
-  const filteredLinks =
-    enabledModules && enabledModules.length > 0
-      ? links.filter((link) => !("moduleCode" in link) || typeof link.moduleCode !== "string" || enabledModules.includes(link.moduleCode))
-      : links;
+  const filteredLinks = modulesLoaded
+    ? links.filter(
+        (link) =>
+          !("moduleCode" in link) ||
+          typeof link.moduleCode !== "string" ||
+          enabledModules?.includes(link.moduleCode),
+      )
+    : links.filter(
+        (link) =>
+          !("moduleCode" in link) || typeof link.moduleCode !== "string",
+      );
 
   const userLabel = getUserLabel(role);
 
   return (
     <aside
       className={`
-        bg-white border-r border-gray-200 transition-all duration-300 min-h-screen
-        ${collapsed ? "w-20" : "w-[300px]"}
+        fixed inset-y-0 left-0 z-40 min-h-screen border-r border-gray-200 bg-white transition-all duration-300 md:static md:z-auto
+        ${collapsed ? "-translate-x-full md:w-20 md:translate-x-0" : "w-[min(300px,calc(100vw-3rem))] translate-x-0 md:w-[300px]"}
       `}
     >
       {/* Logo */}
@@ -180,7 +267,9 @@ export default function Sidebar({
         ) : (
           <div className="p-4 flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">{localStorage.getItem("username") || "User"}</h3>
+              <h3 className="font-semibold">
+                {localStorage.getItem("username") || "User"}
+              </h3>
               <p className="text-sm text-gray-500">{userLabel}</p>
             </div>
             <ChevronRight size={16} />
@@ -191,38 +280,40 @@ export default function Sidebar({
       {/* Navigation + Logout */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
         {filteredLinks.map((link) => {
-          const showAcademicHeading = role === "ADMIN" && link.to === "/admin/classes";
-          const showPeopleHeading = role === "ADMIN" && link.to === "/admin/students";
+          const showAcademicHeading =
+            role === "ADMIN" && link.to === "/admin/classes";
+          const showPeopleHeading =
+            role === "ADMIN" && link.to === "/admin/students";
           return (
-          <div key={link.to}>
-          {(showAcademicHeading || showPeopleHeading) && !collapsed && (
-            <p className="px-4 pb-2 pt-4 text-xs font-semibold uppercase text-gray-400">
-              {showAcademicHeading ? "Academic" : "People"}
-            </p>
-          )}
-          <NavLink
-            to={link.to}
-            className={({ isActive }) =>
-              `block rounded-xl mb-2 transition-all ${
-                isActive
-                  ? "bg-[#234A91] text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`
-            }
-          >
-            <div
-              className={`flex items-center ${
-                collapsed ? "justify-center py-4" : "justify-between p-4"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <link.icon size={20} />
-                {!collapsed && <span>{link.label}</span>}
-              </div>
-              {!collapsed && <ChevronRight size={16} />}
+            <div key={link.to}>
+              {(showAcademicHeading || showPeopleHeading) && !collapsed && (
+                <p className="px-4 pb-2 pt-4 text-xs font-semibold uppercase text-gray-400">
+                  {showAcademicHeading ? "Academic" : "People"}
+                </p>
+              )}
+              <NavLink
+                to={link.to}
+                className={({ isActive }) =>
+                  `block rounded-xl mb-2 transition-all ${
+                    isActive
+                      ? "bg-[#234A91] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`
+                }
+              >
+                <div
+                  className={`flex items-center ${
+                    collapsed ? "justify-center py-4" : "justify-between p-4"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <link.icon size={20} />
+                    {!collapsed && <span>{link.label}</span>}
+                  </div>
+                  {!collapsed && <ChevronRight size={16} />}
+                </div>
+              </NavLink>
             </div>
-          </NavLink>
-          </div>
           );
         })}
 

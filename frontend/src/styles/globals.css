@@ -9,7 +9,8 @@
   /* Fonts */
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --font-display: "Sora", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    "Sora", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* Brand Colors */
   --background: oklch(0.99 0.005 80);
@@ -60,18 +61,37 @@
   );
 
   --gradient-hero:
-    radial-gradient(ellipse 80% 60% at 70% 0%, oklch(0.72 0.18 50 / 0.18), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 10% 30%, oklch(0.34 0.13 265 / 0.12), transparent 60%);
+    radial-gradient(
+      ellipse 80% 60% at 70% 0%,
+      oklch(0.72 0.18 50 / 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 10% 30%,
+      oklch(0.34 0.13 265 / 0.12),
+      transparent 60%
+    );
 
-  --gradient-soft: linear-gradient(180deg, oklch(0.99 0.005 80) 0%, oklch(0.97 0.012 80) 100%);
+  --gradient-soft: linear-gradient(
+    180deg,
+    oklch(0.99 0.005 80) 0%,
+    oklch(0.97 0.012 80) 100%
+  );
 
-  --gradient-accent: linear-gradient(135deg, oklch(0.72 0.18 50), oklch(0.78 0.16 60));
+  --gradient-accent: linear-gradient(
+    135deg,
+    oklch(0.72 0.18 50),
+    oklch(0.78 0.16 60)
+  );
 
   /* Shadows */
-  --shadow-soft: 0 1px 2px oklch(0.22 0.06 265 / 0.04), 0 4px 16px oklch(0.22 0.06 265 / 0.06);
+  --shadow-soft:
+    0 1px 2px oklch(0.22 0.06 265 / 0.04),
+    0 4px 16px oklch(0.22 0.06 265 / 0.06);
 
   --shadow-elevated:
-    0 4px 12px oklch(0.22 0.06 265 / 0.08), 0 24px 48px -12px oklch(0.22 0.06 265 / 0.18);
+    0 4px 12px oklch(0.22 0.06 265 / 0.08),
+    0 24px 48px -12px oklch(0.22 0.06 265 / 0.18);
 
   --shadow-glow: 0 20px 60px -20px oklch(0.72 0.18 50 / 0.45);
 
@@ -186,4 +206,69 @@ p {
 }
 .shadow-brand {
   box-shadow: var(--shadow-brand);
+}
+
+.grade-sheet-table th,
+.grade-sheet-table td {
+  border: 1px solid #d1d5db;
+  padding: 0.55rem 0.35rem;
+  vertical-align: middle;
+}
+
+.grade-sheet-table .subject-column {
+  width: 18%;
+}
+
+.grade-sheet-pdf-host {
+  position: fixed;
+  left: -12000px;
+  top: 0;
+  z-index: -1;
+  width: 1120px;
+  background: #fff;
+  pointer-events: none;
+}
+
+.grade-sheet-pdf-host .grade-sheet {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .grade-sheet {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .grade-sheet-actions,
+  .no-print {
+    display: none !important;
+  }
+
+  .grade-sheet-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .grade-sheet-table thead {
+    display: table-header-group;
+  }
+
+  .grade-sheet-table tr,
+  .grade-sheet-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

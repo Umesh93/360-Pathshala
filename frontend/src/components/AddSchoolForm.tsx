@@ -3,22 +3,15 @@ import { Copy, Check } from "lucide-react";
 import SchoolFormFields, { generatePassword } from "./SchoolFormFields";
 import { useToast } from "../modules/admin/students/components/Toast";
 import { createSchool, updateSchool } from "../services/schoolService";
+import { removeSchoolLogo, uploadSchoolLogo } from "../services/schoolService";
 import type { SchoolPayload } from "../services/schoolService";
 import type { CreateSchoolResponse } from "../services/schoolService";
+import SchoolLogoField from "./SchoolLogoField";
+import type { School } from "../types/School";
 
 interface AddSchoolFormProps {
   onSuccess?: () => void;
-  editSchool?: {
-    id: number;
-    schoolName: string;
-    address: string;
-    email: string;
-    phoneNumber: string;
-    status: string;
-    modules: string[];
-    adminUsername: string;
-    adminPassword: string;
-  } | null;
+  editSchool?: School | null;
 }
 
 export default function AddSchoolForm({
@@ -47,6 +40,8 @@ export default function AddSchoolForm({
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<CreateSchoolResponse | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File>();
+  const [removeLogo, setRemoveLogo] = useState(false);
 
   const modulePricing = useMemo(() => {
     const hasBase =
@@ -71,6 +66,18 @@ export default function AddSchoolForm({
     const newPassword = generatePassword();
     setPassword(newPassword);
     setPasswordRegenerated(true);
+  };
+
+  const errorMessage = (error: unknown) => {
+    const requestError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+    return (
+      requestError.response?.data?.message ||
+      requestError.message ||
+      "Logo upload failed. Please try again."
+    );
   };
 
   const handleSubmit = async () => {
@@ -105,13 +112,26 @@ export default function AddSchoolForm({
           email,
           phone: phoneNumber,
           modules: selectedModules,
-          status: "ACTIVE",
+          status: editSchool.status,
         };
         if (passwordRegenerated) {
           updatePayload.password = password;
         }
         response = await updateSchool(editSchool.id, updatePayload);
-        showToast("School updated successfully!", "success");
+        try {
+          if (logoFile) {
+            await uploadSchoolLogo(editSchool.id, logoFile);
+          } else if (removeLogo) {
+            await removeSchoolLogo(editSchool.id);
+          }
+          showToast("School and logo updated successfully!", "success");
+        } catch (logoError) {
+          showToast(
+            `School updated successfully, but logo upload failed: ${errorMessage(logoError)}`,
+            "validation",
+          );
+        }
+        onSuccess?.();
       } else {
         const createPayload = {
           name: schoolName,
@@ -124,11 +144,25 @@ export default function AddSchoolForm({
         response = await createSchool(createPayload);
         setSuccess(response);
         setPassword(response.adminPassword);
-        showToast("School Registered Successfully", "success");
+        if (logoFile) {
+          try {
+            await uploadSchoolLogo(response.id, logoFile);
+            showToast("School and logo created successfully!", "success");
+          } catch (logoError) {
+            showToast(
+              `School created successfully, but logo upload failed: ${errorMessage(logoError)}`,
+              "validation",
+            );
+          }
+        } else {
+          showToast("School Registered Successfully", "success");
+        }
       }
-      onSuccess?.();
     } catch (error: unknown) {
-      const requestError = error as { response?: { data?: { message?: string } }; message?: string };
+      const requestError = error as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const message =
         requestError.response?.data?.message ||
         requestError.message ||
@@ -148,6 +182,8 @@ export default function AddSchoolForm({
     setPassword("");
     setPasswordRegenerated(false);
     setSuccess(null);
+    setLogoFile(undefined);
+    setRemoveLogo(false);
     onSuccess?.();
   };
 
@@ -184,6 +220,17 @@ export default function AddSchoolForm({
             onRegeneratePassword={handleRegeneratePassword}
             isEdit={isEdit}
           />
+          <div className="mt-8">
+            <SchoolLogoField
+              schoolId={editSchool?.id}
+              currentLogoUrl={editSchool?.logoUrl}
+              file={logoFile}
+              remove={removeLogo}
+              onFileChange={setLogoFile}
+              onRemoveChange={setRemoveLogo}
+              onError={(message) => showToast(message, "validation")}
+            />
+          </div>
         </div>
       </div>
 

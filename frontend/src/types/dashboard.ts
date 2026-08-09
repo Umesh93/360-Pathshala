@@ -1,3 +1,121 @@
+export type DashboardModule = string;
+export interface DashboardSchool {
+  id: number;
+  code: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  logoUrl: string | null;
+}
+export interface AcademicSession {
+  id: number;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  active: boolean;
+}
+export interface DashboardOverview {
+  totalStudents: number;
+  activeStudents: number;
+  totalTeachers: number;
+  activeTeachers: number;
+  totalClasses: number;
+  totalSections: number;
+}
+export interface TodayAbsence {
+  attendanceId: number;
+  studentId: number;
+  studentName: string;
+  className: string;
+  sectionName: string;
+  status: string;
+}
+export interface AttendanceOverview {
+  date: string;
+  total: number;
+  present: number;
+  absent: number;
+  late: number;
+  leave: number;
+  unmarked: number;
+  percentage: number;
+  requiresAttention: boolean;
+  todayAbsences: TodayAbsence[];
+}
+export interface PendingTeacherLeave {
+  id: number;
+  teacherId: number;
+  teacherName: string;
+  startsOn: string;
+  endsOn: string;
+  reason: string;
+  status: string;
+}
+export interface TeacherOverview {
+  present: number;
+  absent: number;
+  onLeave: number;
+  unmarked: number;
+  pendingLeaveCount: number;
+  recentPendingLeaves: PendingTeacherLeave[];
+}
+export interface UpcomingExamination {
+  id: number;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  status: string;
+  classNames: string[];
+}
+export interface RecentExamination {
+  id: number;
+  name: string;
+  endsOn: string;
+  publicationStatus: string;
+}
+export interface ExaminationOverview {
+  upcomingCount: number;
+  awaitingPublicationCount: number;
+  recentlyPublishedCount: number;
+  upcoming: UpcomingExamination[];
+  recent: RecentExamination[];
+}
+export interface RecentAssignment {
+  id: number;
+  title: string;
+  dueAt: string;
+  status: string;
+  className: string;
+  subjectName: string;
+}
+export interface AssignmentOverview {
+  active: number;
+  dueThisWeek: number;
+  pendingSubmissions: number;
+  recent: RecentAssignment[];
+}
+export interface DashboardAttention {
+  absentStudents: number;
+  pendingTeacherLeaves: number;
+  resultsAwaitingPublication: number;
+  assignmentsDueThisWeek: number;
+}
+export interface AdminDashboardResponse {
+  school: DashboardSchool;
+  session: AcademicSession | null;
+  availableSessions: AcademicSession[];
+  enabledModules: DashboardModule[];
+  overview: DashboardOverview;
+  attendance: AttendanceOverview | null;
+  teacherOverview: TeacherOverview | null;
+  examinations: ExaminationOverview | null;
+  assignments: AssignmentOverview | null;
+  attention: DashboardAttention;
+  activityAvailable: false;
+  recentActivity: never[];
+}
+
 export interface DashboardStats {
   totalStudents: number;
   totalTeachers: number;
@@ -9,7 +127,6 @@ export interface DashboardStats {
   upcomingExams: number;
   upcomingEvents: number;
 }
-
 export interface AttendanceData {
   present: number;
   absent: number;
@@ -19,14 +136,12 @@ export interface AttendanceData {
   total: number;
   trend: { day: string; present: number; absent: number }[];
 }
-
 export interface RevenueData {
   monthlyFeeCollection: number;
   pendingCollection: number;
   collectedAmount: number;
   monthlyData: { month: string; amount: number }[];
 }
-
 export interface Notice {
   id: number;
   title: string;
@@ -35,7 +150,6 @@ export interface Notice {
   pinned: boolean;
   unread: boolean;
 }
-
 export interface LeaveRequest {
   id: number;
   name: string;
@@ -46,21 +160,18 @@ export interface LeaveRequest {
   reason: string;
   status: "pending" | "approved" | "rejected";
 }
-
 export interface CalendarEvent {
   id: number;
   title: string;
   date: string;
   type: "holiday" | "event" | "exam" | "meeting";
 }
-
 export interface UpcomingEvent {
   id: number;
   title: string;
   date: string;
   type: "school" | "exam" | "meeting" | "announcement";
 }
-
 export interface TopStudent {
   id: number;
   name: string;
@@ -68,14 +179,12 @@ export interface TopStudent {
   class: string;
   profileImage?: string;
 }
-
 export interface TopTeacher {
   id: number;
   name: string;
   subject: string;
   performance: number;
 }
-
 export interface RecentAdmission {
   id: number;
   name: string;
@@ -83,28 +192,24 @@ export interface RecentAdmission {
   date: string;
   status: string;
 }
-
 export interface UserOverview {
   students: number;
   teachers: number;
   parents: number;
   staff: number;
 }
-
 export interface RecentActivity {
   id: number;
   action: string;
   description: string;
   time: string;
 }
-
 export interface BirthdayStudent {
   id: number;
   name: string;
   class: string;
   date: string;
 }
-
 export interface FeeDue {
   id: number;
   studentName: string;
@@ -113,7 +218,6 @@ export interface FeeDue {
   dueDate: string;
   status: "pending" | "overdue";
 }
-
 export interface DashboardData {
   schoolName: string;
   statistics: DashboardStats;
@@ -130,5 +234,135 @@ export interface DashboardData {
   userOverview: UserOverview;
   birthdayStudents: BirthdayStudent[];
   upcomingFeeDues: FeeDue[];
-  recentNotifications: { id: number; title: string; message: string; time: string }[];
+  recentNotifications: {
+    id: number;
+    title: string;
+    message: string;
+    time: string;
+  }[];
+}
+export interface DashboardStats {
+  totalStudents: number;
+  totalTeachers: number;
+  totalParents: number;
+  totalClasses: number;
+  attendanceToday: number;
+  feeCollectionThisMonth: number;
+  pendingFees: number;
+  upcomingExams: number;
+  upcomingEvents: number;
+}
+export interface AttendanceData {
+  present: number;
+  absent: number;
+  late: number;
+  leave: number;
+  halfDay: number;
+  total: number;
+  trend: { day: string; present: number; absent: number }[];
+}
+export interface RevenueData {
+  monthlyFeeCollection: number;
+  pendingCollection: number;
+  collectedAmount: number;
+  monthlyData: { month: string; amount: number }[];
+}
+export interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  date: string;
+  pinned: boolean;
+  unread: boolean;
+}
+export interface LeaveRequest {
+  id: number;
+  name: string;
+  type: "teacher" | "student";
+  role: string;
+  fromDate: string;
+  toDate: string;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+}
+export interface CalendarEvent {
+  id: number;
+  title: string;
+  date: string;
+  type: "holiday" | "event" | "exam" | "meeting";
+}
+export interface UpcomingEvent {
+  id: number;
+  title: string;
+  date: string;
+  type: "school" | "exam" | "meeting" | "announcement";
+}
+export interface TopStudent {
+  id: number;
+  name: string;
+  marks: number;
+  class: string;
+  profileImage?: string;
+}
+export interface TopTeacher {
+  id: number;
+  name: string;
+  subject: string;
+  performance: number;
+}
+export interface RecentAdmission {
+  id: number;
+  name: string;
+  class: string;
+  date: string;
+  status: string;
+}
+export interface UserOverview {
+  students: number;
+  teachers: number;
+  parents: number;
+  staff: number;
+}
+export interface RecentActivity {
+  id: number;
+  action: string;
+  description: string;
+  time: string;
+}
+export interface BirthdayStudent {
+  id: number;
+  name: string;
+  class: string;
+  date: string;
+}
+export interface FeeDue {
+  id: number;
+  studentName: string;
+  class: string;
+  amount: number;
+  dueDate: string;
+  status: "pending" | "overdue";
+}
+export interface DashboardData {
+  schoolName: string;
+  statistics: DashboardStats;
+  attendance: AttendanceData;
+  revenue: RevenueData;
+  notices: Notice[];
+  leaves: LeaveRequest[];
+  calendar: CalendarEvent[];
+  events: UpcomingEvent[];
+  topStudents: TopStudent[];
+  topTeachers: TopTeacher[];
+  recentActivities: RecentActivity[];
+  admissions: RecentAdmission[];
+  userOverview: UserOverview;
+  birthdayStudents: BirthdayStudent[];
+  upcomingFeeDues: FeeDue[];
+  recentNotifications: {
+    id: number;
+    title: string;
+    message: string;
+    time: string;
+  }[];
 }

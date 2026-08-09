@@ -1,14 +1,23 @@
 import { Search, Sun, Bell, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   collapsed: boolean;
   setCollapsed: (value: boolean) => void;
+  enabledModules?: string[];
+  modulesLoaded?: boolean;
 }
 
-export default function Header({ collapsed, setCollapsed }: HeaderProps) {
+export default function Header({
+  collapsed,
+  setCollapsed,
+  enabledModules,
+  modulesLoaded = true,
+}: HeaderProps) {
+  const navigate = useNavigate();
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      <div className="flex items-center gap-6">
+    <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-6">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="text-gray-500 hover:text-gray-700"
@@ -20,7 +29,7 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
           )}
         </button>
 
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <Search
             size={18}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -29,21 +38,25 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
           <input
             type="text"
             placeholder="Search"
-            className="w-[420px] h-12 pl-12 border border-gray-200 rounded-xl outline-none"
+            className="h-12 w-[min(420px,42vw)] rounded-xl border border-gray-200 pl-12 outline-none"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 sm:h-11 sm:w-11">
           <Sun size={20} />
         </button>
 
-        <button className="relative w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-          <Bell size={20} />
-
-          <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
+        {modulesLoaded && enabledModules?.includes("NOTIFICATIONS") && (
+          <button
+            onClick={() => navigate("/admin/notifications")}
+            aria-label="Notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 sm:h-11 sm:w-11"
+          >
+            <Bell size={20} />
+          </button>
+        )}
       </div>
     </header>
   );
