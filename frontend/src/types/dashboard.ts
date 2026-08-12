@@ -116,6 +116,180 @@ export interface AdminDashboardResponse {
   recentActivity: never[];
 }
 
+export interface RoleDashboardContext {
+  schoolId: number;
+  schoolName: string | null;
+  academicSessionId: number | null;
+  academicSessionName: string | null;
+}
+
+export interface DashboardSelfProfile {
+  role: string;
+  displayName: string;
+  photo: string | null;
+  schoolId: number;
+  personId: number;
+  classId: number | null;
+  className: string | null;
+  sectionId: number | null;
+  sectionName: string | null;
+  employeeNumber: string | null;
+  department: string | null;
+}
+
+export interface TeachingAssignmentScope {
+  academicSessionId: number;
+  academicSessionName: string;
+  classId: number;
+  className: string;
+  sectionId: number;
+  sectionName: string;
+  subjectId: number;
+  subjectCode: string;
+  subjectName: string;
+}
+
+export interface RoleDashboardAssignment {
+  id: number;
+  title: string;
+  dueAt: string | null;
+  status: string;
+  submissionStatus: string | null;
+}
+
+export interface RoleDashboardAssignmentSection {
+  count: number;
+  pending: number;
+  recent: RoleDashboardAssignment[];
+}
+
+export interface TeacherDashboardAttendance {
+  date: string;
+  status: string;
+  checkIn: string | null;
+  checkOut: string | null;
+}
+
+export interface StudentDashboardAttendance {
+  present: number;
+  absent: number;
+  late: number;
+  leave: number;
+  percentage: number;
+  recent: Array<{ date: string; status: string }>;
+}
+
+export interface DashboardExamAssignment {
+  examSubjectId: number;
+  examId: number;
+  examName: string;
+  examDate: string;
+  subjectName: string;
+  className: string;
+  sectionName: string;
+  published: boolean;
+}
+
+export interface DashboardExamSection {
+  count: number;
+  recent: DashboardExamAssignment[];
+}
+
+export interface DashboardExamResult {
+  examId: number;
+  examName: string;
+  studentId: number;
+  studentName: string;
+  schoolName: string;
+  schoolAddress: string | null;
+  schoolPhone: string | null;
+  schoolEmail: string | null;
+  schoolLogoUrl: string | null;
+  studentPhoto: string | null;
+  admissionNumber: string | null;
+  rollNumber: string | null;
+  academicSessionId: number;
+  academicSessionName: string;
+  examStartsOn: string | null;
+  examEndsOn: string | null;
+  resultPublishDate: string | null;
+  classId: number;
+  className: string;
+  sectionId: number;
+  sectionName: string;
+  published: boolean;
+  total: number | null;
+  fullMarks: number | null;
+  percentage: number | null;
+  totalCreditHours: number | null;
+  gpa: number | null;
+  cgpa: number | null;
+  cgpaPeriods: number | null;
+  grade: string | null;
+  status: string | null;
+  remarks: string | null;
+  classRank: number | null;
+  sectionRank: number | null;
+  schoolRank: number | null;
+  subjects: DashboardSubjectResult[];
+}
+
+export interface DashboardSubjectResult {
+  examSubjectId: number;
+  subjectId: number;
+  subjectCode: string | null;
+  subjectName: string;
+  fullMarks: number;
+  passMarks: number;
+  obtainedMarks: number | null;
+  percentage: number | null;
+  absent: boolean;
+  grade: string | null;
+  gradePoint: number | null;
+  gpa: number | null;
+  creditHours: number | null;
+  qualityPoints: number | null;
+  status: string | null;
+  remarks: string | null;
+}
+
+export interface TeacherDashboardResponse {
+  context: RoleDashboardContext;
+  profile: DashboardSelfProfile;
+  modules: string[];
+  teachingAssignments: TeachingAssignmentScope[];
+  assignments: RoleDashboardAssignmentSection | null;
+  teacherAttendance: TeacherDashboardAttendance | null;
+  examinations: DashboardExamSection | null;
+  timetableAvailable: boolean;
+  timetableEntries: unknown[];
+}
+
+export interface StudentDashboardResponse {
+  context: RoleDashboardContext;
+  profile: DashboardSelfProfile;
+  modules: string[];
+  classId: number | null;
+  className: string | null;
+  sectionId: number | null;
+  sectionName: string | null;
+  academicSessionId: number | null;
+  academicSessionName: string | null;
+  assignments: RoleDashboardAssignmentSection | null;
+  attendance: StudentDashboardAttendance | null;
+  results: {
+    publishedCount: number;
+    latestResult: DashboardExamResult | null;
+  } | null;
+  timetableAvailable: boolean;
+  timetableEntries: unknown[];
+}
+
+export interface ParentDashboardResponse {
+  status: string;
+  enabled: boolean;
+}
+
 export interface DashboardStats {
   totalStudents: number;
   totalTeachers: number;

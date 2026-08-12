@@ -24,6 +24,10 @@ export default function AddSchoolForm({
   const [address, setAddress] = useState(editSchool?.address || "");
   const [email, setEmail] = useState(editSchool?.email || "");
   const [phoneNumber, setPhoneNumber] = useState(editSchool?.phoneNumber || "");
+  const [contactPerson, setContactPerson] = useState(
+    editSchool?.contactPerson || "",
+  );
+  const [designation, setDesignation] = useState(editSchool?.designation || "");
   const [selectedModules, setSelectedModules] = useState<string[]>(
     editSchool?.modules && editSchool.modules.length > 0
       ? editSchool.modules
@@ -89,6 +93,14 @@ export default function AddSchoolForm({
       showToast("Address is required", "error");
       return;
     }
+    if (!contactPerson.trim()) {
+      showToast("Contact Person is required", "error");
+      return;
+    }
+    if (!designation.trim()) {
+      showToast("Designation is required", "error");
+      return;
+    }
     if (!email.trim()) {
       showToast("Email is required", "error");
       return;
@@ -111,6 +123,8 @@ export default function AddSchoolForm({
           address,
           email,
           phone: phoneNumber,
+          contactPerson: contactPerson.trim(),
+          designation: designation.trim(),
           modules: selectedModules,
           status: editSchool.status,
         };
@@ -138,6 +152,8 @@ export default function AddSchoolForm({
           address,
           email,
           phone: phoneNumber,
+          contactPerson: contactPerson.trim(),
+          designation: designation.trim(),
           modules: selectedModules,
           status: "ACTIVE",
         };
@@ -207,6 +223,8 @@ export default function AddSchoolForm({
             address={address}
             email={email}
             phone={phoneNumber}
+            contactPerson={contactPerson}
+            designation={designation}
             username={username}
             password={password}
             selectedModules={selectedModules}
@@ -214,6 +232,8 @@ export default function AddSchoolForm({
             onAddressChange={setAddress}
             onEmailChange={setEmail}
             onPhoneChange={setPhoneNumber}
+            onContactPersonChange={setContactPerson}
+            onDesignationChange={setDesignation}
             onUsernameChange={setUsername}
             onPasswordChange={setPassword}
             onModulesChange={setSelectedModules}

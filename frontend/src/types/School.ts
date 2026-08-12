@@ -5,6 +5,8 @@ export interface School {
   address: string;
   email: string;
   phoneNumber: string;
+  contactPerson: string;
+  designation: string;
   status: "ACTIVE" | "INACTIVE" | "DEMO";
   modules: string[];
   adminUsername: string;
@@ -18,6 +20,10 @@ export interface School {
 export interface ModuleOption {
   code: string;
   name: string;
-  price: number;
-  isBase: boolean;
+  description?: string;
+  active: boolean;
+  selectable: boolean;
+  comingSoon: boolean;
+  category: "CORE" | "FUTURE";
+  required: boolean;
 }

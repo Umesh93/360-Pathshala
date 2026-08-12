@@ -1,68 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { Copy, Check, RefreshCw, Eye, EyeOff } from "lucide-react";
-import MultiSelect from "./MultiSelect";
 import type { ModuleOption } from "../types/School";
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const MODULE_OPTIONS: ModuleOption[] = [
-  {
-    code: "STUDENT_MANAGEMENT",
-    name: "Student Registration",
-    price: 0,
-    isBase: true,
-  },
-  {
-    code: "EXAMINATION",
-    name: "Examination & Result Publishing",
-    price: 0,
-    isBase: true,
-  },
-  { code: "ATTENDANCE", name: "Attendance", price: 3000, isBase: false },
-  {
-    code: "TEACHER_DASHBOARD",
-    name: "Teacher Dashboard",
-    price: 3000,
-    isBase: false,
-  },
-  { code: "TEACHER_MANAGEMENT", name: "Teacher Management", price: 3000, isBase: false },
-  { code: "SUBJECT_MANAGEMENT", name: "Subject Management", price: 3000, isBase: false },
-  { code: "PARENT_MANAGEMENT", name: "Parent / Guardian Management", price: 3000, isBase: false },
-  {
-    code: "STUDENT_DASHBOARD",
-    name: "Student Dashboard",
-    price: 3000,
-    isBase: false,
-  },
-  {
-    code: "PARENT_DASHBOARD",
-    name: "Parent / Guardian Dashboard",
-    price: 3000,
-    isBase: false,
-  },
-  { code: "ACCOUNTS", name: "Accounts", price: 3000, isBase: false },
-  { code: "FEE_MANAGEMENT", name: "Fee Management", price: 3000, isBase: false },
-  { code: "ANALYTICS_DASHBOARD", name: "Analytics Dashboard", price: 3000, isBase: false },
-  { code: "LIBRARY", name: "Library", price: 3000, isBase: false },
-  { code: "TRANSPORT", name: "Transport", price: 3000, isBase: false },
-  { code: "HOSTEL", name: "Hostel", price: 3000, isBase: false },
-  { code: "INVENTORY", name: "Inventory", price: 3000, isBase: false },
-  { code: "PAYROLL", name: "Payroll", price: 3000, isBase: false },
-  { code: "HR_MANAGEMENT", name: "HR Management", price: 3000, isBase: false },
-  {
-    code: "LEAVE_MANAGEMENT",
-    name: "Leave Management",
-    price: 3000,
-    isBase: false,
-  },
-  { code: "ASSIGNMENT", name: "Assignments", price: 3000, isBase: false },
-  {
-    code: "ACADEMIC_CALENDAR",
-    name: "Academic Calendar",
-    price: 3000,
-    isBase: false,
-  },
-  { code: "NOTIFICATIONS", name: "Notifications", price: 3000, isBase: false },
-];
+import { getModules } from "../services/schoolService";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const generatePassword = () => {
@@ -93,6 +32,8 @@ interface SchoolFormFieldsProps {
   address: string;
   email: string;
   phone: string;
+  contactPerson?: string;
+  designation?: string;
   username: string;
   password: string;
   selectedModules: string[];
@@ -100,6 +41,8 @@ interface SchoolFormFieldsProps {
   onAddressChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
+  onContactPersonChange?: (value: string) => void;
+  onDesignationChange?: (value: string) => void;
   onUsernameChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onModulesChange: (value: string[]) => void;
@@ -113,6 +56,8 @@ export default function SchoolFormFields({
   address,
   email,
   phone,
+  contactPerson,
+  designation,
   username,
   password,
   selectedModules,
@@ -120,6 +65,8 @@ export default function SchoolFormFields({
   onAddressChange,
   onEmailChange,
   onPhoneChange,
+  onContactPersonChange,
+  onDesignationChange,
   onUsernameChange,
   onPasswordChange,
   onModulesChange,
@@ -129,6 +76,62 @@ export default function SchoolFormFields({
 }: SchoolFormFieldsProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [modules, setModules] = useState<ModuleOption[]>([]);
+  const [moduleSearch, setModuleSearch] = useState("");
+  const [modulesOpen, setModulesOpen] = useState(false);
+  const [modulesLoading, setModulesLoading] = useState(true);
+  const [modulesError, setModulesError] = useState("");
+  const moduleRef = useRef<HTMLDivElement>(null);
+  const applyCatalogue = useEffectEvent((items: ModuleOption[]) => {
+    const activeItems = items.filter((item) => item.active);
+    setModules(activeItems);
+    const required = activeItems
+      .filter((item) => item.required)
+      .map((item) => item.code);
+    const availableSelected = selectedModules.filter((code) =>
+      activeItems.some(
+        (item) => item.code === code && item.selectable && !item.comingSoon,
+      ),
+    );
+    onModulesChange([...new Set([...required, ...availableSelected])]);
+  });
+
+  useEffect(() => {
+    getModules()
+      .then(applyCatalogue)
+      .catch(() => setModulesError("Unable to load available modules."))
+      .finally(() => setModulesLoading(false));
+  }, []);
+  useEffect(() => {
+    const close = (event: MouseEvent) => {
+      if (!moduleRef.current?.contains(event.target as Node))
+        setModulesOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
+  const requiredModules = useMemo(
+    () => modules.filter((item) => item.required).map((item) => item.code),
+    [modules],
+  );
+  const selectable = modules.filter(
+    (item) => item.selectable && !item.comingSoon,
+  );
+  const visible = modules.filter((item) =>
+    `${item.name} ${item.description || ""}`
+      .toLowerCase()
+      .includes(moduleSearch.toLowerCase()),
+  );
+  const updateModules = (code: string) => {
+    if (!selectable.some((item) => item.code === code)) return;
+    const next = selectedModules.includes(code)
+      ? selectedModules.filter(
+          (item) => item !== code && !requiredModules.includes(item),
+        )
+      : [...selectedModules, code];
+    onModulesChange([...new Set([...requiredModules, ...next])]);
+  };
 
   useEffect(() => {
     if (email) {
@@ -145,8 +148,8 @@ export default function SchoolFormFields({
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4">
-        <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="order-1">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
             School Name <span className="text-red-500">*</span>
           </label>
@@ -157,8 +160,30 @@ export default function SchoolFormFields({
             className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
           />
         </div>
+        <div className="order-5">
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Contact Person <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={contactPerson || ""}
+            onChange={(e) => onContactPersonChange?.(e.target.value)}
+            placeholder="Ram Sharma"
+            className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+          />
+        </div>
+        <div className="order-6">
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Designation <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={designation || ""}
+            onChange={(e) => onDesignationChange?.(e.target.value)}
+            placeholder="Principal"
+            className="h-12 w-full rounded-xl border border-slate-300 px-4 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+          />
+        </div>
 
-        <div>
+        <div className="order-2">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
             Address <span className="text-red-500">*</span>
           </label>
@@ -170,7 +195,7 @@ export default function SchoolFormFields({
           />
         </div>
 
-        <div>
+        <div className="order-3">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
             Email Address <span className="text-red-500">*</span>
           </label>
@@ -183,7 +208,7 @@ export default function SchoolFormFields({
           />
         </div>
 
-        <div>
+        <div className="order-4">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
             Phone Number <span className="text-red-500">*</span>
           </label>
@@ -277,28 +302,118 @@ export default function SchoolFormFields({
         <label className="mb-2 block text-sm font-semibold text-slate-700">
           Enabled Modules <span className="text-red-500">*</span>
         </label>
-        <MultiSelect
-          options={MODULE_OPTIONS.map((m) => m.name)}
-          selected={selectedModules.map(
-            (code) => MODULE_OPTIONS.find((m) => m.code === code)?.name || code,
+        <div ref={moduleRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setModulesOpen((open) => !open)}
+            className="min-h-14 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-left"
+          >
+            <span className="flex flex-wrap gap-2 pr-6">
+              {selectedModules.length ? (
+                selectedModules.map((code) => (
+                  <span
+                    key={code}
+                    className="rounded-full bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700"
+                  >
+                    {modules.find((item) => item.code === code)?.name || code}
+                  </span>
+                ))
+              ) : (
+                <span className="text-slate-400">
+                  Choose modules for this school
+                </span>
+              )}
+            </span>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+              ⌄
+            </span>
+          </button>
+          {modulesOpen && (
+            <div className="absolute left-0 right-0 z-50 mt-2 max-h-[420px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+              <div className="border-b bg-slate-50 p-3">
+                <input
+                  autoFocus
+                  value={moduleSearch}
+                  onChange={(event) => setModuleSearch(event.target.value)}
+                  placeholder="Search modules..."
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500"
+                />
+              </div>
+              <div className="max-h-[330px] overflow-y-auto p-3">
+                {modulesLoading && (
+                  <p className="p-3 text-sm text-slate-500">
+                    Loading modules...
+                  </p>
+                )}
+                {modulesError && (
+                  <p className="p-3 text-sm text-red-600">{modulesError}</p>
+                )}
+                {["CORE", "FUTURE"].map((category) => {
+                  const group = visible.filter(
+                    (item) => item.category === category,
+                  );
+                  if (!group.length) return null;
+                  return (
+                    <section key={category} className="mb-4 last:mb-0">
+                      <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500">
+                        {category === "CORE"
+                          ? "Core Modules"
+                          : "Future Upgrades"}
+                      </h3>
+                      {group.map((item) => {
+                        const checked = selectedModules.includes(item.code);
+                        const disabled = item.comingSoon || !item.selectable;
+                        return (
+                          <button
+                            key={item.code}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => updateModules(item.code)}
+                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left ${disabled ? "cursor-not-allowed opacity-55" : "hover:bg-slate-50"}`}
+                          >
+                            <span>
+                              <span className="block text-sm font-medium text-slate-700">
+                                {item.name}
+                              </span>
+                              {item.comingSoon && (
+                                <span className="text-[11px] font-semibold text-amber-600">
+                                  Coming Soon
+                                </span>
+                              )}
+                            </span>
+                            <span
+                              className={`flex h-5 w-5 items-center justify-center rounded border ${checked ? "border-teal-600 bg-teal-600 text-white" : "border-slate-300"}`}
+                            >
+                              {checked ? "✓" : ""}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </section>
+                  );
+                })}
+                {!modulesLoading && !modulesError && !visible.length && (
+                  <p className="p-3 text-sm text-slate-500">
+                    No modules found.
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-between border-t bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                <span>{selectedModules.length} selected</span>
+                <button
+                  type="button"
+                  onClick={() => onModulesChange(requiredModules)}
+                  className="font-semibold text-teal-700"
+                >
+                  Clear optional
+                </button>
+              </div>
+            </div>
           )}
-          onChange={(names) => {
-            const newCodes = names
-              .map(
-                (name) => MODULE_OPTIONS.find((m) => m.name === name)?.code,
-              )
-              .filter((code): code is string => !!code);
-            const baseModules = MODULE_OPTIONS.filter((m) => m.isBase).map(
-              (m) => m.code,
-            );
-            const merged = [...new Set([...newCodes, ...baseModules])];
-            onModulesChange(merged);
-          }}
-          placeholder="Choose modules for this school"
-        />
+        </div>
         <p className="mt-2 text-xs text-slate-500">
-          Student Registration and Examination are required and included in
-          the base package.
+          Student Registration and Examination are required and included in the
+          base package.
         </p>
       </div>
     </div>

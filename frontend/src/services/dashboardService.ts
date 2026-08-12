@@ -1,34 +1,30 @@
 import api from "./api";
+import type {
+  ParentDashboardResponse,
+  StudentDashboardResponse,
+  TeacherDashboardResponse,
+} from "../types/dashboard";
 
-export interface DashboardMetrics {
-  [key: string]: unknown;
-}
+export const getTeacherDashboard =
+  async (): Promise<TeacherDashboardResponse> => {
+    const response = await api.get<TeacherDashboardResponse>(
+      "/dashboards/teacher/summary",
+    );
+    return response.data;
+  };
 
-export interface DashboardCharts {
-  [key: string]: Record<string, unknown> | undefined;
-}
+export const getStudentDashboard =
+  async (): Promise<StudentDashboardResponse> => {
+    const response = await api.get<StudentDashboardResponse>(
+      "/dashboards/student/summary",
+    );
+    return response.data;
+  };
 
-export interface DashboardResponse {
-  metrics: DashboardMetrics;
-  charts: DashboardCharts;
-}
-
-export const getSchoolAdminDashboard = async (): Promise<DashboardResponse> => {
-  const response = await api.get("/dashboards/school-admin");
-  return response.data;
-};
-
-export const getTeacherDashboard = async (): Promise<DashboardResponse> => {
-  const response = await api.get("/dashboards/teacher");
-  return response.data;
-};
-
-export const getStudentDashboard = async (): Promise<DashboardResponse> => {
-  const response = await api.get("/dashboards/student");
-  return response.data;
-};
-
-export const getParentDashboard = async (): Promise<DashboardResponse> => {
-  const response = await api.get("/dashboards/parent");
-  return response.data;
-};
+export const getParentDashboard =
+  async (): Promise<ParentDashboardResponse> => {
+    const response = await api.get<ParentDashboardResponse>(
+      "/dashboards/parent/summary",
+    );
+    return response.data;
+  };

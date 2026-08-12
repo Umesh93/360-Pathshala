@@ -9,7 +9,7 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: Props) => {
-  const { role, token } = useAuth();
+  const { roles, token } = useAuth();
   const location = useLocation();
 
   if (!token || isTokenExpired(token)) {
@@ -21,7 +21,10 @@ const ProtectedRoute = ({ children, allowedRoles }: Props) => {
     return <Navigate to="/login" state={{ from: location }} />;
   }
 
-  if (allowedRoles && role && !allowedRoles.includes(role)) {
+  if (
+    allowedRoles &&
+    (roles.length === 0 || !roles.some((role) => allowedRoles.includes(role)))
+  ) {
     return <Navigate to="/unauthorized" replace />;
   }
 

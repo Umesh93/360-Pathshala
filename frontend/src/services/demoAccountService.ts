@@ -8,9 +8,20 @@ import type {
   ConvertToPaidResult,
 } from "../types/DemoSchool";
 
+const normalizeAccount = (account: DemoSchool): DemoSchool => ({
+  ...account,
+  remainingDays: Number(account.remainingDays),
+});
+
 export const createDemoAccount = async (
   payload: CreateDemoAccountPayload,
-): Promise<{ id: number; demoCode: string; username: string; password: string; expiryDate: string }> => {
+): Promise<{
+  id: number;
+  demoCode: string;
+  username: string;
+  password: string;
+  expiryDate: string;
+}> => {
   const response = await api.post("/super-admin/demo-accounts", {
     demoRequestId: payload.demoRequestId,
     username: payload.username,
@@ -25,12 +36,12 @@ export const createDemoAccount = async (
 
 export const getDemoAccounts = async (): Promise<DemoSchool[]> => {
   const response = await api.get("/super-admin/demo-accounts");
-  return response.data;
+  return response.data.map(normalizeAccount);
 };
 
 export const getDemoAccount = async (id: number): Promise<DemoSchool> => {
   const response = await api.get(`/super-admin/demo-accounts/${id}`);
-  return response.data;
+  return normalizeAccount(response.data);
 };
 
 export const updateDemoAccount = async (
@@ -38,7 +49,7 @@ export const updateDemoAccount = async (
   payload: UpdateDemoAccountPayload,
 ): Promise<DemoSchool> => {
   const response = await api.put(`/super-admin/demo-accounts/${id}`, payload);
-  return response.data;
+  return normalizeAccount(response.data);
 };
 
 export const deleteDemoAccount = async (id: number): Promise<void> => {
@@ -49,12 +60,19 @@ export const extendDemo = async (
   id: number,
   payload: ExtendDemoPayload,
 ): Promise<DemoSchool> => {
-  const response = await api.post(`/super-admin/demo-accounts/${id}/extend`, payload);
-  return response.data;
+  const response = await api.post(
+    `/super-admin/demo-accounts/${id}/extend`,
+    payload,
+  );
+  return normalizeAccount(response.data);
 };
 
-export const resetDemoPassword = async (id: number): Promise<{ password: string }> => {
-  const response = await api.post(`/super-admin/demo-accounts/${id}/reset-password`);
+export const resetDemoPassword = async (
+  id: number,
+): Promise<{ password: string }> => {
+  const response = await api.post(
+    `/super-admin/demo-accounts/${id}/reset-password`,
+  );
   return response.data;
 };
 
@@ -62,6 +80,9 @@ export const convertToPaid = async (
   id: number,
   payload: ConvertToPaidPayload,
 ): Promise<ConvertToPaidResult> => {
-  const response = await api.post(`/super-admin/demo-accounts/${id}/convert`, payload);
+  const response = await api.post(
+    `/super-admin/demo-accounts/${id}/convert`,
+    payload,
+  );
   return response.data;
 };

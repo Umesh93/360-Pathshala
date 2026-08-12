@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
 import { Power, PowerOff } from "lucide-react";
 import type { School } from "../types/School";
-import { MODULE_OPTIONS } from "./SchoolFormFields";
 import ActionMenu from "@/components/common/ActionMenu";
 import { loadSchoolLogoUrl } from "../services/schoolService";
 
-const MODULE_CODE_TO_NAME = Object.fromEntries(
-  MODULE_OPTIONS.map((m) => [m.code, m.name]),
-);
+const MODULE_CODE_TO_NAME: Record<string, string> = {
+  STUDENT_MANAGEMENT: "Student Registration",
+  TEACHER_MANAGEMENT: "Teacher Registration",
+  PARENT_MANAGEMENT: "Parent / Guardian Management",
+  SUBJECT_MANAGEMENT: "Class & Subject Management",
+  TEACHER_ASSIGNMENT: "Teacher Assignment",
+  ASSIGNMENT: "Assignment Management",
+  ATTENDANCE: "Attendance Management",
+  EXAMINATION: "Examination & Result Publishing",
+  FEE_MANAGEMENT: "Fee Management",
+  HOSTEL: "Hostel Management",
+  TRANSPORT: "Transport Management",
+  TIMETABLE: "Timetable Management",
+  ACADEMIC_CALENDAR: "Academic Calendar",
+};
 
 interface Props {
   schools: School[];

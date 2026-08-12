@@ -3,14 +3,18 @@ export type DemoStatus = "ACTIVE" | "EXPIRED" | "EXTENDED" | "CONVERTED";
 export interface DemoSchool {
   id: number;
   demoCode: string;
-  demoRequestId?: number;
+  demoRequestId?: number | null;
+  schoolId: number;
   schoolName: string;
+  email: string;
+  phone: string;
+  logoUrl?: string | null;
   username: string;
   enabledModules: string;
   startDate: string;
   expiryDate: string;
   remainingDays: number;
-  remarks?: string;
+  remarks?: string | null;
   status: DemoStatus;
   createdAt: string;
 }

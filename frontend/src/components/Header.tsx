@@ -6,6 +6,7 @@ interface HeaderProps {
   setCollapsed: (value: boolean) => void;
   enabledModules?: string[];
   modulesLoaded?: boolean;
+  role?: string;
 }
 
 export default function Header({
@@ -13,6 +14,7 @@ export default function Header({
   setCollapsed,
   enabledModules,
   modulesLoaded = true,
+  role = "SUPER_ADMIN",
 }: HeaderProps) {
   const navigate = useNavigate();
   return (
@@ -48,15 +50,17 @@ export default function Header({
           <Sun size={20} />
         </button>
 
-        {modulesLoaded && enabledModules?.includes("NOTIFICATIONS") && (
-          <button
-            onClick={() => navigate("/admin/notifications")}
-            aria-label="Notifications"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 sm:h-11 sm:w-11"
-          >
-            <Bell size={20} />
-          </button>
-        )}
+        {(role === "ADMIN" || role === "SCHOOL_ADMIN") &&
+          modulesLoaded &&
+          enabledModules?.includes("NOTIFICATIONS") && (
+            <button
+              onClick={() => navigate("/admin/notifications")}
+              aria-label="Notifications"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 sm:h-11 sm:w-11"
+            >
+              <Bell size={20} />
+            </button>
+          )}
       </div>
     </header>
   );

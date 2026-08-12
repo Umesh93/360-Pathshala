@@ -8,6 +8,8 @@ interface SchoolSummaryResponse {
   address?: string;
   email: string;
   phone?: string;
+  contactPerson?: string;
+  designation?: string;
   status?: School["status"];
   modules?: string[];
   adminUsername?: string;
@@ -20,6 +22,8 @@ export interface SchoolPayload {
   address: string;
   email: string;
   phone: string;
+  contactPerson: string;
+  designation: string;
   modules: string[];
   status: string;
   password?: string;
@@ -28,6 +32,12 @@ export interface SchoolPayload {
 interface PlatformModuleResponse {
   code: string;
   name: string;
+  description?: string;
+  active?: boolean;
+  selectable?: boolean;
+  comingSoon?: boolean;
+  category?: string;
+  required?: boolean;
 }
 
 export interface CreateSchoolResponse {
@@ -52,6 +62,8 @@ export const getSchools = async (): Promise<School[]> => {
       address: school.address || "",
       email: school.email,
       phoneNumber: school.phone || "",
+      contactPerson: school.contactPerson || "",
+      designation: school.designation || "",
       status: school.status || "DEMO",
       modules: school.modules || [],
       adminUsername: school.adminUsername || "",
@@ -101,105 +113,20 @@ export const getNextSchoolId = async (): Promise<string> => {
 
 export const getModules = async (): Promise<ModuleOption[]> => {
   const response = await api.get("/saas/modules");
-  const moduleMap: Record<string, ModuleOption> = {
-    STUDENT_MANAGEMENT: {
-      code: "STUDENT_MANAGEMENT",
-      name: "Student Registration",
-      price: 0,
-      isBase: true,
-    },
-    EXAMINATION: {
-      code: "EXAMINATION",
-      name: "Examination & Result Publishing",
-      price: 0,
-      isBase: true,
-    },
-    ATTENDANCE: {
-      code: "ATTENDANCE",
-      name: "Attendance",
-      price: 3000,
-      isBase: false,
-    },
-    TEACHER_DASHBOARD: {
-      code: "TEACHER_DASHBOARD",
-      name: "Teacher Dashboard",
-      price: 3000,
-      isBase: false,
-    },
-    STUDENT_DASHBOARD: {
-      code: "STUDENT_DASHBOARD",
-      name: "Student Dashboard",
-      price: 3000,
-      isBase: false,
-    },
-    PARENT_DASHBOARD: {
-      code: "PARENT_DASHBOARD",
-      name: "Parent / Guardian Dashboard",
-      price: 3000,
-      isBase: false,
-    },
-    ACCOUNTS: {
-      code: "ACCOUNTS",
-      name: "Accounts",
-      price: 3000,
-      isBase: false,
-    },
-    LIBRARY: { code: "LIBRARY", name: "Library", price: 3000, isBase: false },
-    TRANSPORT: {
-      code: "TRANSPORT",
-      name: "Transport",
-      price: 3000,
-      isBase: false,
-    },
-    HOSTEL: { code: "HOSTEL", name: "Hostel", price: 3000, isBase: false },
-    INVENTORY: {
-      code: "INVENTORY",
-      name: "Inventory",
-      price: 3000,
-      isBase: false,
-    },
-    PAYROLL: { code: "PAYROLL", name: "Payroll", price: 3000, isBase: false },
-    HR_MANAGEMENT: {
-      code: "HR_MANAGEMENT",
-      name: "HR Management",
-      price: 3000,
-      isBase: false,
-    },
-    LEAVE_MANAGEMENT: {
-      code: "LEAVE_MANAGEMENT",
-      name: "Leave Management",
-      price: 3000,
-      isBase: false,
-    },
-    ASSIGNMENT: {
-      code: "ASSIGNMENT",
-      name: "Assignments",
-      price: 3000,
-      isBase: false,
-    },
-    ACADEMIC_CALENDAR: {
-      code: "ACADEMIC_CALENDAR",
-      name: "Academic Calendar",
-      price: 3000,
-      isBase: false,
-    },
-    NOTIFICATIONS: {
-      code: "NOTIFICATIONS",
-      name: "Notifications",
-      price: 3000,
-      isBase: false,
-    },
-  };
-
-  return (response.data as PlatformModuleResponse[]).map(
-    (item) =>
-      moduleMap[item.code] || {
-        code: item.code,
-        name: item.name,
-        price: 0,
-        isBase: false,
-      },
-  );
+  return (
+    response.data as (PlatformModuleResponse & Partial<ModuleOption>)[]
+  ).map((item) => ({
+    code: item.code,
+    name: item.name,
+    description: item.description,
+    active: item.active ?? true,
+    selectable: item.selectable ?? true,
+    comingSoon: item.comingSoon ?? false,
+    category: item.category === "FUTURE" ? "FUTURE" : "CORE",
+    required:
+      item.required ??
+      (item.code === "STUDENT_MANAGEMENT" || item.code === "EXAMINATION"),
+  }));
 };
 
 export const uploadSchoolLogo = async (

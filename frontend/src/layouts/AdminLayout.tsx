@@ -54,6 +54,7 @@ export default function AdminLayout({ children }: Props) {
           setCollapsed={setCollapsed}
           enabledModules={enabledModules}
           modulesLoaded={enabledModules !== undefined && !modulesError}
+          role="ADMIN"
         />
 
         <main className="min-w-0 flex-1 p-4 md:p-6 lg:p-10">{children}</main>
