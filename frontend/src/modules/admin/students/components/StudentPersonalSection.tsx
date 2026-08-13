@@ -30,8 +30,10 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
     }
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) =>
+    error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -189,7 +191,9 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Citizenship Number (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Citizenship Number (Optional)
+          </label>
           <input
             data-field="citizenshipNumber"
             type="text"
@@ -200,7 +204,9 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Nationality
+          </label>
           <input
             data-field="nationality"
             type="text"
@@ -225,7 +231,9 @@ const StudentPersonalSection: React.FC<StudentPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Email (Optional)
+          </label>
           <input
             data-field="email"
             type="email"

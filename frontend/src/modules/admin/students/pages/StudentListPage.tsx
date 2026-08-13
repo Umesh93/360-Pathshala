@@ -6,7 +6,14 @@ import StudentTable from "../components/StudentTable";
 import StudentSkeleton from "../components/StudentSkeleton";
 import EmptyState from "../components/EmptyState";
 import Pagination from "../components/Pagination";
-import { getStudents, deleteStudent, bulkDeleteStudents, exportStudentsCSV, exportStudentsPDF, importStudents } from "../services/student.service";
+import {
+  getStudents,
+  deleteStudent,
+  bulkDeleteStudents,
+  exportStudentsCSV,
+  exportStudentsPDF,
+  importStudents,
+} from "../services/student.service";
 import type { Student } from "../types/student.types";
 import { useToast } from "../components/Toast";
 import ConfirmDialog from "../../../../components/feedback/ConfirmDialog";
@@ -42,7 +49,7 @@ const StudentListPage = () => {
         searchQuery,
         classFilter,
         sectionFilter,
-        statusFilter
+        statusFilter,
       );
       setStudents(response.data);
       setTotalPages(response.totalPages);

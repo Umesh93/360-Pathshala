@@ -36,7 +36,9 @@ const useStudents = (options: UseStudentsOptions = {}): UseStudentsReturn => {
   const [page, setPage] = useState(options.page || 1);
   const [search, setSearch] = useState(options.search || "");
   const [classFilter, setClassFilter] = useState(options.classFilter || "");
-  const [sectionFilter, setSectionFilter] = useState(options.sectionFilter || "");
+  const [sectionFilter, setSectionFilter] = useState(
+    options.sectionFilter || "",
+  );
   const [statusFilter, setStatusFilter] = useState(options.statusFilter || "");
   const [pagination, setPagination] = useState({
     page: 1,
@@ -55,7 +57,7 @@ const useStudents = (options: UseStudentsOptions = {}): UseStudentsReturn => {
         search,
         classFilter,
         sectionFilter,
-        statusFilter
+        statusFilter,
       );
       setStudents(response.data);
       setPagination({

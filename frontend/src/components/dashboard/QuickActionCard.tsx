@@ -8,7 +8,12 @@ interface QuickActionCardProps {
   href?: string;
 }
 
-const QuickActionCard = ({ label, icon: Icon, onClick, href }: QuickActionCardProps) => {
+const QuickActionCard = ({
+  label,
+  icon: Icon,
+  onClick,
+  href,
+}: QuickActionCardProps) => {
   const content = (
     <Card className="rounded-2xl border border-gray-200 bg-white shadow-soft p-5 flex items-center gap-4 cursor-pointer hover:shadow-elevated transition-shadow">
       <div className="p-2.5 rounded-xl bg-[#223D5D]/10 text-[#223D5D]">
@@ -19,10 +24,18 @@ const QuickActionCard = ({ label, icon: Icon, onClick, href }: QuickActionCardPr
   );
 
   if (href) {
-    return <a href={href} className="block">{content}</a>;
+    return (
+      <a href={href} className="block">
+        {content}
+      </a>
+    );
   }
 
-  return <div onClick={onClick} className="block">{content}</div>;
+  return (
+    <div onClick={onClick} className="block">
+      {content}
+    </div>
+  );
 };
 
 export default QuickActionCard;

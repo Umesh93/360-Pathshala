@@ -38,10 +38,7 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ notices }) => {
                 }`}
               >
                 <div className="flex items-start gap-2">
-                  <Pin
-                    size={14}
-                    className="text-[#234A91] mt-0.5 shrink-0"
-                  />
+                  <Pin size={14} className="text-[#234A91] mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-gray-800 truncate">
                       {notice.title}

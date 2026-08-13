@@ -7,17 +7,25 @@ interface HostelSectionProps {
   errors?: Record<string, string>;
 }
 
-const HostelSection: React.FC<HostelSectionProps> = ({ data, onChange, errors = {} }) => {
+const HostelSection: React.FC<HostelSectionProps> = ({
+  data,
+  onChange,
+  errors = {},
+}) => {
   const update = (field: keyof HostelData, value: string | boolean) => {
     onChange({ ...data, [field]: value });
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) =>
+    error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Hostel Information</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Hostel Information
+      </h2>
       <div className="flex gap-4 mb-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -44,7 +52,9 @@ const HostelSection: React.FC<HostelSectionProps> = ({ data, onChange, errors = 
       {data.hasHostel && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Hostel (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Hostel (Optional)
+            </label>
             <select
               data-field="hostel"
               value={data.hostel}
@@ -59,7 +69,9 @@ const HostelSection: React.FC<HostelSectionProps> = ({ data, onChange, errors = 
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Room Number (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Room Number (Optional)
+            </label>
             <input
               data-field="roomNumber"
               type="text"
@@ -70,7 +82,9 @@ const HostelSection: React.FC<HostelSectionProps> = ({ data, onChange, errors = 
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Bed Number (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Bed Number (Optional)
+            </label>
             <input
               data-field="bedNumber"
               type="text"

@@ -42,7 +42,10 @@ const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
             />
           </div>
 
-          <button onClick={onExport} className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          <button
+            onClick={onExport}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
             <SlidersHorizontal size={16} />
             Filter
           </button>
@@ -51,7 +54,6 @@ const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
             <Download size={16} />
             Export
           </button>
-
 
           <button
             onClick={onRefresh}

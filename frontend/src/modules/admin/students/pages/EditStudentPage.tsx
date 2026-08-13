@@ -21,7 +21,10 @@ const EditStudentPage = () => {
               {index === breadcrumbs.length - 1 ? (
                 <span className="font-medium text-gray-800">{crumb.label}</span>
               ) : (
-                <a href={crumb.href} className="hover:text-[#234A91] transition-colors">
+                <a
+                  href={crumb.href}
+                  className="hover:text-[#234A91] transition-colors"
+                >
                   {crumb.label}
                 </a>
               )}

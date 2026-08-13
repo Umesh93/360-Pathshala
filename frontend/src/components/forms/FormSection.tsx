@@ -7,12 +7,21 @@ interface FormSectionProps {
   className?: string;
 }
 
-const FormSection = ({ title, description, children, className = "" }: FormSectionProps) => (
+const FormSection = ({
+  title,
+  description,
+  children,
+  className = "",
+}: FormSectionProps) => (
   <div className={`space-y-4 ${className}`}>
     {(title || description) && (
       <div className="mb-4">
-        {title && <h3 className="text-sm font-semibold text-gray-700">{title}</h3>}
-        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
+        {title && (
+          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        )}
+        {description && (
+          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+        )}
       </div>
     )}
     {children}

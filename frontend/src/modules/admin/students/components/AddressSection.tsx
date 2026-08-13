@@ -7,6 +7,10 @@ interface AddressSectionProps {
   errors?: Record<string, string>;
 }
 
-export default function AddressSection({ data, onChange, errors = {} }: AddressSectionProps) {
+export default function AddressSection({
+  data,
+  onChange,
+  errors = {},
+}: AddressSectionProps) {
   return <AddressForm data={data} onChange={onChange} errors={errors} />;
 }

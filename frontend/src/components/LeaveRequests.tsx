@@ -19,8 +19,8 @@ const LeaveRequests: React.FC<LeaveRequestsProps> = ({
   const handleApprove = (id: number) => {
     setLocalLeaves((prev) =>
       prev.map((leave) =>
-        leave.id === id ? { ...leave, status: "approved" as const } : leave
-      )
+        leave.id === id ? { ...leave, status: "approved" as const } : leave,
+      ),
     );
     onApprove?.(id);
   };
@@ -28,8 +28,8 @@ const LeaveRequests: React.FC<LeaveRequestsProps> = ({
   const handleReject = (id: number) => {
     setLocalLeaves((prev) =>
       prev.map((leave) =>
-        leave.id === id ? { ...leave, status: "rejected" as const } : leave
-      )
+        leave.id === id ? { ...leave, status: "rejected" as const } : leave,
+      ),
     );
     onReject?.(id);
   };

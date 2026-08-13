@@ -61,7 +61,8 @@ export const AuthProvider = ({ children }: Props) => {
     if (state.token) localStorage.setItem("token", state.token);
     if (state.role) localStorage.setItem("role", state.role);
     if (state.userId) localStorage.setItem("userId", String(state.userId));
-    if (state.schoolId) localStorage.setItem("schoolId", String(state.schoolId));
+    if (state.schoolId)
+      localStorage.setItem("schoolId", String(state.schoolId));
     if (state.username) localStorage.setItem("username", state.username);
     setAuthState(state);
   };

@@ -1,7 +1,16 @@
 export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
 
-export interface Option { id: number; name: string; classId?: number }
-export interface PageResult<T> { items: T[]; page: number; totalPages: number; total: number }
+export interface Option {
+  id: number;
+  name: string;
+  classId?: number;
+}
+export interface PageResult<T> {
+  items: T[];
+  page: number;
+  totalPages: number;
+  total: number;
+}
 export interface AttendanceFilters {
   academicSessionId?: number;
   date?: string;

@@ -52,8 +52,14 @@ const LoginForm = () => {
 
       navigate(getDashboardRoute(data.roles?.[0] || ""));
     } catch (err) {
-      const axiosError = err as { response?: { data?: { message?: string } }; message?: string };
-      const message = axiosError.response?.data?.message || axiosError.message || "Invalid username or password";
+      const axiosError = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const message =
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Invalid username or password";
       setError(message);
     } finally {
       setLoading(false);
@@ -118,11 +124,7 @@ const LoginForm = () => {
 
         {error && <p className="error-message">{error}</p>}
 
-        <button
-          type="submit"
-          className="login-btn"
-          disabled={loading}
-        >
+        <button type="submit" className="login-btn" disabled={loading}>
           {loading ? "Logging in..." : "Log In"}
         </button>
       </form>

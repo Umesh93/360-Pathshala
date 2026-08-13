@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { PublicLayout } from "@/public/layouts/PublicLayout";
 
-
 const modules = [
   {
     icon: ClipboardCheck,
@@ -90,11 +89,12 @@ function FeaturesPage() {
             Features
           </span>
           <h1 className="font-display text-5xl font-extrabold leading-tight text-foreground sm:text-6xl flex flex-col">
-            A complete <span className="text-gradient-accent">modular</span> toolkit for schools.
+            A complete <span className="text-gradient-accent">modular</span>{" "}
+            toolkit for schools.
           </h1>
           <p className="max-w-xl mt-6 text-lg text-muted-foreground">
-            Every module is independent. Activate only what your institution needs — scale up
-            anytime.
+            Every module is independent. Activate only what your institution
+            needs — scale up anytime.
           </p>
         </div>
       </section>
@@ -113,8 +113,12 @@ function FeaturesPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary transition-colors group-hover:bg-accent-soft group-hover:text-accent">
                 <m.icon className="h-6 w-6" />
               </div>
-              <h3 className="mt-5 font-display text-xl font-bold text-foreground">{m.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.desc}</p>
+              <h3 className="mt-5 font-display text-xl font-bold text-foreground">
+                {m.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {m.desc}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -127,7 +131,8 @@ function FeaturesPage() {
             Pick your modules. We'll handle the rest.
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-primary-foreground/80">
-            Tell us your school's needs in a 30-minute demo and we'll tailor the right setup.
+            Tell us your school's needs in a 30-minute demo and we'll tailor the
+            right setup.
           </p>
           <Link
             to="/demo"

@@ -11,14 +11,16 @@ import type {
 import type { StudentFormData } from "../schemas/student.schema";
 import api from "../../../../services/api";
 
-const mapStudent = (item: StudentResponse | Record<string, unknown>): Student => {
+const mapStudent = (
+  item: StudentResponse | Record<string, unknown>,
+): Student => {
   const record = item as Record<string, unknown>;
   const details = (record.details as Record<string, unknown>) || {};
   return {
-    id: (record.id as number),
+    id: record.id as number,
     admissionNo: (record.admissionNo as string) ?? "",
-    firstName: (record.firstName as string),
-    lastName: (record.lastName as string),
+    firstName: record.firstName as string,
+    lastName: record.lastName as string,
     rollNumber: (record.rollNumber as string) ?? "",
     class: (record.className as string) ?? "",
     className: (record.className as string) ?? "",
@@ -26,28 +28,53 @@ const mapStudent = (item: StudentResponse | Record<string, unknown>): Student =>
     sectionName: (record.sectionName as string) ?? "",
     classId: (record.classId as number) ?? undefined,
     sectionId: (record.sectionId as number) ?? undefined,
-    guardianName: (record.guardianName as string) ?? (details.guardianName as string) ?? "",
+    guardianName:
+      (record.guardianName as string) ?? (details.guardianName as string) ?? "",
     gender: (record.gender as Student["gender"]) || "other",
     dob: (record.dob as string) ?? "",
-    phone: ((details.studentPhone as string) ?? (record.phone as string) ?? ""),
-    email: ((details.studentEmail as string) ?? (record.email as string) ?? ""),
+    phone: (details.studentPhone as string) ?? (record.phone as string) ?? "",
+    email: (details.studentEmail as string) ?? (record.email as string) ?? "",
     address: (record.address as string) ?? "",
-    status: ["active", "inactive", "transferred", "graduated", "suspended", "dropped"].includes(record.status as string)
+    status: [
+      "active",
+      "inactive",
+      "transferred",
+      "graduated",
+      "suspended",
+      "dropped",
+    ].includes(record.status as string)
       ? (record.status as Student["status"])
       : "inactive",
     photo: (details.photo as string) ?? (record.photo as string) ?? "",
-    admissionDate: (details.admissionDate as string) ?? (record.admissionDate as string) ?? "",
+    admissionDate:
+      (details.admissionDate as string) ??
+      (record.admissionDate as string) ??
+      "",
     guardian: {
-      fatherName: [details.fatherFirstName, details.fatherMiddleName, details.fatherLastName].filter(Boolean).join(" "),
+      fatherName: [
+        details.fatherFirstName,
+        details.fatherMiddleName,
+        details.fatherLastName,
+      ]
+        .filter(Boolean)
+        .join(" "),
       fatherFirstName: (details.fatherFirstName as string) ?? "",
       fatherMiddleName: (details.fatherMiddleName as string) ?? "",
       fatherLastName: (details.fatherLastName as string) ?? "",
-      motherName: [details.motherFirstName, details.motherMiddleName, details.motherLastName].filter(Boolean).join(" "),
+      motherName: [
+        details.motherFirstName,
+        details.motherMiddleName,
+        details.motherLastName,
+      ]
+        .filter(Boolean)
+        .join(" "),
       motherFirstName: (details.motherFirstName as string) ?? "",
       motherMiddleName: (details.motherMiddleName as string) ?? "",
       motherLastName: (details.motherLastName as string) ?? "",
       guardianName: (details.guardianName as string) ?? "",
-      guardianSelection: (details.guardianSelection as "father" | "mother" | "other") ?? undefined,
+      guardianSelection:
+        (details.guardianSelection as "father" | "mother" | "other") ??
+        undefined,
       relationship: (details.guardianRelationship as string) ?? "",
       occupation: (details.guardianOccupation as string) ?? "",
       phone: (details.guardianPhone as string) ?? "",
@@ -101,7 +128,8 @@ const mapStudent = (item: StudentResponse | Record<string, unknown>): Student =>
     previousSchool: (details.previousSchool as string) ?? "",
     previousAddress: (details.previousAddress as string) ?? "",
     previousClass: (details.previousClass as string) ?? "",
-    transferCertificateNumber: (details.transferCertificateNumber as string) ?? "",
+    transferCertificateNumber:
+      (details.transferCertificateNumber as string) ?? "",
     reasonForLeaving: (details.reasonForLeaving as string) ?? "",
     hasHostel: (details.hasHostel as boolean) ?? false,
     hostel: (details.hostel as string) ?? "",
@@ -118,42 +146,129 @@ const mapStudent = (item: StudentResponse | Record<string, unknown>): Student =>
   };
 };
 
-export const buildStudentPayload = (formData: StudentFormData): StudentRequest => {
+export const buildStudentPayload = (
+  formData: StudentFormData,
+): StudentRequest => {
   const flat: Record<string, unknown> = {
-    ...formData.academicInfo, ...formData.personalInfo, ...formData.guardian, ...formData.address,
-    ...formData.medical, ...formData.academicHistory, ...formData.hostel, ...formData.transport,
-    ...formData.documents, ...formData.login, notes: formData.notes?.notes,
+    ...formData.academicInfo,
+    ...formData.personalInfo,
+    ...formData.guardian,
+    ...formData.address,
+    ...formData.medical,
+    ...formData.academicHistory,
+    ...formData.hostel,
+    ...formData.transport,
+    ...formData.documents,
+    ...formData.login,
+    notes: formData.notes?.notes,
   };
-  const fatherName = [flat.fatherFirstName, flat.fatherMiddleName, flat.fatherLastName].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
-  const motherName = [flat.motherFirstName, flat.motherMiddleName, flat.motherLastName].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
+  const fatherName = [
+    flat.fatherFirstName,
+    flat.fatherMiddleName,
+    flat.fatherLastName,
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
+  const motherName = [
+    flat.motherFirstName,
+    flat.motherMiddleName,
+    flat.motherLastName,
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
   return {
-    admissionNumber: flat.admissionNo, rollNumber: flat.rollNumber, firstName: flat.firstName, lastName: flat.lastName,
-    dateOfBirth: flat.dob, gender: flat.gender, parentId: null,
-    classId: flat.class ? Number(flat.class) : null, sectionId: flat.section ? Number(flat.section) : null,
-    province: flat.currentProvinceName || undefined, district: flat.currentDistrictName || undefined,
-    municipality: flat.currentMunicipalityName || flat.currentMunicipality || undefined, ward: flat.currentWardNumber || flat.currentWard ? Number(flat.currentWardNumber || flat.currentWard) : null,
-    street: flat.currentStreet || undefined, fatherName, motherName, guardianName: flat.guardianName,
-    relationship: flat.guardianRelationship, occupation: flat.guardianOccupation, guardianPhone: flat.guardianPhone,
-    guardianEmail: flat.guardianEmail, guardianAddress: flat.guardianAddress, academicYear: flat.academicYear, medium: flat.medium, admissionDate: flat.admissionDate,
-    house: flat.house, status: flat.status, scholarship: flat.scholarship, middleName: flat.middleName, bloodGroup: flat.bloodGroup,
-    religion: flat.religion, caste: flat.caste, nationality: flat.nationality, motherTongue: flat.motherTongue, studentPhone: flat.phone,
-    studentEmail: flat.email, citizenshipNumber: flat.citizenshipNumber, emisId: flat.emisId, studentIdBarcode: flat.studentIdBarcode, photo: flat.photo,
-    fatherFirstName: flat.fatherFirstName, fatherMiddleName: flat.fatherMiddleName, fatherLastName: flat.fatherLastName,
-    fatherOccupation: flat.fatherOccupation, fatherPhone: flat.fatherPhone, fatherEmail: flat.fatherEmail,
-    fatherPhoto: flat.fatherPhoto, fatherCitizenshipNumber: flat.fatherCitizenship,
-    motherFirstName: flat.motherFirstName, motherMiddleName: flat.motherMiddleName, motherLastName: flat.motherLastName,
-    motherOccupation: flat.motherOccupation, motherPhone: flat.motherPhone, motherEmail: flat.motherEmail,
-    motherPhoto: flat.motherPhoto, motherCitizenshipNumber: flat.motherCitizenship,
-    guardianSelection: flat.guardianSelection, guardianRelationship: flat.guardianRelationship,
-    guardianOccupation: flat.guardianOccupation, guardianCitizenshipNumber: flat.guardianCitizenship,
-    medicalBloodGroup: flat.bloodGroup, height: flat.height, weight: flat.weight,
-    medicalConditions: flat.medicalConditions, medicalConditionsOther: flat.medicalConditionsOther, allergies: flat.allergies, disability: flat.disability,
-    emergencyContactPerson: flat.emergencyContactPerson, emergencyContactNumber: flat.emergencyContactNumber, previousSchool: flat.previousSchool,
-    previousAddress: flat.previousAddress, previousClass: flat.previousClass, transferCertificateNumber: flat.transferCertificateNumber,
-    reasonForLeaving: flat.reasonForLeaving, hasHostel: flat.hasHostel, hostel: flat.hostel, roomNumber: flat.roomNumber, bedNumber: flat.bedNumber,
-    usesTransport: flat.usesTransport, route: flat.route, pickupPoint: flat.pickupPoint, vehicle: flat.vehicle,
+    admissionNumber: flat.admissionNo,
+    rollNumber: flat.rollNumber,
+    firstName: flat.firstName,
+    lastName: flat.lastName,
+    dateOfBirth: flat.dob,
+    gender: flat.gender,
+    parentId: null,
+    classId: flat.class ? Number(flat.class) : null,
+    sectionId: flat.section ? Number(flat.section) : null,
+    province: flat.currentProvinceName || undefined,
+    district: flat.currentDistrictName || undefined,
+    municipality:
+      flat.currentMunicipalityName || flat.currentMunicipality || undefined,
+    ward:
+      flat.currentWardNumber || flat.currentWard
+        ? Number(flat.currentWardNumber || flat.currentWard)
+        : null,
+    street: flat.currentStreet || undefined,
+    fatherName,
+    motherName,
+    guardianName: flat.guardianName,
+    relationship: flat.guardianRelationship,
+    occupation: flat.guardianOccupation,
+    guardianPhone: flat.guardianPhone,
+    guardianEmail: flat.guardianEmail,
+    guardianAddress: flat.guardianAddress,
+    academicYear: flat.academicYear,
+    medium: flat.medium,
+    admissionDate: flat.admissionDate,
+    house: flat.house,
+    status: flat.status,
+    scholarship: flat.scholarship,
+    middleName: flat.middleName,
+    bloodGroup: flat.bloodGroup,
+    religion: flat.religion,
+    caste: flat.caste,
+    nationality: flat.nationality,
+    motherTongue: flat.motherTongue,
+    studentPhone: flat.phone,
+    studentEmail: flat.email,
+    citizenshipNumber: flat.citizenshipNumber,
+    emisId: flat.emisId,
+    studentIdBarcode: flat.studentIdBarcode,
+    photo: flat.photo,
+    fatherFirstName: flat.fatherFirstName,
+    fatherMiddleName: flat.fatherMiddleName,
+    fatherLastName: flat.fatherLastName,
+    fatherOccupation: flat.fatherOccupation,
+    fatherPhone: flat.fatherPhone,
+    fatherEmail: flat.fatherEmail,
+    fatherPhoto: flat.fatherPhoto,
+    fatherCitizenshipNumber: flat.fatherCitizenship,
+    motherFirstName: flat.motherFirstName,
+    motherMiddleName: flat.motherMiddleName,
+    motherLastName: flat.motherLastName,
+    motherOccupation: flat.motherOccupation,
+    motherPhone: flat.motherPhone,
+    motherEmail: flat.motherEmail,
+    motherPhoto: flat.motherPhoto,
+    motherCitizenshipNumber: flat.motherCitizenship,
+    guardianSelection: flat.guardianSelection,
+    guardianRelationship: flat.guardianRelationship,
+    guardianOccupation: flat.guardianOccupation,
+    guardianCitizenshipNumber: flat.guardianCitizenship,
+    medicalBloodGroup: flat.bloodGroup,
+    height: flat.height,
+    weight: flat.weight,
+    medicalConditions: flat.medicalConditions,
+    medicalConditionsOther: flat.medicalConditionsOther,
+    allergies: flat.allergies,
+    disability: flat.disability,
+    emergencyContactPerson: flat.emergencyContactPerson,
+    emergencyContactNumber: flat.emergencyContactNumber,
+    previousSchool: flat.previousSchool,
+    previousAddress: flat.previousAddress,
+    previousClass: flat.previousClass,
+    transferCertificateNumber: flat.transferCertificateNumber,
+    reasonForLeaving: flat.reasonForLeaving,
+    hasHostel: flat.hasHostel,
+    hostel: flat.hostel,
+    roomNumber: flat.roomNumber,
+    bedNumber: flat.bedNumber,
+    usesTransport: flat.usesTransport,
+    route: flat.route,
+    pickupPoint: flat.pickupPoint,
+    vehicle: flat.vehicle,
     documents: typeof flat.documents === "string" ? flat.documents : undefined,
-    documentCategories: Array.isArray(flat.documentCategories) ? flat.documentCategories.join(",") : flat.documentCategories,
+    documentCategories: Array.isArray(flat.documentCategories)
+      ? flat.documentCategories.join(",")
+      : flat.documentCategories,
     notes: flat.notes,
   };
 };
@@ -164,7 +279,7 @@ export const getStudents = async (
   search = "",
   classFilter = "",
   sectionFilter = "",
-  statusFilter = ""
+  statusFilter = "",
 ): Promise<PaginatedResponse<Student>> => {
   const response = await api.get("/people/students", {
     params: {
@@ -193,7 +308,9 @@ export const getStudentById = async (id: number): Promise<Student> => {
   return mapStudent(response.data);
 };
 
-export const createStudent = async (formData: StudentFormData): Promise<Student> => {
+export const createStudent = async (
+  formData: StudentFormData,
+): Promise<Student> => {
   const payload = buildStudentPayload(formData);
   const response = await api.post("/people/students", payload);
   return mapStudent(response.data);
@@ -201,7 +318,7 @@ export const createStudent = async (formData: StudentFormData): Promise<Student>
 
 export const updateStudent = async (
   id: number,
-  formData: StudentFormData
+  formData: StudentFormData,
 ): Promise<Student> => {
   const payload = buildStudentPayload(formData);
 
@@ -262,7 +379,7 @@ export const generateAdmissionNo = async (): Promise<string> => {
 
 export const getNextRollNumber = async (
   classId: string,
-  sectionId: string
+  sectionId: string,
 ): Promise<{ nextRollNumber: number }> => {
   const response = await api.get(`/people/students/next-roll-number`, {
     params: { classId, sectionId },
@@ -284,7 +401,9 @@ export const getClasses = async (): Promise<{ id: number; name: string }[]> => {
   }
 };
 
-export const getSections = async (classId?: number): Promise<{ id: number; name: string; classId: number }[]> => {
+export const getSections = async (
+  classId?: number,
+): Promise<{ id: number; name: string; classId: number }[]> => {
   try {
     const response = await api.get("/academic/sections", {
       params: { page: 0, size: 100, classId },
@@ -299,7 +418,9 @@ export const getSections = async (classId?: number): Promise<{ id: number; name:
   }
 };
 
-export const getProvinces = async (): Promise<{ id: number; name: string }[]> => {
+export const getProvinces = async (): Promise<
+  { id: number; name: string }[]
+> => {
   try {
     const response = await api.get("/people/students/locations/provinces");
     return response.data as { id: number; name: string }[];
@@ -309,7 +430,7 @@ export const getProvinces = async (): Promise<{ id: number; name: string }[]> =>
 };
 
 export const getDistricts = async (
-  provinceId?: number
+  provinceId?: number,
 ): Promise<{ id: number; name: string; provinceId: number }[]> => {
   try {
     const response = await api.get("/people/students/locations/districts", {
@@ -322,7 +443,7 @@ export const getDistricts = async (
 };
 
 export const loadStudentEditData = async (
-  id: number
+  id: number,
 ): Promise<{ student: Student; lookups: StudentEditLookups }> => {
   const classes = await getClasses();
   const provinces = await getProvinces();
@@ -340,9 +461,13 @@ export const uploadDocuments = async (files: File[]): Promise<string[]> => {
   try {
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    const response = await api.post("/people/students/documents/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post(
+      "/people/students/documents/upload",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     return (response.data.urls as string[]) || [];
   } catch {
     return files.map((file) => URL.createObjectURL(file));
@@ -363,7 +488,9 @@ export const exportStudentsPDF = async (): Promise<Blob> => {
   return response.data as Blob;
 };
 
-export const importStudents = async (file: File): Promise<{ imported: number; failed: number }> => {
+export const importStudents = async (
+  file: File,
+): Promise<{ imported: number; failed: number }> => {
   const formData = new FormData();
   formData.append("file", file);
   const response = await api.post("/people/students/import", formData, {

@@ -33,47 +33,59 @@ export const personalInfoSchema = z.object({
   photo: z.any().optional(),
 });
 
-export const guardianSchema = z.object({
-  fatherFirstName: z.string().optional(),
-  fatherMiddleName: z.string().optional(),
-  fatherLastName: z.string().optional(),
-  fatherOccupation: z.string().optional(),
-  fatherPhone: z.string().optional(),
-  fatherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  fatherPhoto: z.any().optional(),
-  fatherCitizenship: z.string().optional(),
-  motherFirstName: z.string().optional(),
-  motherMiddleName: z.string().optional(),
-  motherLastName: z.string().optional(),
-  motherOccupation: z.string().optional(),
-  motherPhone: z.string().optional(),
-  motherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  motherPhoto: z.any().optional(),
-  motherCitizenship: z.string().optional(),
-  guardianSelection: z.enum(["father", "mother", "other"]).optional(),
-  guardianName: z.string().optional(),
-  guardianRelationship: z.string().optional(),
-  guardianOccupation: z.string().optional(),
-  guardianPhone: z.string().optional(),
-  guardianEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  guardianAddress: z.string().optional(),
-  guardianCitizenship: z.string().optional(),
-}).superRefine((value, context) => {
-  const required: [keyof typeof value, string][] = [
-    ["fatherFirstName", "Father first name is required"],
-    ["fatherLastName", "Father last name is required"],
-    ["fatherPhone", "Father phone is required"],
-    ["guardianSelection", "Guardian selection is required"],
-  ];
-  if (value.guardianSelection === "other") required.push(
-    ["guardianName", "Guardian name is required"],
-    ["guardianRelationship", "Guardian relationship is required"],
-    ["guardianPhone", "Guardian phone is required"],
-  );
-  required.forEach(([field, message]) => {
-    if (!String(value[field] ?? "").trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message });
+export const guardianSchema = z
+  .object({
+    fatherFirstName: z.string().optional(),
+    fatherMiddleName: z.string().optional(),
+    fatherLastName: z.string().optional(),
+    fatherOccupation: z.string().optional(),
+    fatherPhone: z.string().optional(),
+    fatherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+    fatherPhoto: z.any().optional(),
+    fatherCitizenship: z.string().optional(),
+    motherFirstName: z.string().optional(),
+    motherMiddleName: z.string().optional(),
+    motherLastName: z.string().optional(),
+    motherOccupation: z.string().optional(),
+    motherPhone: z.string().optional(),
+    motherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+    motherPhoto: z.any().optional(),
+    motherCitizenship: z.string().optional(),
+    guardianSelection: z.enum(["father", "mother", "other"]).optional(),
+    guardianName: z.string().optional(),
+    guardianRelationship: z.string().optional(),
+    guardianOccupation: z.string().optional(),
+    guardianPhone: z.string().optional(),
+    guardianEmail: z
+      .string()
+      .email("Invalid email")
+      .optional()
+      .or(z.literal("")),
+    guardianAddress: z.string().optional(),
+    guardianCitizenship: z.string().optional(),
+  })
+  .superRefine((value, context) => {
+    const required: [keyof typeof value, string][] = [
+      ["fatherFirstName", "Father first name is required"],
+      ["fatherLastName", "Father last name is required"],
+      ["fatherPhone", "Father phone is required"],
+      ["guardianSelection", "Guardian selection is required"],
+    ];
+    if (value.guardianSelection === "other")
+      required.push(
+        ["guardianName", "Guardian name is required"],
+        ["guardianRelationship", "Guardian relationship is required"],
+        ["guardianPhone", "Guardian phone is required"],
+      );
+    required.forEach(([field, message]) => {
+      if (!String(value[field] ?? "").trim())
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [field],
+          message,
+        });
+    });
   });
-});
 
 export const addressSchema = z.object({
   currentProvince: z.string().min(1, "Province is required"),
@@ -82,10 +94,13 @@ export const addressSchema = z.object({
   currentDistrictName: z.string().optional(),
   currentMunicipality: z.string().min(1, "Municipality is required"),
   currentMunicipalityName: z.string().optional(),
-  currentWard: z.string().min(1, "Ward number is required").refine((value) => {
-    const ward = Number(value);
-    return Number.isInteger(ward) && ward >= 1 && ward <= 35;
-  }, "Ward number must be between 1 and 35"),
+  currentWard: z
+    .string()
+    .min(1, "Ward number is required")
+    .refine((value) => {
+      const ward = Number(value);
+      return Number.isInteger(ward) && ward >= 1 && ward <= 35;
+    }, "Ward number must be between 1 and 35"),
   currentWardNumber: z.string().optional(),
   currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
@@ -104,8 +119,12 @@ export const medicalSchema = z.object({
   medicalConditionsOther: z.string().optional(),
   allergies: z.string().optional(),
   disability: z.string().optional(),
-  emergencyContactPerson: z.string().min(1, "Emergency contact person is required"),
-  emergencyContactNumber: z.string().min(10, "Emergency contact number is required"),
+  emergencyContactPerson: z
+    .string()
+    .min(1, "Emergency contact person is required"),
+  emergencyContactNumber: z
+    .string()
+    .min(10, "Emergency contact number is required"),
 });
 
 export const academicHistorySchema = z.object({

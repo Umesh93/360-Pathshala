@@ -8,9 +8,13 @@ interface GuardianStatusBadgeProps {
   status: string;
 }
 
-export default function GuardianStatusBadge({ status }: GuardianStatusBadgeProps) {
+export default function GuardianStatusBadge({
+  status,
+}: GuardianStatusBadgeProps) {
   return (
-    <span className={`px-2 py-1 rounded-full text-xs ${statusColors[status?.toUpperCase()] || statusColors.ACTIVE}`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs ${statusColors[status?.toUpperCase()] || statusColors.ACTIVE}`}
+    >
       {status || "ACTIVE"}
     </span>
   );

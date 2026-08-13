@@ -7,7 +7,7 @@ interface IncomeExpenseChartProps {
 const IncomeExpenseChart: React.FC<IncomeExpenseChartProps> = ({ revenue }) => {
   const maxAmount = Math.max(
     ...revenue.monthlyData.map((item) => item.amount),
-    1
+    1,
   );
 
   const expenseFactor = 0.65;

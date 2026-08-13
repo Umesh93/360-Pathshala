@@ -36,13 +36,14 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
   };
 
   useEffect(() => {
-    const contactNumber = data.emergencyContactPerson === "Father"
-      ? guardianData?.fatherPhone
-      : data.emergencyContactPerson === "Mother"
-        ? guardianData?.motherPhone
-        : data.emergencyContactPerson === "Guardian"
-          ? guardianData?.guardianPhone
-          : undefined;
+    const contactNumber =
+      data.emergencyContactPerson === "Father"
+        ? guardianData?.fatherPhone
+        : data.emergencyContactPerson === "Mother"
+          ? guardianData?.motherPhone
+          : data.emergencyContactPerson === "Guardian"
+            ? guardianData?.guardianPhone
+            : undefined;
     if (contactNumber && contactNumber !== data.emergencyContactNumber) {
       onChange({ ...data, emergencyContactNumber: contactNumber });
     }
@@ -57,13 +58,14 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
   ]);
 
   const handleEmergencyPersonChange = (value: string) => {
-    const contactNumber = value === "Father"
-      ? guardianData?.fatherPhone
-      : value === "Mother"
-        ? guardianData?.motherPhone
-        : value === "Guardian"
-          ? guardianData?.guardianPhone
-          : "";
+    const contactNumber =
+      value === "Father"
+        ? guardianData?.fatherPhone
+        : value === "Mother"
+          ? guardianData?.motherPhone
+          : value === "Guardian"
+            ? guardianData?.guardianPhone
+            : "";
     onChange({
       ...data,
       emergencyContactPerson: value,
@@ -71,15 +73,21 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
     });
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) =>
+    error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Medical Information</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Medical Information
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Blood Group (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Blood Group (Optional)
+          </label>
           <select
             data-field="bloodGroup"
             value={data.bloodGroup}
@@ -100,7 +108,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Height (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Height (Optional)
+          </label>
           <input
             data-field="height"
             type="text"
@@ -112,7 +122,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Weight (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Weight (Optional)
+          </label>
           <input
             data-field="weight"
             type="text"
@@ -124,7 +136,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Medical Conditions (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Medical Conditions (Optional)
+          </label>
           <select
             data-field="medicalConditions"
             value={data.medicalConditions}
@@ -133,7 +147,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
           >
             <option value="">Select</option>
             {medicalConditionsOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
           {errorText(errors.medicalConditions)}
@@ -141,7 +157,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
 
         {data.medicalConditions === "Other" && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Specify Medical Condition (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Specify Medical Condition (Optional)
+            </label>
             <input
               data-field="medicalConditionsOther"
               type="text"
@@ -153,7 +171,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Allergies (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Allergies (Optional)
+          </label>
           <input
             data-field="allergies"
             type="text"
@@ -164,7 +184,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Disability (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Disability (Optional)
+          </label>
           <input
             data-field="disability"
             type="text"
@@ -186,7 +208,9 @@ const MedicalSection: React.FC<MedicalSectionProps> = ({
           >
             <option value="">Select</option>
             {emergencyContactOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
           {errorText(errors.emergencyContactPerson)}

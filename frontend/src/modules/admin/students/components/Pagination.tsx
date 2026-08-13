@@ -101,9 +101,7 @@ const Pagination: React.FC<PaginationProps> = ({
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() =>
-                  typeof page === "number" && onPageChange(page)
-                }
+                onClick={() => typeof page === "number" && onPageChange(page)}
                 disabled={typeof page !== "number"}
                 className={`
                   relative inline-flex items-center px-4 py-2 border text-sm font-medium

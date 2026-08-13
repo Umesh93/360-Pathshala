@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import SchoolFormFields, { generatePassword } from "./SchoolFormFields";
 import { useToast } from "../modules/admin/students/components/Toast";
@@ -46,19 +46,6 @@ export default function AddSchoolForm({
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File>();
   const [removeLogo, setRemoveLogo] = useState(false);
-
-  const modulePricing = useMemo(() => {
-    const hasBase =
-      selectedModules.includes("STUDENT_MANAGEMENT") &&
-      selectedModules.includes("EXAMINATION");
-    const base = hasBase ? 5000 : 0;
-    const additionalCount = selectedModules.filter(
-      (code) => code !== "STUDENT_MANAGEMENT" && code !== "EXAMINATION",
-    ).length;
-    const additional = additionalCount * 3000;
-    const total = base + additional;
-    return { base, additional, additionalCount, total };
-  }, [selectedModules]);
 
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -254,44 +241,6 @@ export default function AddSchoolForm({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-8 py-6">
-          <h2 className="text-2xl font-semibold text-slate-800">
-            Payment Summary
-          </h2>
-        </div>
-        <div className="p-8">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Base Package</span>
-              <span className="font-medium text-slate-800">
-                NPR {modulePricing.base.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Additional Modules</span>
-              <span className="font-medium text-slate-800">
-                NPR {modulePricing.additional.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Additional Module Count</span>
-              <span className="font-medium text-slate-800">
-                {modulePricing.additionalCount}
-              </span>
-            </div>
-            <div className="border-t border-slate-200 pt-3 flex items-center justify-between">
-              <span className="text-base font-semibold text-slate-800">
-                Total Amount
-              </span>
-              <span className="text-xl font-bold text-teal-600">
-                NPR {modulePricing.total.toLocaleString()}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {success && (
         <div className="rounded-3xl border border-green-200 bg-green-50 p-6">
           <h3 className="text-lg font-semibold text-green-800 mb-4">
@@ -364,43 +313,6 @@ export default function AddSchoolForm({
                   className="rounded-lg border border-green-200 p-2 hover:bg-green-100"
                 >
                   {copiedField === "adminPassword" ? (
-                    <Check size={16} className="text-green-700" />
-                  ) : (
-                    <Copy size={16} className="text-green-700" />
-                  )}
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-green-700">
-                Total Amount
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  value={"NPR " + success.totalAmount.toLocaleString()}
-                  readOnly
-                  className="h-10 flex-1 rounded-lg border border-green-200 bg-white px-3 text-sm text-green-800"
-                />
-              </div>
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-medium text-green-700">
-                Payment Reference
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  value={success.paymentReference}
-                  readOnly
-                  className="h-10 flex-1 rounded-lg border border-green-200 bg-white px-3 text-sm text-green-800"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCopy(success.paymentReference, "paymentReference")
-                  }
-                  className="rounded-lg border border-green-200 p-2 hover:bg-green-100"
-                >
-                  {copiedField === "paymentReference" ? (
                     <Check size={16} className="text-green-700" />
                   ) : (
                     <Copy size={16} className="text-green-700" />

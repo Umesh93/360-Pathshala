@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
-import { studentFormSchema, type StudentFormData } from "../schemas/student.schema";
+import {
+  studentFormSchema,
+  type StudentFormData,
+} from "../schemas/student.schema";
 import { generateAdmissionNo } from "../services/student.service";
 
 const STORAGE_KEY = "student_form_draft";
@@ -128,10 +131,30 @@ const initialFormData: StudentFormData = {
 type SectionKey = keyof StudentFormData;
 
 const SECTION_FIELDS: Record<SectionKey, string[]> = {
-  academicInfo: ["academicYear", "admissionNo", "admissionDate", "class", "section", "rollNumber"],
-  personalInfo: ["firstName", "lastName", "dob", "gender", "religion", "caste", "phone"],
+  academicInfo: [
+    "academicYear",
+    "admissionNo",
+    "admissionDate",
+    "class",
+    "section",
+    "rollNumber",
+  ],
+  personalInfo: [
+    "firstName",
+    "lastName",
+    "dob",
+    "gender",
+    "religion",
+    "caste",
+    "phone",
+  ],
   guardian: [],
-  address: ["currentProvince", "currentDistrict", "currentMunicipality", "currentWard"],
+  address: [
+    "currentProvince",
+    "currentDistrict",
+    "currentMunicipality",
+    "currentWard",
+  ],
   medical: ["emergencyContactPerson", "emergencyContactNumber"],
   academicHistory: [],
   hostel: [],
@@ -149,12 +172,12 @@ export const useStudentForm = () => {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [stepErrors, setStepErrors] = useState<Set<number>>(new Set());
 
-  const updateSection = useCallback(<T extends SectionKey>(
-    section: T,
-    value: StudentFormData[T]
-  ) => {
-    setFormData((prev) => ({ ...prev, [section]: value }));
-  }, []);
+  const updateSection = useCallback(
+    <T extends SectionKey>(section: T, value: StudentFormData[T]) => {
+      setFormData((prev) => ({ ...prev, [section]: value }));
+    },
+    [],
+  );
 
   const markTouched = useCallback((field: string) => {
     setTouchedFields((prev) => {
@@ -164,46 +187,67 @@ export const useStudentForm = () => {
     });
   }, []);
 
-  const validateStep = useCallback((stepIndex: number) => {
-    const stepMap: SectionKey[] = ["academicInfo", "personalInfo", "guardian", "address", "academicHistory"];
-    const section = stepMap[stepIndex];
-    if (!section) return true;
-    const requiredFields = SECTION_FIELDS[section] || [];
-    const sectionData = formData[section];
-    const newErrors: Record<string, string> = {};
-    requiredFields.forEach((field) => {
-      const value = (sectionData as Record<string, unknown>)[field];
-      if (value === undefined || value === null || value === "") {
-        newErrors[`${section}.${field}`] = "This field is required";
+  const validateStep = useCallback(
+    (stepIndex: number) => {
+      const stepMap: SectionKey[] = [
+        "academicInfo",
+        "personalInfo",
+        "guardian",
+        "address",
+        "academicHistory",
+      ];
+      const section = stepMap[stepIndex];
+      if (!section) return true;
+      const requiredFields = SECTION_FIELDS[section] || [];
+      const sectionData = formData[section];
+      const newErrors: Record<string, string> = {};
+      requiredFields.forEach((field) => {
+        const value = (sectionData as Record<string, unknown>)[field];
+        if (value === undefined || value === null || value === "") {
+          newErrors[`${section}.${field}`] = "This field is required";
+        }
+      });
+      if (section === "guardian") {
+        const result = studentFormSchema.shape.guardian.safeParse(sectionData);
+        if (!result.success)
+          result.error.issues.forEach((issue) => {
+            newErrors[`guardian.${String(issue.path[0])}`] = issue.message;
+          });
       }
-    });
-    if (section === "guardian") {
-      const result = studentFormSchema.shape.guardian.safeParse(sectionData);
-      if (!result.success) result.error.issues.forEach((issue) => {
-        newErrors[`guardian.${String(issue.path[0])}`] = issue.message;
+      setFieldErrors((prev) => {
+        const next = Object.fromEntries(
+          Object.entries(prev).filter(
+            ([path]) => !path.startsWith(`${section}.`),
+          ),
+        );
+        Object.entries(newErrors).forEach(([key, message]) => {
+          next[key] = message;
+        });
+        return next;
       });
-    }
-    setFieldErrors((prev) => {
-      const next = Object.fromEntries(Object.entries(prev).filter(([path]) => !path.startsWith(`${section}.`)));
-      Object.entries(newErrors).forEach(([key, message]) => {
-        next[key] = message;
+      const hasErrors = Object.keys(newErrors).length > 0;
+      setStepErrors((prev) => {
+        const next = new Set(prev);
+        if (hasErrors) next.add(stepIndex);
+        else next.delete(stepIndex);
+        return next;
       });
-      return next;
-    });
-    const hasErrors = Object.keys(newErrors).length > 0;
-    setStepErrors((prev) => {
-      const next = new Set(prev);
-      if (hasErrors) next.add(stepIndex); else next.delete(stepIndex);
-      return next;
-    });
-    return !hasErrors;
-  }, [formData]);
+      return !hasErrors;
+    },
+    [formData],
+  );
 
   const validateAll = useCallback(() => {
     let firstErrorStep = -1;
     const newErrors: Record<string, string> = {};
     const newStepErrors = new Set<number>();
-    const stepMap: SectionKey[] = ["academicInfo", "personalInfo", "guardian", "address", "academicHistory"];
+    const stepMap: SectionKey[] = [
+      "academicInfo",
+      "personalInfo",
+      "guardian",
+      "address",
+      "academicHistory",
+    ];
     stepMap.forEach((section, index) => {
       const requiredFields = SECTION_FIELDS[section] || [];
       const sectionData = formData[section];
@@ -220,15 +264,24 @@ export const useStudentForm = () => {
       });
       if (hasErrors) newStepErrors.add(index);
     });
-    const guardianResult = studentFormSchema.shape.guardian.safeParse(formData.guardian);
+    const guardianResult = studentFormSchema.shape.guardian.safeParse(
+      formData.guardian,
+    );
     if (!guardianResult.success) {
       if (firstErrorStep === -1) firstErrorStep = 2;
-      guardianResult.error.issues.forEach((issue) => { newErrors[`guardian.${String(issue.path[0])}`] = issue.message; });
+      guardianResult.error.issues.forEach((issue) => {
+        newErrors[`guardian.${String(issue.path[0])}`] = issue.message;
+      });
       newStepErrors.add(2);
     }
     setFieldErrors(newErrors);
     setStepErrors(newStepErrors);
-    return { isValid: firstErrorStep === -1, firstErrorStep, errors: newErrors, errorSteps: newStepErrors };
+    return {
+      isValid: firstErrorStep === -1,
+      firstErrorStep,
+      errors: newErrors,
+      errorSteps: newStepErrors,
+    };
   }, [formData]);
 
   const nextStep = useCallback(() => {

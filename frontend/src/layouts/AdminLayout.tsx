@@ -21,21 +21,26 @@ export default function AdminLayout({ children }: Props) {
 
   useEffect(() => {
     let active = true;
-    getCurrentSchoolModuleCodes()
-      .then((modules) => {
-        if (active) {
-          setEnabledModules(modules);
-          setModulesError(false);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setEnabledModules([]);
-          setModulesError(true);
-        }
-      });
+    const loadModules = () => {
+      getCurrentSchoolModuleCodes()
+        .then((modules) => {
+          if (active) {
+            setEnabledModules(modules);
+            setModulesError(false);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setEnabledModules([]);
+            setModulesError(true);
+          }
+        });
+    };
+    loadModules();
+    window.addEventListener("school-modules-updated", loadModules);
     return () => {
       active = false;
+      window.removeEventListener("school-modules-updated", loadModules);
     };
   }, []);
 

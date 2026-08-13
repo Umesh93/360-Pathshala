@@ -19,7 +19,10 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => (
       <div key={index} className="flex items-center gap-2">
         <ChevronRight className="h-4 w-4 text-gray-400" />
         {item.href ? (
-          <Link to={item.href} className="hover:text-[#223D5D] transition-colors">
+          <Link
+            to={item.href}
+            className="hover:text-[#223D5D] transition-colors"
+          >
             {item.label}
           </Link>
         ) : (

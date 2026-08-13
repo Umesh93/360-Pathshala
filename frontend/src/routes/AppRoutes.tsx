@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import Home from "../public/pages/Home";
 import About from "../public/pages/About";
 import Features from "../public/pages/Features";
@@ -10,6 +10,7 @@ import Dashboard from "../pages/super-admin/Dashboard";
 import Schools from "../pages/super-admin/Schools";
 import DemoRequests from "../pages/super-admin/DemoRequests";
 import ConversionHistory from "../pages/super-admin/ConversionHistory";
+import PaymentsPage from "../pages/super-admin/Payments";
 import AdminDashboard from "../pages/admin/Dashboard";
 import StudentListPage from "../modules/admin/students/pages/StudentListPage";
 import StudentDetailPage from "../modules/admin/students/pages/StudentDetailPage";
@@ -48,6 +49,8 @@ import {
   StudentTimetablePage,
   TeacherTimetablePage,
 } from "../modules/timetables/PortalTimetablePages";
+import SubscriptionPage from "../modules/subscriptions/SubscriptionPage";
+import PaymentResultPage from "../modules/subscriptions/PaymentResultPage";
 
 const AppRoutes = () => {
   return (
@@ -91,6 +94,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
             <ConversionHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/payments"
+        element={
+          <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+            <PaymentsPage />
           </ProtectedRoute>
         }
       />
@@ -269,6 +280,30 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
             <GuardianFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
+            <Navigate to="/admin/settings/subscription" replace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings/subscription"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
+            <SubscriptionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings/subscription/payment-result"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
+            <PaymentResultPage />
           </ProtectedRoute>
         }
       />

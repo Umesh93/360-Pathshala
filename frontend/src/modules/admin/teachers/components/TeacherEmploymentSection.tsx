@@ -19,7 +19,9 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Employment Information</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Employment Information
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
@@ -32,7 +34,9 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
               className="h-10 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm outline-none"
             />
           </div>
-          {errors.teacherId && <p className="mt-1 text-xs text-red-600">{errors.teacherId}</p>}
+          {errors.teacherId && (
+            <p className="mt-1 text-xs text-red-600">{errors.teacherId}</p>
+          )}
         </div>
 
         <div>
@@ -45,7 +49,9 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
               className="h-10 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm outline-none"
             />
           </div>
-          {errors.employeeCode && <p className="mt-1 text-xs text-red-600">{errors.employeeCode}</p>}
+          {errors.employeeCode && (
+            <p className="mt-1 text-xs text-red-600">{errors.employeeCode}</p>
+          )}
         </div>
 
         <div>
@@ -58,11 +64,15 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
               errors.joiningDate ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.joiningDate && <p className="mt-1 text-xs text-red-600">{errors.joiningDate}</p>}
+          {errors.joiningDate && (
+            <p className="mt-1 text-xs text-red-600">{errors.joiningDate}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Employment Type <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Employment Type <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.employmentType}
             onChange={(e) => update("employmentType", e.target.value)}
@@ -77,7 +87,9 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Department <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Department <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.department}
             onChange={(e) => update("department", e.target.value)}
@@ -93,11 +105,15 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
             <option value="Computer Science">Computer Science</option>
             <option value="Physical Education">Physical Education</option>
           </select>
-          {errors.department && <p className="mt-1 text-xs text-red-600">{errors.department}</p>}
+          {errors.department && (
+            <p className="mt-1 text-xs text-red-600">{errors.department}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Designation <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Designation <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.designation}
             onChange={(e) => update("designation", e.target.value)}
@@ -111,11 +127,15 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
             <option value="HOD">Head of Department</option>
             <option value="Vice Principal">Vice Principal</option>
           </select>
-          {errors.designation && <p className="mt-1 text-xs text-red-600">{errors.designation}</p>}
+          {errors.designation && (
+            <p className="mt-1 text-xs text-red-600">{errors.designation}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Status <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Status <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.status}
             onChange={(e) => update("status", e.target.value)}
@@ -129,7 +149,9 @@ const TeacherEmploymentSection: React.FC<TeacherEmploymentSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Reporting Manager</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Reporting Manager
+          </label>
           <input
             type="text"
             value={data.reportingManager}

@@ -27,8 +27,11 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
   onDownload,
 }) => {
   const [sortKey, setSortKey] = React.useState<SortKey>("firstName");
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc");
-  const [selectedRows, setSelectedRows] = React.useState<Set<number>>(new Set());
+  const [sortDirection, setSortDirection] =
+    React.useState<SortDirection>("asc");
+  const [selectedRows, setSelectedRows] = React.useState<Set<number>>(
+    new Set(),
+  );
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -75,11 +78,27 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
   const SortIcon = ({ column }: { column: SortKey }) => {
     if (sortKey !== column) return null;
     return sortDirection === "asc" ? (
-      <svg width="14" height="14" className="inline ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="14"
+        height="14"
+        className="inline ml-1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M18 15l-6-6-6 6" />
       </svg>
     ) : (
-      <svg width="14" height="14" className="inline ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="14"
+        height="14"
+        className="inline ml-1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M6 9l6 6 6-6" />
       </svg>
     );
@@ -187,9 +206,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
                     className="w-4 h-4 rounded border-gray-300 text-[#234A91] focus:ring-[#234A91]"
                   />
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
-                  {index + 1}
-                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <TeacherAvatar

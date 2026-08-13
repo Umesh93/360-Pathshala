@@ -6,7 +6,11 @@ import TeacherTable from "../components/TeacherTable";
 import TeacherSkeleton from "../components/TeacherSkeleton";
 import EmptyState from "../../students/components/EmptyState";
 import Pagination from "../../students/components/Pagination";
-import { getTeachers, deleteTeacher, exportTeachersCsv } from "../services/teacher.service";
+import {
+  getTeachers,
+  deleteTeacher,
+  exportTeachersCsv,
+} from "../services/teacher.service";
 import ConfirmDialog from "../../../../components/feedback/ConfirmDialog";
 import { useToast } from "../../students/components/Toast";
 import type { Teacher } from "../types/teacher.types";
@@ -33,7 +37,7 @@ const TeacherListPage = () => {
         10,
         searchQuery,
         subjectFilter,
-        statusFilter
+        statusFilter,
       );
       setTeachers(response.data);
       setTotalPages(response.totalPages);
@@ -80,12 +84,26 @@ const TeacherListPage = () => {
     if (!deleteId) return;
     try {
       await deleteTeacher(deleteId);
-      setDeleteId(undefined); await fetchTeachers(); showToast("Teacher deleted successfully", "success");
+      setDeleteId(undefined);
+      await fetchTeachers();
+      showToast("Teacher deleted successfully", "success");
     } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to delete teacher", "error");
+      showToast(
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to delete teacher",
+        "error",
+      );
     }
   };
-  const handleExport = async () => { const blob = await exportTeachersCsv(); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "teachers.csv"; link.click(); URL.revokeObjectURL(url); };
+  const handleExport = async () => {
+    const blob = await exportTeachersCsv();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "teachers.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleAddTeacher = () => {
     navigate("/admin/teachers/add");
@@ -216,7 +234,15 @@ const TeacherListPage = () => {
           </>
         )}
       </div>
-      <ConfirmDialog open={deleteId !== undefined} title="Delete Teacher" description="This teacher will be soft deleted." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} onCancel={() => setDeleteId(undefined)} />
+      <ConfirmDialog
+        open={deleteId !== undefined}
+        title="Delete Teacher"
+        description="This teacher will be soft deleted."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(undefined)}
+      />
     </AdminLayout>
   );
 };

@@ -348,50 +348,57 @@ export default function SchoolFormFields({
                 {modulesError && (
                   <p className="p-3 text-sm text-red-600">{modulesError}</p>
                 )}
-                {["CORE", "FUTURE"].map((category) => {
-                  const group = visible.filter(
-                    (item) => item.category === category,
-                  );
-                  if (!group.length) return null;
-                  return (
-                    <section key={category} className="mb-4 last:mb-0">
-                      <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500">
-                        {category === "CORE"
-                          ? "Core Modules"
-                          : "Future Upgrades"}
-                      </h3>
-                      {group.map((item) => {
-                        const checked = selectedModules.includes(item.code);
-                        const disabled = item.comingSoon || !item.selectable;
-                        return (
-                          <button
-                            key={item.code}
-                            type="button"
-                            disabled={disabled}
-                            onClick={() => updateModules(item.code)}
-                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left ${disabled ? "cursor-not-allowed opacity-55" : "hover:bg-slate-50"}`}
-                          >
-                            <span>
-                              <span className="block text-sm font-medium text-slate-700">
-                                {item.name}
-                              </span>
-                              {item.comingSoon && (
-                                <span className="text-[11px] font-semibold text-amber-600">
-                                  Coming Soon
-                                </span>
-                              )}
-                            </span>
-                            <span
-                              className={`flex h-5 w-5 items-center justify-center rounded border ${checked ? "border-teal-600 bg-teal-600 text-white" : "border-slate-300"}`}
+                {(["REQUIRED", "INCLUDED", "PAID"] as const).map(
+                  (billingType) => {
+                    const group = visible.filter(
+                      (item) => item.billingType === billingType,
+                    );
+                    if (!group.length) return null;
+                    return (
+                      <section key={billingType} className="mb-4 last:mb-0">
+                        <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500">
+                          {billingType === "REQUIRED"
+                            ? "Required"
+                            : billingType === "INCLUDED"
+                              ? "Included"
+                              : "Paid Add-ons"}
+                        </h3>
+                        {group.map((item) => {
+                          const checked = selectedModules.includes(item.code);
+                          const disabled =
+                            item.billingType === "REQUIRED" || !item.selectable;
+                          return (
+                            <button
+                              key={item.code}
+                              type="button"
+                              disabled={disabled}
+                              onClick={() => updateModules(item.code)}
+                              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left ${disabled ? "cursor-not-allowed opacity-55" : "hover:bg-slate-50"}`}
                             >
-                              {checked ? "✓" : ""}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </section>
-                  );
-                })}
+                              <span>
+                                <span className="block text-sm font-medium text-slate-700">
+                                  {item.name}
+                                </span>
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  {item.billingType === "REQUIRED"
+                                    ? "Required"
+                                    : item.billingType === "INCLUDED"
+                                      ? "Included"
+                                      : `NPR ${item.annualPrice.toLocaleString()} / ${item.billingPeriod}`}
+                                </span>
+                              </span>
+                              <span
+                                className={`flex h-5 w-5 items-center justify-center rounded border ${checked ? "border-teal-600 bg-teal-600 text-white" : "border-slate-300"}`}
+                              >
+                                {checked ? "✓" : ""}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </section>
+                    );
+                  },
+                )}
                 {!modulesLoading && !modulesError && !visible.length && (
                   <p className="p-3 text-sm text-slate-500">
                     No modules found.
@@ -412,8 +419,8 @@ export default function SchoolFormFields({
           )}
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          Student Registration and Examination are required and included in the
-          base package.
+          Required modules stay enabled. Included modules and paid add-ons can
+          be configured for the school.
         </p>
       </div>
     </div>

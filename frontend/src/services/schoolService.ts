@@ -38,6 +38,9 @@ interface PlatformModuleResponse {
   comingSoon?: boolean;
   category?: string;
   required?: boolean;
+  billingType: "REQUIRED" | "INCLUDED" | "PAID";
+  annualPrice: number;
+  billingPeriod: string;
 }
 
 export interface CreateSchoolResponse {
@@ -126,6 +129,9 @@ export const getModules = async (): Promise<ModuleOption[]> => {
     required:
       item.required ??
       (item.code === "STUDENT_MANAGEMENT" || item.code === "EXAMINATION"),
+    billingType: item.billingType,
+    annualPrice: item.annualPrice,
+    billingPeriod: item.billingPeriod,
   }));
 };
 

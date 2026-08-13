@@ -6,7 +6,9 @@ interface BirthdayStudentsProps {
   birthdayStudents: BirthdayStudent[];
 }
 
-const BirthdayStudents: React.FC<BirthdayStudentsProps> = ({ birthdayStudents }) => {
+const BirthdayStudents: React.FC<BirthdayStudentsProps> = ({
+  birthdayStudents,
+}) => {
   if (birthdayStudents.length === 0) {
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm">

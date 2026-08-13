@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Search, SlidersHorizontal, Download, Upload, RefreshCw } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  Download,
+  Upload,
+  RefreshCw,
+} from "lucide-react";
 
 interface StudentToolbarProps {
   onSearch: (value: string) => void;

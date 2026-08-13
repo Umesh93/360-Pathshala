@@ -35,11 +35,18 @@ const DeleteDialog = ({
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
         </div>
         <p className="text-sm text-gray-600 mb-1">{description}</p>
-        {itemName && <p className="text-sm font-medium text-gray-800 mb-6">"{itemName}"</p>}
+        {itemName && (
+          <p className="text-sm font-medium text-gray-800 mb-6">"{itemName}"</p>
+        )}
         {!itemName && <div className="mb-6" />}
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onCancel}>{cancelLabel}</Button>
-          <Button onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+          <Button variant="outline" onClick={onCancel}>
+            {cancelLabel}
+          </Button>
+          <Button
+            onClick={onConfirm}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
             {confirmLabel}
           </Button>
         </div>

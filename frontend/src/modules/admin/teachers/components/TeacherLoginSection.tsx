@@ -28,7 +28,9 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Login Account</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Login Account
+      </h2>
 
       <div className="flex items-center gap-2 mb-4">
         <input
@@ -38,7 +40,10 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
           onChange={(e) => update("createLogin", e.target.checked)}
           className="h-4 w-4 rounded border-gray-300 text-[#234A91] focus:ring-[#234A91]"
         />
-        <label htmlFor="createLogin" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="createLogin"
+          className="text-sm font-medium text-gray-700"
+        >
           Create Login Account
         </label>
       </div>
@@ -46,7 +51,9 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
       {data.createLogin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Username</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Username
+            </label>
             <input
               type="text"
               value={data.username}
@@ -56,7 +63,9 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               value={data.email}
@@ -65,11 +74,15 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
                 errors.email ? "border-red-500" : "border-gray-200"
               }`}
             />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+            )}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -97,7 +110,9 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}

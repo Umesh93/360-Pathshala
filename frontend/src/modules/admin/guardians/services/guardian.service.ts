@@ -1,5 +1,14 @@
 import api from "../../../../services/api";
-import type { Guardian, GuardianFilters, GuardianSummary, Child, PaginatedGuardians, GuardianRequest, LinkStudentRequest, GuardianAddress } from "../types/guardian.types";
+import type {
+  Guardian,
+  GuardianFilters,
+  GuardianSummary,
+  Child,
+  PaginatedGuardians,
+  GuardianRequest,
+  LinkStudentRequest,
+  GuardianAddress,
+} from "../types/guardian.types";
 
 const addressPrefix = "ADDR1|";
 const legacyAddressPrefix = "ADDRESS_JSON:";
@@ -9,10 +18,17 @@ type GuardianMetadata = Partial<Guardian>;
 
 const parseMetadata = (documents?: string): GuardianMetadata => {
   if (!documents?.startsWith(metadataPrefix)) return {};
-  try { return JSON.parse(documents.slice(metadataPrefix.length)) as GuardianMetadata; } catch { return {}; }
+  try {
+    return JSON.parse(
+      documents.slice(metadataPrefix.length),
+    ) as GuardianMetadata;
+  } catch {
+    return {};
+  }
 };
 
-export const encodeGuardianMetadata = (metadata: GuardianMetadata) => `${metadataPrefix}${JSON.stringify(metadata)}`;
+export const encodeGuardianMetadata = (metadata: GuardianMetadata) =>
+  `${metadataPrefix}${JSON.stringify(metadata)}`;
 
 const mapGuardian = (record: Guardian): Guardian => {
   const metadata = parseMetadata(record.documents);
@@ -20,7 +36,10 @@ const mapGuardian = (record: Guardian): Guardian => {
   return {
     ...record,
     ...metadata,
-    guardianCode: record.guardianCode || metadata.guardianCode || `GDN-${String(record.id).padStart(5, "0")}`,
+    guardianCode:
+      record.guardianCode ||
+      metadata.guardianCode ||
+      `GDN-${String(record.id).padStart(5, "0")}`,
     firstName: record.firstName || metadata.firstName || names[0] || "",
     lastName: record.lastName || metadata.lastName || names.slice(1).join(" "),
     mobile: record.mobile || metadata.mobile || record.phone || "",
@@ -29,35 +48,89 @@ const mapGuardian = (record: Guardian): Guardian => {
   };
 };
 
-export const encodeGuardianAddress = (address: GuardianAddress) => addressPrefix + [
-  address.currentProvince, address.currentDistrict, address.currentMunicipality, address.currentWard, address.currentStreet,
-  address.permanentSameAsCurrent ? "1" : "0", address.permanentProvince, address.permanentDistrict,
-  address.permanentMunicipality, address.permanentWard, address.permanentStreet,
-].map((value) => encodeURIComponent(value || "")).join("|");
+export const encodeGuardianAddress = (address: GuardianAddress) =>
+  addressPrefix +
+  [
+    address.currentProvince,
+    address.currentDistrict,
+    address.currentMunicipality,
+    address.currentWard,
+    address.currentStreet,
+    address.permanentSameAsCurrent ? "1" : "0",
+    address.permanentProvince,
+    address.permanentDistrict,
+    address.permanentMunicipality,
+    address.permanentWard,
+    address.permanentStreet,
+  ]
+    .map((value) => encodeURIComponent(value || ""))
+    .join("|");
 
 export const decodeGuardianAddress = (address?: string): GuardianAddress => {
-  const empty: GuardianAddress = { currentProvince: "", currentDistrict: "", currentMunicipality: "", currentWard: "", currentStreet: "", permanentSameAsCurrent: false, permanentProvince: "", permanentDistrict: "", permanentMunicipality: "", permanentWard: "", permanentStreet: "" };
+  const empty: GuardianAddress = {
+    currentProvince: "",
+    currentDistrict: "",
+    currentMunicipality: "",
+    currentWard: "",
+    currentStreet: "",
+    permanentSameAsCurrent: false,
+    permanentProvince: "",
+    permanentDistrict: "",
+    permanentMunicipality: "",
+    permanentWard: "",
+    permanentStreet: "",
+  };
   if (!address) return empty;
   if (address.startsWith(legacyAddressPrefix)) {
-    try { return { ...empty, ...JSON.parse(address.slice(legacyAddressPrefix.length)) }; } catch { return empty; }
+    try {
+      return {
+        ...empty,
+        ...JSON.parse(address.slice(legacyAddressPrefix.length)),
+      };
+    } catch {
+      return empty;
+    }
   }
-  if (!address.startsWith(addressPrefix)) return { ...empty, currentStreet: address };
-  const values = address.slice(addressPrefix.length).split("|").map((value) => decodeURIComponent(value));
+  if (!address.startsWith(addressPrefix))
+    return { ...empty, currentStreet: address };
+  const values = address
+    .slice(addressPrefix.length)
+    .split("|")
+    .map((value) => decodeURIComponent(value));
   return {
-    currentProvince: values[0] || "", currentDistrict: values[1] || "", currentMunicipality: values[2] || "",
-    currentWard: values[3] || "", currentStreet: values[4] || "", permanentSameAsCurrent: values[5] === "1",
-    permanentProvince: values[6] || "", permanentDistrict: values[7] || "", permanentMunicipality: values[8] || "",
-    permanentWard: values[9] || "", permanentStreet: values[10] || "",
+    currentProvince: values[0] || "",
+    currentDistrict: values[1] || "",
+    currentMunicipality: values[2] || "",
+    currentWard: values[3] || "",
+    currentStreet: values[4] || "",
+    permanentSameAsCurrent: values[5] === "1",
+    permanentProvince: values[6] || "",
+    permanentDistrict: values[7] || "",
+    permanentMunicipality: values[8] || "",
+    permanentWard: values[9] || "",
+    permanentStreet: values[10] || "",
   };
 };
 
 export const formatGuardianAddress = (address?: string) => {
   const value = decodeGuardianAddress(address);
-  return [value.currentStreet, `Ward ${value.currentWard}`, value.currentMunicipality, value.currentDistrictName || value.currentDistrict, value.currentProvinceName || value.currentProvince].filter(Boolean).join(", ");
+  return [
+    value.currentStreet,
+    `Ward ${value.currentWard}`,
+    value.currentMunicipality,
+    value.currentDistrictName || value.currentDistrict,
+    value.currentProvinceName || value.currentProvince,
+  ]
+    .filter(Boolean)
+    .join(", ");
 };
 
-export const getGuardians = async (filters: GuardianFilters = {}): Promise<PaginatedGuardians> => {
-  const response = await api.get<PaginatedGuardians>("/people/guardians", { params: filters });
+export const getGuardians = async (
+  filters: GuardianFilters = {},
+): Promise<PaginatedGuardians> => {
+  const response = await api.get<PaginatedGuardians>("/people/guardians", {
+    params: filters,
+  });
   return { ...response.data, content: response.data.content.map(mapGuardian) };
 };
 
@@ -71,12 +144,17 @@ export const getGuardianSummary = async (): Promise<GuardianSummary> => {
   return response.data;
 };
 
-export const createGuardian = async (payload: GuardianRequest): Promise<Guardian> => {
+export const createGuardian = async (
+  payload: GuardianRequest,
+): Promise<Guardian> => {
   const response = await api.post<Guardian>("/people/guardians", payload);
   return mapGuardian(response.data);
 };
 
-export const updateGuardian = async (id: number, payload: GuardianRequest): Promise<Guardian> => {
+export const updateGuardian = async (
+  id: number,
+  payload: GuardianRequest,
+): Promise<Guardian> => {
   const response = await api.put<Guardian>(`/people/guardians/${id}`, payload);
   return mapGuardian(response.data);
 };
@@ -91,24 +169,41 @@ export const restoreGuardian = async (id: number): Promise<Guardian> => {
   return mapGuardian(response.data);
 };
 
-export const linkStudent = async (guardianId: number, payload: LinkStudentRequest): Promise<Guardian> => {
-  const response = await api.post<Guardian>(`/people/guardians/${guardianId}/link-student`, payload);
+export const linkStudent = async (
+  guardianId: number,
+  payload: LinkStudentRequest,
+): Promise<Guardian> => {
+  const response = await api.post<Guardian>(
+    `/people/guardians/${guardianId}/link-student`,
+    payload,
+  );
   return response.data;
 };
 
-export const unlinkStudent = async (guardianId: number, studentId: number): Promise<Guardian> => {
-  const response = await api.delete<Guardian>(`/people/guardians/${guardianId}/unlink-student/${studentId}`);
+export const unlinkStudent = async (
+  guardianId: number,
+  studentId: number,
+): Promise<Guardian> => {
+  const response = await api.delete<Guardian>(
+    `/people/guardians/${guardianId}/unlink-student/${studentId}`,
+  );
   return response.data;
 };
 
 export const getChildren = async (guardianId: number): Promise<Child[]> => {
-  const response = await api.get<Child[]>(`/people/guardians/${guardianId}/children`);
+  const response = await api.get<Child[]>(
+    `/people/guardians/${guardianId}/children`,
+  );
   return response.data;
 };
 
-export const getStudentsForLinking = async (): Promise<{ id: number; admissionNo: string; name: string }[]> => {
+export const getStudentsForLinking = async (): Promise<
+  { id: number; admissionNo: string; name: string }[]
+> => {
   try {
-    const response = await api.get("/people/students", { params: { page: 0, size: 1000 } });
+    const response = await api.get("/people/students", {
+      params: { page: 0, size: 1000 },
+    });
     return (response.data.content as Record<string, unknown>[]).map((s) => ({
       id: s.id as number,
       admissionNo: (s.admissionNo as string) ?? "",
@@ -121,7 +216,9 @@ export const getStudentsForLinking = async (): Promise<{ id: number; admissionNo
 
 export const getClasses = async (): Promise<{ id: number; name: string }[]> => {
   try {
-    const response = await api.get("/academic/classes", { params: { page: 0, size: 100 } });
+    const response = await api.get("/academic/classes", {
+      params: { page: 0, size: 100 },
+    });
     return (response.data.content as Record<string, unknown>[]).map((c) => ({
       id: (c.id as number) ?? 0,
       name: (c.name as string) ?? "",
@@ -131,9 +228,13 @@ export const getClasses = async (): Promise<{ id: number; name: string }[]> => {
   }
 };
 
-export const getSections = async (classId?: number): Promise<{ id: number; name: string; classId: number }[]> => {
+export const getSections = async (
+  classId?: number,
+): Promise<{ id: number; name: string; classId: number }[]> => {
   try {
-    const response = await api.get("/academic/sections", { params: { page: 0, size: 100, classId } });
+    const response = await api.get("/academic/sections", {
+      params: { page: 0, size: 100, classId },
+    });
     return (response.data.content as Record<string, unknown>[]).map((s) => ({
       id: (s.id as number) ?? 0,
       name: (s.name as string) ?? "",
@@ -144,7 +245,12 @@ export const getSections = async (classId?: number): Promise<{ id: number; name:
   }
 };
 
-export const exportGuardiansCsv = async (filters: GuardianFilters = {}): Promise<Blob> => {
-  const response = await api.get("/people/guardians/export", { params: filters, responseType: "blob" });
+export const exportGuardiansCsv = async (
+  filters: GuardianFilters = {},
+): Promise<Blob> => {
+  const response = await api.get("/people/guardians/export", {
+    params: filters,
+    responseType: "blob",
+  });
   return response.data as Blob;
 };

@@ -1,8 +1,13 @@
 import api from "./api";
 import type { LoginResponse } from "../types/Auth";
 
-export const login = async (usernameOrEmail: string, password: string): Promise<LoginResponse> => {
-  console.log("AuthService: attempting login to", "/auth/login", { usernameOrEmail });
+export const login = async (
+  usernameOrEmail: string,
+  password: string,
+): Promise<LoginResponse> => {
+  console.log("AuthService: attempting login to", "/auth/login", {
+    usernameOrEmail,
+  });
   const response = await api.post("/auth/login", {
     usernameOrEmail,
     password,

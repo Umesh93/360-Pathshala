@@ -8,7 +8,13 @@ import EmptyState from "../../students/components/EmptyState";
 import Pagination from "../../students/components/Pagination";
 import ConfirmDialog from "../../../../components/feedback/ConfirmDialog";
 import { useToast } from "../../students/components/Toast";
-import { getGuardians, deleteGuardian, restoreGuardian, exportGuardiansCsv, getGuardianSummary } from "../services/guardian.service";
+import {
+  getGuardians,
+  deleteGuardian,
+  restoreGuardian,
+  exportGuardiansCsv,
+  getGuardianSummary,
+} from "../services/guardian.service";
 import type { Guardian, GuardianFilters } from "../types/guardian.types";
 
 export default function GuardianListPage() {
@@ -29,17 +35,29 @@ export default function GuardianListPage() {
   const [deleted, setDeleted] = useState(false);
   const [summary, setSummary] = useState({ total: 0, active: 0, inactive: 0 });
 
-  const filters = useMemo<GuardianFilters>(() => ({
-    search: searchQuery || undefined,
-    relationship: relationshipFilter || undefined,
-    status: statusFilter || undefined,
-    deleted,
-    page: page - 1,
-    size: 10,
-    province: provinceFilter || undefined,
-    district: districtFilter || undefined,
-    hasStudents: studentFilter === "" ? undefined : studentFilter === "with",
-  }), [searchQuery, relationshipFilter, statusFilter, deleted, page, provinceFilter, districtFilter, studentFilter]);
+  const filters = useMemo<GuardianFilters>(
+    () => ({
+      search: searchQuery || undefined,
+      relationship: relationshipFilter || undefined,
+      status: statusFilter || undefined,
+      deleted,
+      page: page - 1,
+      size: 10,
+      province: provinceFilter || undefined,
+      district: districtFilter || undefined,
+      hasStudents: studentFilter === "" ? undefined : studentFilter === "with",
+    }),
+    [
+      searchQuery,
+      relationshipFilter,
+      statusFilter,
+      deleted,
+      page,
+      provinceFilter,
+      districtFilter,
+      studentFilter,
+    ],
+  );
 
   const fetchGuardians = useCallback(async () => {
     setLoading(true);
@@ -72,7 +90,8 @@ export default function GuardianListPage() {
     fetchGuardians();
   };
 
-  const placeholderAction = () => showToast("This action is not available yet", "validation");
+  const placeholderAction = () =>
+    showToast("This action is not available yet", "validation");
 
   const handleView = (id: number) => {
     navigate(`/admin/guardians/${id}`);
@@ -90,7 +109,11 @@ export default function GuardianListPage() {
       showToast("Guardian deleted successfully", "success");
       await fetchGuardians();
     } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to delete guardian", "error");
+      showToast(
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to delete guardian",
+        "error",
+      );
     }
   };
 
@@ -100,7 +123,11 @@ export default function GuardianListPage() {
       showToast("Guardian restored successfully", "success");
       await fetchGuardians();
     } catch (error) {
-      showToast((error as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to restore guardian", "error");
+      showToast(
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to restore guardian",
+        "error",
+      );
     }
   };
 
@@ -133,7 +160,10 @@ export default function GuardianListPage() {
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-gray-900 font-medium">{crumb.label}</span>
               ) : (
-                <a href={crumb.href} className="hover:text-[#234A91] transition-colors">
+                <a
+                  href={crumb.href}
+                  className="hover:text-[#234A91] transition-colors"
+                >
                   {crumb.label}
                 </a>
               )}
@@ -143,9 +173,12 @@ export default function GuardianListPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Guardian Management</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Guardian Management
+            </h1>
             <p className="text-gray-500 text-sm mt-1">
-              Manage guardians and link students. Total: {summary.total} | Active: {summary.active}
+              Manage guardians and link students. Total: {summary.total} |
+              Active: {summary.active}
             </p>
           </div>
         </div>
@@ -156,25 +189,61 @@ export default function GuardianListPage() {
           onRefresh={handleRefresh}
           onAddGuardian={handleAddGuardian}
           onExport={handleExport}
-           relationshipFilter={relationshipFilter}
-          onRelationshipChange={(value) => { setRelationshipFilter(value); setPage(1); }}
+          relationshipFilter={relationshipFilter}
+          onRelationshipChange={(value) => {
+            setRelationshipFilter(value);
+            setPage(1);
+          }}
           statusFilter={statusFilter}
-          onStatusChange={(value) => { setStatusFilter(value); setPage(1); }}
-           provinceFilter={provinceFilter}
-           onProvinceChange={(value) => { setProvinceFilter(value); setPage(1); }}
-           districtFilter={districtFilter}
-           onDistrictChange={(value) => { setDistrictFilter(value); setPage(1); }}
-           studentFilter={studentFilter}
-           onStudentChange={(value) => { setStudentFilter(value); setPage(1); }}
-           deleted={deleted}
-           onDeletedChange={(value) => { setDeleted(value); setPage(1); }}
-         />
+          onStatusChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+          provinceFilter={provinceFilter}
+          onProvinceChange={(value) => {
+            setProvinceFilter(value);
+            setPage(1);
+          }}
+          districtFilter={districtFilter}
+          onDistrictChange={(value) => {
+            setDistrictFilter(value);
+            setPage(1);
+          }}
+          studentFilter={studentFilter}
+          onStudentChange={(value) => {
+            setStudentFilter(value);
+            setPage(1);
+          }}
+          deleted={deleted}
+          onDeletedChange={(value) => {
+            setDeleted(value);
+            setPage(1);
+          }}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[{ label: "Total Guardians", value: summary.total, color: "text-[#234A91]" }, { label: "Active Guardians", value: summary.active, color: "text-green-700" }, { label: "Inactive Guardians", value: summary.inactive, color: "text-gray-700" }].map((item) => (
+          {[
+            {
+              label: "Total Guardians",
+              value: summary.total,
+              color: "text-[#234A91]",
+            },
+            {
+              label: "Active Guardians",
+              value: summary.active,
+              color: "text-green-700",
+            },
+            {
+              label: "Inactive Guardians",
+              value: summary.inactive,
+              color: "text-gray-700",
+            },
+          ].map((item) => (
             <div key={item.label} className="bg-white rounded-xl p-5 shadow-sm">
               <p className="text-sm text-gray-500">{item.label}</p>
-              <p className={`mt-2 text-2xl font-bold ${item.color}`}>{item.value}</p>
+              <p className={`mt-2 text-2xl font-bold ${item.color}`}>
+                {item.value}
+              </p>
             </div>
           ))}
         </div>
@@ -182,7 +251,10 @@ export default function GuardianListPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
             <p className="text-red-600 text-sm">{error}</p>
-            <button onClick={fetchGuardians} className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
+            <button
+              onClick={fetchGuardians}
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
+            >
               Retry
             </button>
           </div>
@@ -201,16 +273,20 @@ export default function GuardianListPage() {
           <>
             <GuardianTable
               guardians={guardians}
-               page={page}
-               pageSize={10}
+              page={page}
+              pageSize={10}
               onView={handleView}
               onEdit={handleEdit}
               onDelete={setDeleteId}
-               onRestore={handleRestore}
-               onPrint={placeholderAction}
-               onDownload={placeholderAction}
+              onRestore={handleRestore}
+              onPrint={placeholderAction}
+              onDownload={placeholderAction}
             />
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           </>
         )}
 

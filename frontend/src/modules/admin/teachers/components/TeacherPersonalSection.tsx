@@ -31,7 +31,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Personal Information
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex flex-col items-center">
@@ -40,9 +42,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
             className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#234A91] overflow-hidden"
           >
             {data.photo ? (
-              <img src={data.photo} alt="Preview" className="w-full h-full object-cover" />
+              <img
+                src={data.photo}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <span className="text-xs text-gray-500 text-center px-2">Click to upload</span>
+              <span className="text-xs text-gray-500 text-center px-2">
+                Click to upload
+              </span>
             )}
           </div>
           <input
@@ -56,7 +64,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">First Name <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            First Name <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={data.firstName}
@@ -67,11 +77,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
               errors.firstName ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
+          {errors.firstName && (
+            <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Middle Name</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Middle Name
+          </label>
           <input
             type="text"
             value={data.middleName}
@@ -83,7 +97,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Last Name <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Last Name <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={data.lastName}
@@ -94,11 +110,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
               errors.lastName ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
+          {errors.lastName && (
+            <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Date of Birth <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Date of Birth <span className="text-red-500">*</span>
+          </label>
           <input
             type="date"
             value={data.dob}
@@ -107,11 +127,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
               errors.dob ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.dob && <p className="mt-1 text-xs text-red-600">{errors.dob}</p>}
+          {errors.dob && (
+            <p className="mt-1 text-xs text-red-600">{errors.dob}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Gender <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Gender <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.gender}
             onChange={(e) => update("gender", e.target.value)}
@@ -124,12 +148,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && <p className="mt-1 text-xs text-red-600">{errors.gender}</p>}
+          {errors.gender && (
+            <p className="mt-1 text-xs text-red-600">{errors.gender}</p>
+          )}
         </div>
 
-
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Nationality
+          </label>
           <input
             type="text"
             value={data.nationality}
@@ -139,7 +166,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Religion</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Religion
+          </label>
           <input
             type="text"
             value={data.religion}
@@ -149,7 +178,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Marital Status</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Marital Status
+          </label>
           <select
             value={data.maritalStatus}
             onChange={(e) => update("maritalStatus", e.target.value)}
@@ -164,7 +195,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Phone Number <span className="text-red-500">*</span>
+          </label>
           <input
             type="tel"
             value={data.phone}
@@ -173,11 +206,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
               errors.phone ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Alternative Phone</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Alternative Phone
+          </label>
           <input
             type="tel"
             value={data.alternativePhone}
@@ -187,7 +224,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Email <span className="text-red-500">*</span>
+          </label>
           <input
             type="email"
             value={data.email}
@@ -196,11 +235,15 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
               errors.email ? "border-red-500" : "border-gray-200"
             }`}
           />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+          {errors.email && (
+            <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Citizenship / National ID</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Citizenship / National ID
+          </label>
           <input
             type="text"
             value={data.citizenshipNumber}
@@ -210,7 +253,9 @@ const TeacherPersonalSection: React.FC<TeacherPersonalSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Passport Number (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Passport Number (Optional)
+          </label>
           <input
             type="text"
             value={data.passportNumber}

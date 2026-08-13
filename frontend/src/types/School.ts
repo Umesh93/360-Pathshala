@@ -26,4 +26,7 @@ export interface ModuleOption {
   comingSoon: boolean;
   category: "CORE" | "FUTURE";
   required: boolean;
+  billingType: "REQUIRED" | "INCLUDED" | "PAID";
+  annualPrice: number;
+  billingPeriod: string;
 }

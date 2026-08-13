@@ -13,10 +13,18 @@ import LoginSection from "./LoginSection";
 import NotesSection from "./NotesSection";
 import StudentFormFooter from "./StudentFormFooter";
 import { useStudentForm } from "../hooks/useStudentForm";
-import { createStudent, generateAdmissionNo, loadStudentEditData, updateStudent } from "../services/student.service";
+import {
+  createStudent,
+  generateAdmissionNo,
+  loadStudentEditData,
+  updateStudent,
+} from "../services/student.service";
 import type { StudentEditLookups } from "../types/student.types";
 import { useToast } from "./Toast";
-import { studentFormSchema, type StudentFormData } from "../schemas/student.schema";
+import {
+  studentFormSchema,
+  type StudentFormData,
+} from "../schemas/student.schema";
 
 type SectionKey = keyof StudentFormData;
 
@@ -25,12 +33,18 @@ const steps: { title: string; section: SectionKey }[] = [
   { title: "Personal", section: "personalInfo" },
   { title: "Guardian", section: "guardian" },
   { title: "Address & Medical", section: "address" },
-  { title: "History, Hostel, Transport, Docs, Login, Notes", section: "academicHistory" },
+  {
+    title: "History, Hostel, Transport, Docs, Login, Notes",
+    section: "academicHistory",
+  },
 ];
 
-const sectionErrors = (errors: Record<string, string>, section: SectionKey) => Object.fromEntries(
-  Object.entries(errors).filter(([path]) => path.startsWith(`${section}.`)).map(([path, message]) => [path.slice(section.length + 1), message]),
-);
+const sectionErrors = (errors: Record<string, string>, section: SectionKey) =>
+  Object.fromEntries(
+    Object.entries(errors)
+      .filter(([path]) => path.startsWith(`${section}.`))
+      .map(([path, message]) => [path.slice(section.length + 1), message]),
+  );
 
 const splitName = (name?: string) => {
   const parts = name?.trim().split(/\s+/).filter(Boolean) || [];
@@ -50,7 +64,14 @@ interface SuccessDialogProps {
   studentId?: number;
 }
 
-const SuccessDialog: React.FC<SuccessDialogProps> = ({ admissionNo, rollNumber, onAddAnother, onViewStudent, onClose, studentId }) => {
+const SuccessDialog: React.FC<SuccessDialogProps> = ({
+  admissionNo,
+  rollNumber,
+  onAddAnother,
+  onViewStudent,
+  onClose,
+  studentId,
+}) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-xl p-6 shadow-xl max-w-md w-full mx-4">
@@ -58,11 +79,19 @@ const SuccessDialog: React.FC<SuccessDialogProps> = ({ admissionNo, rollNumber, 
           <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-green-600 text-xl">✓</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800">Student registered successfully</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Student registered successfully
+          </h3>
         </div>
         <div className="space-y-2 mb-6">
-          <p className="text-sm text-gray-600">Admission No: <span className="font-medium text-gray-800">{admissionNo}</span></p>
-          <p className="text-sm text-gray-600">Roll No: <span className="font-medium text-gray-800">{rollNumber}</span></p>
+          <p className="text-sm text-gray-600">
+            Admission No:{" "}
+            <span className="font-medium text-gray-800">{admissionNo}</span>
+          </p>
+          <p className="text-sm text-gray-600">
+            Roll No:{" "}
+            <span className="font-medium text-gray-800">{rollNumber}</span>
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <button
@@ -127,14 +156,25 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
   const hasLoadedAdmissionNumber = useRef(false);
   const submissionLock = useRef(false);
   const [editLookups, setEditLookups] = useState<StudentEditLookups>();
-  const [successData, setSuccessData] = useState<{ admissionNo: string; rollNumber: string; studentId?: number } | null>(null);
-  const [errorSummary, setErrorSummary] = useState<{ step: number; title: string }[]>([]);
+  const [successData, setSuccessData] = useState<{
+    admissionNo: string;
+    rollNumber: string;
+    studentId?: number;
+  } | null>(null);
+  const [errorSummary, setErrorSummary] = useState<
+    { step: number; title: string }[]
+  >([]);
 
   useEffect(() => {
     if (studentId || hasLoadedAdmissionNumber.current) return;
     hasLoadedAdmissionNumber.current = true;
     generateAdmissionNo()
-      .then((admissionNo) => updateSection("academicInfo", { ...formData.academicInfo, admissionNo }))
+      .then((admissionNo) =>
+        updateSection("academicInfo", {
+          ...formData.academicInfo,
+          admissionNo,
+        }),
+      )
       .catch(() => {
         hasLoadedAdmissionNumber.current = false;
         showToast("Failed to generate Admission Number", "error");
@@ -152,32 +192,37 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
     if (studentId && !hasLoadedStudent.current) {
       const fetchStudent = async () => {
         try {
-           const { student, lookups } = await loadStudentEditData(studentId);
-           if (student) {
+          const { student, lookups } = await loadStudentEditData(studentId);
+          if (student) {
             const father = splitName(student.guardian.fatherName);
             const mother = splitName(student.guardian.motherName);
-            const guardianSelection = student.guardian.guardianSelection || (student.guardian.relationship?.toLowerCase() === "father"
-              ? "father"
-              : student.guardian.relationship?.toLowerCase() === "mother"
-                ? "mother"
-                : "other");
+            const guardianSelection =
+              student.guardian.guardianSelection ||
+              (student.guardian.relationship?.toLowerCase() === "father"
+                ? "father"
+                : student.guardian.relationship?.toLowerCase() === "mother"
+                  ? "mother"
+                  : "other");
             const formData: StudentFormData = {
               academicInfo: {
                 academicYear: student.academicYear || "2083/2084 BS",
                 medium: student.medium === "Nepali" ? "Nepali" : "English",
                 admissionNo: student.admissionNo,
-                admissionDate: student.admissionDate || new Date().toISOString().split("T")[0],
+                admissionDate:
+                  student.admissionDate ||
+                  new Date().toISOString().split("T")[0],
                 class: student.classId ? String(student.classId) : "",
                 className: student.className,
                 section: student.sectionId ? String(student.sectionId) : "",
                 sectionName: student.sectionName,
                 rollNumber: student.rollNumber,
                 house: student.house || "",
-                status: student.status === "inactive"
-                  ? "inactive"
-                  : student.status === "transferred"
-                    ? "transfer"
-                    : "active",
+                status:
+                  student.status === "inactive"
+                    ? "inactive"
+                    : student.status === "transferred"
+                      ? "transfer"
+                      : "active",
                 scholarship: student.scholarship || "",
               },
               personalInfo: {
@@ -197,65 +242,86 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
                 studentIdBarcode: student.studentIdBarcode || "",
                 photo: student.photo,
               },
-                guardian: {
-                  fatherFirstName: student.guardian.fatherFirstName || father.firstName,
-                  fatherMiddleName: student.guardian.fatherMiddleName || father.middleName,
-                  fatherLastName: student.guardian.fatherLastName || father.lastName,
-                  fatherOccupation: student.guardian.fatherOccupation || "",
-                  fatherPhone: student.guardian.fatherPhone || student.guardian.phone || "",
-                  fatherEmail: student.guardian.fatherEmail || student.guardian.email || "",
-                  fatherPhoto: student.guardian.fatherPhoto,
-                  fatherCitizenship: student.guardian.fatherCitizenship || "",
-                  motherFirstName: student.guardian.motherFirstName || mother.firstName,
-                  motherMiddleName: student.guardian.motherMiddleName || mother.middleName,
-                  motherLastName: student.guardian.motherLastName || mother.lastName,
-                  motherOccupation: student.guardian.motherOccupation || "",
-                  motherPhone: student.guardian.motherPhone || "",
-                  motherEmail: student.guardian.motherEmail || "",
-                  motherPhoto: student.guardian.motherPhoto,
-                  motherCitizenship: student.guardian.motherCitizenship || "",
-                  guardianSelection,
-                  guardianName: student.guardianName || student.guardian.guardianName || "",
-                  guardianRelationship: student.guardian.relationship || "",
-                  guardianOccupation: student.guardian.occupation || "",
-                  guardianPhone: student.guardian.phone || "",
-                  guardianEmail: student.guardian.email || "",
-                  guardianAddress: student.guardian.address || "",
-                  guardianCitizenship: student.guardian.citizenship || "",
-               },
-               address: {
-                  currentProvince: student.provinceId ? String(student.provinceId) : "",
-                  currentProvinceName: student.province || "",
-                  currentDistrict: student.districtId ? String(student.districtId) : "",
-                  currentDistrictName: student.district || "",
-                   currentMunicipality: student.municipality || "",
-                  currentMunicipalityName: student.municipality || "",
-                   currentWard: student.ward ? String(student.ward) : "",
-                  currentWardNumber: student.ward ? String(student.ward) : "",
-                 currentStreet: student.street || (student.address as string) || "",
-                 permanentSameAsCurrent: false,
-                 permanentProvince: "",
-                 permanentDistrict: "",
-                 permanentMunicipality: "",
-                 permanentWard: "",
-                 permanentStreet: "",
-               },
+              guardian: {
+                fatherFirstName:
+                  student.guardian.fatherFirstName || father.firstName,
+                fatherMiddleName:
+                  student.guardian.fatherMiddleName || father.middleName,
+                fatherLastName:
+                  student.guardian.fatherLastName || father.lastName,
+                fatherOccupation: student.guardian.fatherOccupation || "",
+                fatherPhone:
+                  student.guardian.fatherPhone || student.guardian.phone || "",
+                fatherEmail:
+                  student.guardian.fatherEmail || student.guardian.email || "",
+                fatherPhoto: student.guardian.fatherPhoto,
+                fatherCitizenship: student.guardian.fatherCitizenship || "",
+                motherFirstName:
+                  student.guardian.motherFirstName || mother.firstName,
+                motherMiddleName:
+                  student.guardian.motherMiddleName || mother.middleName,
+                motherLastName:
+                  student.guardian.motherLastName || mother.lastName,
+                motherOccupation: student.guardian.motherOccupation || "",
+                motherPhone: student.guardian.motherPhone || "",
+                motherEmail: student.guardian.motherEmail || "",
+                motherPhoto: student.guardian.motherPhoto,
+                motherCitizenship: student.guardian.motherCitizenship || "",
+                guardianSelection,
+                guardianName:
+                  student.guardianName || student.guardian.guardianName || "",
+                guardianRelationship: student.guardian.relationship || "",
+                guardianOccupation: student.guardian.occupation || "",
+                guardianPhone: student.guardian.phone || "",
+                guardianEmail: student.guardian.email || "",
+                guardianAddress: student.guardian.address || "",
+                guardianCitizenship: student.guardian.citizenship || "",
+              },
+              address: {
+                currentProvince: student.provinceId
+                  ? String(student.provinceId)
+                  : "",
+                currentProvinceName: student.province || "",
+                currentDistrict: student.districtId
+                  ? String(student.districtId)
+                  : "",
+                currentDistrictName: student.district || "",
+                currentMunicipality: student.municipality || "",
+                currentMunicipalityName: student.municipality || "",
+                currentWard: student.ward ? String(student.ward) : "",
+                currentWardNumber: student.ward ? String(student.ward) : "",
+                currentStreet:
+                  student.street || (student.address as string) || "",
+                permanentSameAsCurrent: false,
+                permanentProvince: "",
+                permanentDistrict: "",
+                permanentMunicipality: "",
+                permanentWard: "",
+                permanentStreet: "",
+              },
               medical: {
-                bloodGroup: student.medicalBloodGroup || student.bloodGroup || "",
+                bloodGroup:
+                  student.medicalBloodGroup || student.bloodGroup || "",
                 height: student.height || "",
                 weight: student.weight || "",
                 medicalConditions: student.medicalConditions || "",
                 medicalConditionsOther: student.medicalConditionsOther || "",
                 allergies: student.allergies || "",
                 disability: student.disability || "",
-                emergencyContactPerson: student.emergencyContactPerson || "Father",
-                emergencyContactNumber: student.emergencyContactNumber || student.emergencyContact || student.guardian.phone || "",
+                emergencyContactPerson:
+                  student.emergencyContactPerson || "Father",
+                emergencyContactNumber:
+                  student.emergencyContactNumber ||
+                  student.emergencyContact ||
+                  student.guardian.phone ||
+                  "",
               },
               academicHistory: {
                 previousSchool: student.previousSchool || "",
                 previousAddress: student.previousAddress || "",
                 previousClass: student.previousClass || "",
-                transferCertificateNumber: student.transferCertificateNumber || "",
+                transferCertificateNumber:
+                  student.transferCertificateNumber || "",
                 reasonForLeaving: student.reasonForLeaving || "",
                 emisId: student.emisId || "",
               },
@@ -273,7 +339,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
               },
               documents: {
                 documents: student.documents || undefined,
-                documentCategories: student.documentCategories ? student.documentCategories.split(",") : [],
+                documentCategories: student.documentCategories
+                  ? student.documentCategories.split(",")
+                  : [],
               },
               login: {
                 createLogin: false,
@@ -286,8 +354,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
                 notes: student.notes || "",
               },
             };
-             loadStudent(formData);
-             setEditLookups(lookups);
+            loadStudent(formData);
+            setEditLookups(lookups);
             hasLoadedStudent.current = true;
           }
         } catch {
@@ -304,12 +372,17 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
       const firstErrorPath = Object.keys(errors)[0];
       if (!firstErrorPath) return;
       const field = firstErrorPath.split(".").pop();
-      const element = document.querySelector(`[data-field="${field}"]`) as HTMLElement | null;
+      const element = document.querySelector(
+        `[data-field="${field}"]`,
+      ) as HTMLElement | null;
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
         element.focus();
         element.classList.add("ring-2", "ring-red-500");
-        setTimeout(() => element.classList.remove("ring-2", "ring-red-500"), 2000);
+        setTimeout(
+          () => element.classList.remove("ring-2", "ring-red-500"),
+          2000,
+        );
       }
     }, 100);
   };
@@ -319,7 +392,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
     if (!isValid) {
       showToast("Please complete all required fields.", "validation");
       setTimeout(() => {
-        const element = document.querySelector('[aria-invalid="true"]') as HTMLElement | null;
+        const element = document.querySelector(
+          '[aria-invalid="true"]',
+        ) as HTMLElement | null;
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" });
           element.focus();
@@ -339,10 +414,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
       if (!isValid) {
         setCurrentStep(firstErrorStep);
         setErrorSummary(
-          Array.from(errorSteps).map(stepIndex => ({
+          Array.from(errorSteps).map((stepIndex) => ({
             step: stepIndex,
             title: steps[stepIndex].title,
-          }))
+          })),
         );
         scrollToFirstError(errors);
         showToast("Please complete all required fields.", "validation");
@@ -351,9 +426,18 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
       setErrorSummary([]);
       const parsed = studentFormSchema.safeParse(formData);
       if (!parsed.success) {
-        const errors = Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join("."), issue.message]));
+        const errors = Object.fromEntries(
+          parsed.error.issues.map((issue) => [
+            issue.path.join("."),
+            issue.message,
+          ]),
+        );
         setFieldErrors(errors);
-        const firstStep = steps.findIndex((step) => Object.keys(errors).some((path) => path.startsWith(`${step.section}.`)));
+        const firstStep = steps.findIndex((step) =>
+          Object.keys(errors).some((path) =>
+            path.startsWith(`${step.section}.`),
+          ),
+        );
         if (firstStep >= 0) setCurrentStep(firstStep);
         scrollToFirstError(errors);
         showToast("Please complete all required fields.", "validation");
@@ -376,17 +460,43 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
         studentId: savedStudentId,
       });
     } catch (error) {
-      const response = (error as {
-        response?: { data?: { message?: string; errors?: Record<string, string> } };
-      }).response?.data;
+      const response = (
+        error as {
+          response?: {
+            data?: { message?: string; errors?: Record<string, string> };
+          };
+        }
+      ).response?.data;
       if (response?.errors) {
-        const fieldMap: Record<string, string> = { admissionNumber: "academicInfo.admissionNo", rollNumber: "academicInfo.rollNumber", classId: "academicInfo.class", sectionId: "academicInfo.section", firstName: "personalInfo.firstName", lastName: "personalInfo.lastName", dateOfBirth: "personalInfo.dob", gender: "personalInfo.gender" };
-        const errors = Object.fromEntries(Object.entries(response.errors).map(([field, message]) => [fieldMap[field] || field, message]));
+        const fieldMap: Record<string, string> = {
+          admissionNumber: "academicInfo.admissionNo",
+          rollNumber: "academicInfo.rollNumber",
+          classId: "academicInfo.class",
+          sectionId: "academicInfo.section",
+          firstName: "personalInfo.firstName",
+          lastName: "personalInfo.lastName",
+          dateOfBirth: "personalInfo.dob",
+          gender: "personalInfo.gender",
+        };
+        const errors = Object.fromEntries(
+          Object.entries(response.errors).map(([field, message]) => [
+            fieldMap[field] || field,
+            message,
+          ]),
+        );
         setFieldErrors(errors);
-        const firstStep = steps.findIndex((step) => Object.keys(errors).some((path) => path.startsWith(`${step.section}.`)));
+        const firstStep = steps.findIndex((step) =>
+          Object.keys(errors).some((path) =>
+            path.startsWith(`${step.section}.`),
+          ),
+        );
         if (firstStep >= 0) setCurrentStep(firstStep);
         scrollToFirstError(errors);
-      } else showToast(response?.message || "Unable to save student. Please try again.", "server");
+      } else
+        showToast(
+          response?.message || "Unable to save student. Please try again.",
+          "server",
+        );
     } finally {
       submissionLock.current = false;
       setSubmitting(false);
@@ -399,7 +509,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
     setCurrentStep(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => {
-      const firstNameInput = document.querySelector('input[data-field="firstName"]') as HTMLInputElement | null;
+      const firstNameInput = document.querySelector(
+        'input[data-field="firstName"]',
+      ) as HTMLInputElement | null;
       firstNameInput?.focus();
     }, 300);
   };
@@ -444,14 +556,20 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
             };
             return (
               <div key={step.section} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${statusColors[status]}`}>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${statusColors[status]}`}
+                >
                   {status === "completed" ? "✓" : index + 1}
                 </div>
-                <span className={`text-sm whitespace-nowrap ${status === "upcoming" ? "text-gray-500" : "text-gray-900 font-medium"}`}>
+                <span
+                  className={`text-sm whitespace-nowrap ${status === "upcoming" ? "text-gray-500" : "text-gray-900 font-medium"}`}
+                >
                   {step.title}
                 </span>
                 {index < steps.length - 1 && (
-                  <div className={`w-8 h-px mx-2 ${index < currentStep ? "bg-green-500" : "bg-gray-300"}`} />
+                  <div
+                    className={`w-8 h-px mx-2 ${index < currentStep ? "bg-green-500" : "bg-gray-300"}`}
+                  />
                 )}
               </div>
             );
@@ -459,7 +577,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
         </div>
         {errorSummary.length > 0 && (
           <div className="mt-3 p-3 bg-red-50 rounded-lg">
-            <p className="text-sm text-red-700 font-medium mb-2">The following sections require attention:</p>
+            <p className="text-sm text-red-700 font-medium mb-2">
+              The following sections require attention:
+            </p>
             <div className="flex flex-wrap gap-2">
               {errorSummary.map((item) => (
                 <button
@@ -478,13 +598,13 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
 
       <div className="space-y-4">
         {currentStep === 0 && (
-            <StudentAcademicSection
-              data={formData.academicInfo}
-              onChange={(data) => updateSection("academicInfo", data)}
-              lookupData={editLookups}
-              autoGenerateRollNumber={!studentId}
-              errors={sectionErrors(fieldErrors, "academicInfo")}
-            />
+          <StudentAcademicSection
+            data={formData.academicInfo}
+            onChange={(data) => updateSection("academicInfo", data)}
+            lookupData={editLookups}
+            autoGenerateRollNumber={!studentId}
+            errors={sectionErrors(fieldErrors, "academicInfo")}
+          />
         )}
 
         {currentStep === 1 && (

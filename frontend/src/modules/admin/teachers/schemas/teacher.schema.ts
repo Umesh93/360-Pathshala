@@ -4,7 +4,13 @@ export const employmentSchema = z.object({
   teacherId: z.string().min(1, "Teacher ID is required"),
   employeeCode: z.string().min(1, "Employee Code is required"),
   joiningDate: z.string().min(1, "Joining date is required"),
-  employmentType: z.enum(["permanent", "contract", "part-time", "visiting", "intern"]),
+  employmentType: z.enum([
+    "permanent",
+    "contract",
+    "part-time",
+    "visiting",
+    "intern",
+  ]),
   department: z.string().min(1, "Department is required"),
   designation: z.string().min(1, "Designation is required"),
   status: z.enum(["active", "inactive", "resigned", "suspended"]),
@@ -31,7 +37,9 @@ export const personalSchema = z.object({
 export const emergencySchema = z.object({
   emergencyContactName: z.string().min(1, "Emergency contact name is required"),
   relationship: z.string().min(1, "Relationship is required"),
-  emergencyContactNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  emergencyContactNumber: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits"),
   alternativePhone: z.string().optional(),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
 });
@@ -40,10 +48,13 @@ export const addressSchema = z.object({
   currentProvince: z.string().min(1, "Province is required"),
   currentDistrict: z.string().min(1, "District is required"),
   currentMunicipality: z.string().min(1, "Municipality is required"),
-  currentWard: z.string().min(1, "Ward number is required").refine((value) => {
-    const ward = Number(value);
-    return Number.isInteger(ward) && ward >= 1 && ward <= 35;
-  }, "Ward number must be between 1 and 35"),
+  currentWard: z
+    .string()
+    .min(1, "Ward number is required")
+    .refine((value) => {
+      const ward = Number(value);
+      return Number.isInteger(ward) && ward >= 1 && ward <= 35;
+    }, "Ward number must be between 1 and 35"),
   currentStreet: z.string().optional(),
   permanentSameAsCurrent: z.boolean().default(false),
   permanentProvince: z.string().optional(),

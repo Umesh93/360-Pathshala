@@ -18,11 +18,15 @@ const TeacherEducationSection: React.FC<TeacherEducationSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Education & Professional Details</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Education & Professional Details
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Highest Qualification <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Highest Qualification <span className="text-red-500">*</span>
+          </label>
           <select
             value={data.highestQualification}
             onChange={(e) => update("highestQualification", e.target.value)}
@@ -36,11 +40,17 @@ const TeacherEducationSection: React.FC<TeacherEducationSectionProps> = ({
             <option value="M.Phil">M.Phil</option>
             <option value="PhD">PhD</option>
           </select>
-          {errors.highestQualification && <p className="mt-1 text-xs text-red-600">{errors.highestQualification}</p>}
+          {errors.highestQualification && (
+            <p className="mt-1 text-xs text-red-600">
+              {errors.highestQualification}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">University</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            University
+          </label>
           <input
             type="text"
             value={data.university}
@@ -50,7 +60,9 @@ const TeacherEducationSection: React.FC<TeacherEducationSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Specialization</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Specialization
+          </label>
           <input
             type="text"
             value={data.specialization}
@@ -60,7 +72,9 @@ const TeacherEducationSection: React.FC<TeacherEducationSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Passing Year</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Passing Year
+          </label>
           <input
             type="text"
             value={data.passingYear}
@@ -70,7 +84,9 @@ const TeacherEducationSection: React.FC<TeacherEducationSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Experience (Years)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Experience (Years)
+          </label>
           <input
             type="text"
             value={data.experience}

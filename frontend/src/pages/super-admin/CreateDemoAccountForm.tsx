@@ -51,7 +51,9 @@ export default function CreateDemoAccountForm({
   const [address, setAddress] = useState(demoRequest?.address || "");
   const [email, setEmail] = useState(demoRequest?.email || "");
   const [phone, setPhone] = useState(demoRequest?.phone || "");
-  const [username, setUsername] = useState(demoRequest?.email.split("@")[0] || "");
+  const [username, setUsername] = useState(
+    demoRequest?.email.split("@")[0] || "",
+  );
   const [password, setPassword] = useState(generatePassword());
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(

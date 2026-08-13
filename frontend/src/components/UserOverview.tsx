@@ -5,7 +5,9 @@ interface UserOverviewProps {
   userOverview: UserOverview;
 }
 
-const UserOverviewComponent: React.FC<UserOverviewProps> = ({ userOverview }) => {
+const UserOverviewComponent: React.FC<UserOverviewProps> = ({
+  userOverview,
+}) => {
   const items = [
     {
       label: "Students",

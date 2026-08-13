@@ -1,7 +1,8 @@
 import type { TeacherFormData } from "../schemas/teacher.schema";
 
 export const buildTeacherPayload = (formData: TeacherFormData) => {
-  const fullName = `${formData.personal.firstName} ${formData.personal.middleName || ""} ${formData.personal.lastName}`.trim();
+  const fullName =
+    `${formData.personal.firstName} ${formData.personal.middleName || ""} ${formData.personal.lastName}`.trim();
 
   const payload: Record<string, unknown> = {
     ...formData.employment,
@@ -54,7 +55,8 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
     maritalStatus: payload.maritalStatus,
     citizenshipNumber: payload.citizenshipNumber,
     passportNumber: payload.passportNumber,
-    relationship: relationshipMap[payload.relationship as string] || payload.relationship,
+    relationship:
+      relationshipMap[payload.relationship as string] || payload.relationship,
     emergencyContactName: payload.emergencyContactName,
     emergencyContactNumber: payload.emergencyContactNumber,
     currentProvince: payload.currentProvince,
@@ -90,7 +92,7 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
 
 export const validateSection = <T>(
   schema: { parse: (data: unknown) => T },
-  data: unknown
+  data: unknown,
 ): { success: true; data: T } | { success: false; errors: string[] } => {
   try {
     const parsed = schema.parse(data);
@@ -116,7 +118,8 @@ export const formatFileSize = (bytes: number) => {
 };
 
 export const generatePassword = (length = 12) => {
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
   let password = "";
   for (let i = 0; i < length; i++) {
     password += charset.charAt(Math.floor(Math.random() * charset.length));

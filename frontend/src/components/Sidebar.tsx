@@ -120,7 +120,6 @@ const ADMIN_LINKS = [
     icon: CalendarClock,
     moduleCode: "LEAVE_MANAGEMENT",
   },
-  { to: "/admin/certificates", label: "Certificates", icon: Award },
   {
     to: "/admin/reports",
     label: "Reports",

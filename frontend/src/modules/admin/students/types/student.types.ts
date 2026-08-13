@@ -17,7 +17,13 @@ export interface Student {
   phone: string;
   email?: string;
   address: string;
-  status: "active" | "inactive" | "transferred" | "graduated" | "suspended" | "dropped";
+  status:
+    | "active"
+    | "inactive"
+    | "transferred"
+    | "graduated"
+    | "suspended"
+    | "dropped";
   category?: string;
   bloodGroup?: string;
   religion?: string;
@@ -45,13 +51,34 @@ export interface Student {
   guardian: Guardian;
   classTeacher?: string;
   subjects?: string[];
-  academicYear?: string; medium?: string; scholarship?: string; caste?: string; motherTongue?: string;
-  citizenshipNumber?: string; emisId?: string; studentIdBarcode?: string; medicalBloodGroup?: string;
-  height?: string; weight?: string; medicalConditionsOther?: string; emergencyContactPerson?: string;
-  emergencyContactNumber?: string; previousAddress?: string; previousClass?: string;
-  transferCertificateNumber?: string; reasonForLeaving?: string; hasHostel?: boolean;
-  roomNumber?: string; bedNumber?: string; usesTransport?: boolean; route?: string;
-  pickupPoint?: string; vehicle?: string; documents?: string; documentCategories?: string; notes?: string;
+  academicYear?: string;
+  medium?: string;
+  scholarship?: string;
+  caste?: string;
+  motherTongue?: string;
+  citizenshipNumber?: string;
+  emisId?: string;
+  studentIdBarcode?: string;
+  medicalBloodGroup?: string;
+  height?: string;
+  weight?: string;
+  medicalConditionsOther?: string;
+  emergencyContactPerson?: string;
+  emergencyContactNumber?: string;
+  previousAddress?: string;
+  previousClass?: string;
+  transferCertificateNumber?: string;
+  reasonForLeaving?: string;
+  hasHostel?: boolean;
+  roomNumber?: string;
+  bedNumber?: string;
+  usesTransport?: boolean;
+  route?: string;
+  pickupPoint?: string;
+  vehicle?: string;
+  documents?: string;
+  documentCategories?: string;
+  notes?: string;
 }
 
 export interface StudentResponse {
@@ -82,16 +109,72 @@ export interface StudentResponse {
 }
 
 export interface StudentDetailsResponse {
-  academicYear: string | null; medium: string | null; admissionDate: string | null; house: string | null; scholarship: string | null;
-  middleName: string | null; bloodGroup: string | null; religion: string | null; caste: string | null; nationality: string | null; motherTongue: string | null;
-  studentPhone: string | null; studentEmail: string | null; citizenshipNumber: string | null; emisId: string | null; studentIdBarcode: string | null; photo: string | null;
-  fatherFirstName: string | null; fatherMiddleName: string | null; fatherLastName: string | null; fatherOccupation: string | null; fatherPhone: string | null; fatherEmail: string | null; fatherCitizenshipNumber: string | null; fatherPhoto: string | null;
-  motherFirstName: string | null; motherMiddleName: string | null; motherLastName: string | null; motherOccupation: string | null; motherPhone: string | null; motherEmail: string | null; motherCitizenshipNumber: string | null; motherPhoto: string | null;
-  guardianSelection: "father" | "mother" | "other" | null; guardianName: string | null; guardianRelationship: string | null; guardianPhone: string | null; guardianEmail: string | null; guardianAddress: string | null; guardianOccupation: string | null; guardianCitizenshipNumber: string | null;
-  medicalBloodGroup: string | null; height: string | null; weight: string | null; medicalConditions: string | null; medicalConditionsOther: string | null; allergies: string | null; disability: string | null;
-  emergencyContactPerson: string | null; emergencyContactNumber: string | null; previousSchool: string | null; previousAddress: string | null; previousClass: string | null;
-  transferCertificateNumber: string | null; reasonForLeaving: string | null; hasHostel: boolean | null; hostel: string | null; roomNumber: string | null; bedNumber: string | null;
-  usesTransport: boolean | null; route: string | null; pickupPoint: string | null; vehicle: string | null; documents: string | null; documentCategories: string | null; notes: string | null;
+  academicYear: string | null;
+  medium: string | null;
+  admissionDate: string | null;
+  house: string | null;
+  scholarship: string | null;
+  middleName: string | null;
+  bloodGroup: string | null;
+  religion: string | null;
+  caste: string | null;
+  nationality: string | null;
+  motherTongue: string | null;
+  studentPhone: string | null;
+  studentEmail: string | null;
+  citizenshipNumber: string | null;
+  emisId: string | null;
+  studentIdBarcode: string | null;
+  photo: string | null;
+  fatherFirstName: string | null;
+  fatherMiddleName: string | null;
+  fatherLastName: string | null;
+  fatherOccupation: string | null;
+  fatherPhone: string | null;
+  fatherEmail: string | null;
+  fatherCitizenshipNumber: string | null;
+  fatherPhoto: string | null;
+  motherFirstName: string | null;
+  motherMiddleName: string | null;
+  motherLastName: string | null;
+  motherOccupation: string | null;
+  motherPhone: string | null;
+  motherEmail: string | null;
+  motherCitizenshipNumber: string | null;
+  motherPhoto: string | null;
+  guardianSelection: "father" | "mother" | "other" | null;
+  guardianName: string | null;
+  guardianRelationship: string | null;
+  guardianPhone: string | null;
+  guardianEmail: string | null;
+  guardianAddress: string | null;
+  guardianOccupation: string | null;
+  guardianCitizenshipNumber: string | null;
+  medicalBloodGroup: string | null;
+  height: string | null;
+  weight: string | null;
+  medicalConditions: string | null;
+  medicalConditionsOther: string | null;
+  allergies: string | null;
+  disability: string | null;
+  emergencyContactPerson: string | null;
+  emergencyContactNumber: string | null;
+  previousSchool: string | null;
+  previousAddress: string | null;
+  previousClass: string | null;
+  transferCertificateNumber: string | null;
+  reasonForLeaving: string | null;
+  hasHostel: boolean | null;
+  hostel: string | null;
+  roomNumber: string | null;
+  bedNumber: string | null;
+  usesTransport: boolean | null;
+  route: string | null;
+  pickupPoint: string | null;
+  vehicle: string | null;
+  documents: string | null;
+  documentCategories: string | null;
+  notes: string | null;
 }
 
 export interface StudentRequest {
@@ -131,13 +214,55 @@ export interface StudentRequest {
   guardianRelationship?: unknown;
   guardianOccupation?: unknown;
   guardianCitizenshipNumber?: unknown;
-  academicYear?: unknown; medium?: unknown; admissionDate?: unknown; house?: unknown; status?: unknown; scholarship?: unknown; middleName?: unknown;
-  bloodGroup?: unknown; religion?: unknown; caste?: unknown; nationality?: unknown; motherTongue?: unknown; studentPhone?: unknown; studentEmail?: unknown;
-  citizenshipNumber?: unknown; emisId?: unknown; studentIdBarcode?: unknown; photo?: unknown; fatherOccupation?: unknown; fatherPhone?: unknown; fatherEmail?: unknown;
-  motherOccupation?: unknown; motherPhone?: unknown; motherEmail?: unknown; medicalBloodGroup?: unknown; height?: unknown; weight?: unknown; medicalConditions?: unknown;
-  medicalConditionsOther?: unknown; allergies?: unknown; disability?: unknown; emergencyContactPerson?: unknown; emergencyContactNumber?: unknown; previousSchool?: unknown;
-  previousAddress?: unknown; previousClass?: unknown; transferCertificateNumber?: unknown; reasonForLeaving?: unknown; hasHostel?: unknown; hostel?: unknown; roomNumber?: unknown;
-  bedNumber?: unknown; usesTransport?: unknown; route?: unknown; pickupPoint?: unknown; vehicle?: unknown; documents?: unknown; documentCategories?: unknown; notes?: unknown;
+  academicYear?: unknown;
+  medium?: unknown;
+  admissionDate?: unknown;
+  house?: unknown;
+  status?: unknown;
+  scholarship?: unknown;
+  middleName?: unknown;
+  bloodGroup?: unknown;
+  religion?: unknown;
+  caste?: unknown;
+  nationality?: unknown;
+  motherTongue?: unknown;
+  studentPhone?: unknown;
+  studentEmail?: unknown;
+  citizenshipNumber?: unknown;
+  emisId?: unknown;
+  studentIdBarcode?: unknown;
+  photo?: unknown;
+  fatherOccupation?: unknown;
+  fatherPhone?: unknown;
+  fatherEmail?: unknown;
+  motherOccupation?: unknown;
+  motherPhone?: unknown;
+  motherEmail?: unknown;
+  medicalBloodGroup?: unknown;
+  height?: unknown;
+  weight?: unknown;
+  medicalConditions?: unknown;
+  medicalConditionsOther?: unknown;
+  allergies?: unknown;
+  disability?: unknown;
+  emergencyContactPerson?: unknown;
+  emergencyContactNumber?: unknown;
+  previousSchool?: unknown;
+  previousAddress?: unknown;
+  previousClass?: unknown;
+  transferCertificateNumber?: unknown;
+  reasonForLeaving?: unknown;
+  hasHostel?: unknown;
+  hostel?: unknown;
+  roomNumber?: unknown;
+  bedNumber?: unknown;
+  usesTransport?: unknown;
+  route?: unknown;
+  pickupPoint?: unknown;
+  vehicle?: unknown;
+  documents?: unknown;
+  documentCategories?: unknown;
+  notes?: unknown;
 }
 
 export interface StudentEditLookups {
@@ -163,10 +288,17 @@ export interface Guardian {
   phone: string;
   email?: string;
   address: string;
-  fatherOccupation?: string; fatherPhone?: string; fatherEmail?: string;
-  fatherPhoto?: string; fatherCitizenship?: string;
-  motherOccupation?: string; motherPhone?: string; motherEmail?: string;
-  motherPhoto?: string; motherCitizenship?: string; citizenship?: string;
+  fatherOccupation?: string;
+  fatherPhone?: string;
+  fatherEmail?: string;
+  fatherPhoto?: string;
+  fatherCitizenship?: string;
+  motherOccupation?: string;
+  motherPhone?: string;
+  motherEmail?: string;
+  motherPhoto?: string;
+  motherCitizenship?: string;
+  citizenship?: string;
 }
 
 export interface AttendanceRecord {

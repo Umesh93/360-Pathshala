@@ -22,8 +22,12 @@ const ActivityTimeline = ({ items }: ActivityTimelineProps) => (
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-800">{item.title}</p>
-          {item.description && <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>}
-          {item.time && <p className="text-xs text-gray-400 mt-1">{item.time}</p>}
+          {item.description && (
+            <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+          )}
+          {item.time && (
+            <p className="text-xs text-gray-400 mt-1">{item.time}</p>
+          )}
         </div>
       </div>
     ))}

@@ -1,16 +1,287 @@
 import { useEffect, useState } from "react";
 import { Check, LoaderCircle, Plus, X } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../../../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../../components/ui/dialog";
 import { useToast } from "../../students/components/Toast";
-import { errorMessage, getCorrections, requestCorrection, reviewCorrection } from "../attendance.service";
+import {
+  errorMessage,
+  getCorrections,
+  requestCorrection,
+  reviewCorrection,
+} from "../attendance.service";
 import type { AttendanceStatus, Correction } from "../attendance.types";
-import { cardClass, Empty, ErrorBanner, fieldClass, FilterField, MiniPagination, primaryButton, secondaryButton, statuses, today } from "../components/AttendanceUi";
+import {
+  cardClass,
+  Empty,
+  ErrorBanner,
+  fieldClass,
+  FilterField,
+  MiniPagination,
+  primaryButton,
+  secondaryButton,
+  statuses,
+  today,
+} from "../components/AttendanceUi";
 
-const badge: Record<Correction["status"], string> = { PENDING: "bg-amber-50 text-amber-700", APPROVED: "bg-emerald-50 text-emerald-700", REJECTED: "bg-red-50 text-red-700" };
+const badge: Record<Correction["status"], string> = {
+  PENDING: "bg-amber-50 text-amber-700",
+  APPROVED: "bg-emerald-50 text-emerald-700",
+  REJECTED: "bg-red-50 text-red-700",
+};
 export default function CorrectionsView() {
-  const { showToast } = useToast(); const [items, setItems] = useState<Correction[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(1); const [error, setError] = useState(""); const [reload, setReload] = useState(0); const [open, setOpen] = useState(false); const [saving, setSaving] = useState(false); const [form, setForm] = useState({ attendanceId: "", personId: "", personType: "STUDENT" as "STUDENT" | "TEACHER", date: today(), requestedStatus: "PRESENT" as AttendanceStatus, reason: "" });
-  useEffect(() => { let active = true; getCorrections({ page, size: 15 }).then((result) => { if (active) { setItems(result.items); setPages(result.totalPages); } }).catch((value) => active && setError(errorMessage(value))); return () => { active = false; }; }, [page, reload]);
-  const submit = async () => { if (!form.attendanceId || !form.reason.trim()) { showToast("Attendance record ID and correction reason are required", "validation"); return; } setSaving(true); try { await requestCorrection({ attendanceId: Number(form.attendanceId), personId: Number(form.personId) || undefined, personType: form.personType, date: form.date, requestedStatus: form.requestedStatus, reason: form.reason.trim() }); showToast("Correction request created", "success"); setOpen(false); setReload((value) => value + 1); } catch (value) { showToast(errorMessage(value), "error"); } finally { setSaving(false); } };
-  const review = async (id: number, status: "APPROVED" | "REJECTED") => { try { await reviewCorrection(id, status); showToast(`Correction ${status.toLowerCase()}`, "success"); setReload((value) => value + 1); } catch (value) { showToast(errorMessage(value), "error"); } };
-  return <div className="space-y-4"><div className="flex justify-end"><button className={primaryButton} onClick={() => setOpen(true)}><Plus size={17}/>New Correction</button></div>{error && <ErrorBanner message={error} onRetry={() => setReload((value) => value + 1)}/>}<section className={`${cardClass} overflow-hidden`}><div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm"><thead className="bg-gray-50 text-left text-xs uppercase text-gray-500"><tr><th className="p-4">Person</th><th className="p-4">Date</th><th className="p-4">Change</th><th className="p-4">Reason</th><th className="p-4">Status</th><th className="p-4 text-right">Review</th></tr></thead><tbody>{items.map((item) => <tr key={item.id} className="border-t"><td className="p-4"><b>{item.personName || `${item.personType} #${item.personId}`}</b><p className="text-xs text-gray-500">{item.personType}</p></td><td className="p-4">{item.date}</td><td className="p-4"><span className="text-gray-500">{item.previousStatus}</span> → <b>{item.requestedStatus}</b></td><td className="max-w-xs p-4 text-gray-600">{item.reason}</td><td className="p-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge[item.status]}`}>{item.status}</span></td><td className="p-4"><div className="flex justify-end gap-2">{item.status === "PENDING" ? <><button aria-label="Approve correction" className="rounded-lg bg-emerald-50 p-2 text-emerald-700" onClick={() => review(item.id, "APPROVED")}><Check size={16}/></button><button aria-label="Reject correction" className="rounded-lg bg-red-50 p-2 text-red-700" onClick={() => review(item.id, "REJECTED")}><X size={16}/></button></> : "-"}</div></td></tr>)}</tbody></table>{!items.length && <Empty>No correction requests found.</Empty>}</div><MiniPagination page={page} totalPages={pages} onChange={setPage}/></section><Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Request Attendance Correction</DialogTitle><DialogDescription>Submit a traceable adjustment for an existing attendance record.</DialogDescription></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><FilterField label="Person type"><select className={fieldClass} value={form.personType} onChange={(event) => setForm({ ...form, personType: event.target.value as typeof form.personType })}><option>STUDENT</option><option>TEACHER</option></select></FilterField><FilterField label="Person ID"><input type="number" min="1" className={fieldClass} value={form.personId} onChange={(event) => setForm({ ...form, personId: event.target.value })}/></FilterField><FilterField label="Attendance ID (optional)"><input type="number" min="1" className={fieldClass} value={form.attendanceId} onChange={(event) => setForm({ ...form, attendanceId: event.target.value })}/></FilterField><FilterField label="Date"><input type="date" className={fieldClass} value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })}/></FilterField><FilterField label="Correct status"><select className={fieldClass} value={form.requestedStatus} onChange={(event) => setForm({ ...form, requestedStatus: event.target.value as AttendanceStatus })}>{statuses.map((item) => <option key={item}>{item}</option>)}</select></FilterField><div className="sm:col-span-2"><FilterField label="Reason"><textarea className="min-h-24 w-full rounded-lg border border-gray-200 p-3 text-sm" value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })}/></FilterField></div></div><DialogFooter><button className={secondaryButton} onClick={() => setOpen(false)}>Cancel</button><button className={primaryButton} disabled={saving} onClick={submit}>{saving && <LoaderCircle size={17} className="animate-spin"/>}Submit Request</button></DialogFooter></DialogContent></Dialog></div>;
+  const { showToast } = useToast();
+  const [items, setItems] = useState<Correction[]>([]);
+  const [page, setPage] = useState(0);
+  const [pages, setPages] = useState(1);
+  const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    attendanceId: "",
+    personId: "",
+    personType: "STUDENT" as "STUDENT" | "TEACHER",
+    date: today(),
+    requestedStatus: "PRESENT" as AttendanceStatus,
+    reason: "",
+  });
+  useEffect(() => {
+    let active = true;
+    getCorrections({ page, size: 15 })
+      .then((result) => {
+        if (active) {
+          setItems(result.items);
+          setPages(result.totalPages);
+        }
+      })
+      .catch((value) => active && setError(errorMessage(value)));
+    return () => {
+      active = false;
+    };
+  }, [page, reload]);
+  const submit = async () => {
+    if (!form.attendanceId || !form.reason.trim()) {
+      showToast(
+        "Attendance record ID and correction reason are required",
+        "validation",
+      );
+      return;
+    }
+    setSaving(true);
+    try {
+      await requestCorrection({
+        attendanceId: Number(form.attendanceId),
+        personId: Number(form.personId) || undefined,
+        personType: form.personType,
+        date: form.date,
+        requestedStatus: form.requestedStatus,
+        reason: form.reason.trim(),
+      });
+      showToast("Correction request created", "success");
+      setOpen(false);
+      setReload((value) => value + 1);
+    } catch (value) {
+      showToast(errorMessage(value), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const review = async (id: number, status: "APPROVED" | "REJECTED") => {
+    try {
+      await reviewCorrection(id, status);
+      showToast(`Correction ${status.toLowerCase()}`, "success");
+      setReload((value) => value + 1);
+    } catch (value) {
+      showToast(errorMessage(value), "error");
+    }
+  };
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button className={primaryButton} onClick={() => setOpen(true)}>
+          <Plus size={17} />
+          New Correction
+        </button>
+      </div>
+      {error && (
+        <ErrorBanner
+          message={error}
+          onRetry={() => setReload((value) => value + 1)}
+        />
+      )}
+      <section className={`${cardClass} overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+              <tr>
+                <th className="p-4">Person</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Change</th>
+                <th className="p-4">Reason</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 text-right">Review</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className="border-t">
+                  <td className="p-4">
+                    <b>
+                      {item.personName ||
+                        `${item.personType} #${item.personId}`}
+                    </b>
+                    <p className="text-xs text-gray-500">{item.personType}</p>
+                  </td>
+                  <td className="p-4">{item.date}</td>
+                  <td className="p-4">
+                    <span className="text-gray-500">{item.previousStatus}</span>{" "}
+                    → <b>{item.requestedStatus}</b>
+                  </td>
+                  <td className="max-w-xs p-4 text-gray-600">{item.reason}</td>
+                  <td className="p-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge[item.status]}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex justify-end gap-2">
+                      {item.status === "PENDING" ? (
+                        <>
+                          <button
+                            aria-label="Approve correction"
+                            className="rounded-lg bg-emerald-50 p-2 text-emerald-700"
+                            onClick={() => review(item.id, "APPROVED")}
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            aria-label="Reject correction"
+                            className="rounded-lg bg-red-50 p-2 text-red-700"
+                            onClick={() => review(item.id, "REJECTED")}
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
+                        "-"
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!items.length && <Empty>No correction requests found.</Empty>}
+        </div>
+        <MiniPagination page={page} totalPages={pages} onChange={setPage} />
+      </section>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Attendance Correction</DialogTitle>
+            <DialogDescription>
+              Submit a traceable adjustment for an existing attendance record.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FilterField label="Person type">
+              <select
+                className={fieldClass}
+                value={form.personType}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    personType: event.target.value as typeof form.personType,
+                  })
+                }
+              >
+                <option>STUDENT</option>
+                <option>TEACHER</option>
+              </select>
+            </FilterField>
+            <FilterField label="Person ID">
+              <input
+                type="number"
+                min="1"
+                className={fieldClass}
+                value={form.personId}
+                onChange={(event) =>
+                  setForm({ ...form, personId: event.target.value })
+                }
+              />
+            </FilterField>
+            <FilterField label="Attendance ID (optional)">
+              <input
+                type="number"
+                min="1"
+                className={fieldClass}
+                value={form.attendanceId}
+                onChange={(event) =>
+                  setForm({ ...form, attendanceId: event.target.value })
+                }
+              />
+            </FilterField>
+            <FilterField label="Date">
+              <input
+                type="date"
+                className={fieldClass}
+                value={form.date}
+                onChange={(event) =>
+                  setForm({ ...form, date: event.target.value })
+                }
+              />
+            </FilterField>
+            <FilterField label="Correct status">
+              <select
+                className={fieldClass}
+                value={form.requestedStatus}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    requestedStatus: event.target.value as AttendanceStatus,
+                  })
+                }
+              >
+                {statuses.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </FilterField>
+            <div className="sm:col-span-2">
+              <FilterField label="Reason">
+                <textarea
+                  className="min-h-24 w-full rounded-lg border border-gray-200 p-3 text-sm"
+                  value={form.reason}
+                  onChange={(event) =>
+                    setForm({ ...form, reason: event.target.value })
+                  }
+                />
+              </FilterField>
+            </div>
+          </div>
+          <DialogFooter>
+            <button className={secondaryButton} onClick={() => setOpen(false)}>
+              Cancel
+            </button>
+            <button
+              className={primaryButton}
+              disabled={saving}
+              onClick={submit}
+            >
+              {saving && <LoaderCircle size={17} className="animate-spin" />}
+              Submit Request
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

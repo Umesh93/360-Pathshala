@@ -6,10 +6,13 @@ interface AdmissionsChartProps {
 }
 
 const AdmissionsChart: React.FC<AdmissionsChartProps> = ({ admissions }) => {
-  const statusCounts = admissions.reduce((acc, curr) => {
-    acc[curr.status] = (acc[curr.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const statusCounts = admissions.reduce(
+    (acc, curr) => {
+      acc[curr.status] = (acc[curr.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const total = admissions.length;
   const confirmed = statusCounts["Confirmed"] || 0;

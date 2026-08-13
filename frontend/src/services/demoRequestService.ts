@@ -1,6 +1,5 @@
 import api from "../config/axios";
 import {
-  DEMO_MODULE_CODES,
   type AcceptDemoResponse,
   type CreateDemoRequestPayload,
   type DemoModuleCode,
@@ -19,9 +18,10 @@ export interface PublicModule {
   comingSoon?: boolean;
   category?: string;
   required?: boolean;
+  billingType: "REQUIRED" | "INCLUDED" | "PAID";
+  annualPrice: number;
+  billingPeriod: string;
 }
-
-const allowedModules = new Set<string>(DEMO_MODULE_CODES);
 
 const moduleLabelOverrides: Partial<Record<DemoModuleCode, string>> = {
   TEACHER_MANAGEMENT: "Teacher Registration",
@@ -72,9 +72,7 @@ export const submitDemoRequest = async (
 
 export const getPublicModules = async (): Promise<PublicModule[]> => {
   const response = await api.get<PublicModule[]>("/public/modules");
-  return response.data.filter(
-    (module) => module.active && allowedModules.has(module.code),
-  );
+  return response.data.filter((module) => module.active && !module.comingSoon);
 };
 
 export const getAdminDemoRequests = async (): Promise<DemoRequest[]> => {

@@ -39,15 +39,26 @@ export default function Dashboard() {
       .then(([schools, requests, accounts, conversions]) => {
         setSchoolCount((schools as { id: number }[]).length);
         setTotalDemoRequests((requests as { id: number }[]).length);
-        setActiveDemos((accounts as { status: string }[]).filter((a) => a.status === "ACTIVE" || a.status === "EXTENDED").length);
-        setExpiredDemos((accounts as { status: string }[]).filter((a) => a.status === "EXPIRED").length);
+        setActiveDemos(
+          (accounts as { status: string }[]).filter(
+            (a) => a.status === "ACTIVE" || a.status === "EXTENDED",
+          ).length,
+        );
+        setExpiredDemos(
+          (accounts as { status: string }[]).filter(
+            (a) => a.status === "EXPIRED",
+          ).length,
+        );
         setConvertedCount((conversions as { id: number }[]).length);
       })
       .catch(() => setError("Failed to load dashboard data"))
       .finally(() => setLoading(false));
   }, []);
 
-  const conversionRate = totalDemoRequests > 0 ? ((convertedCount / totalDemoRequests) * 100).toFixed(1) : "0.0";
+  const conversionRate =
+    totalDemoRequests > 0
+      ? ((convertedCount / totalDemoRequests) * 100).toFixed(1)
+      : "0.0";
 
   if (loading) {
     return (
@@ -70,8 +81,14 @@ export default function Dashboard() {
   if (error) {
     return (
       <SuperAdminLayout>
-        <PageHeader title="Dashboard" subtitle="Super Admin → Create Schools and Provide required access" />
-        <ErrorState description={error} onRetry={() => window.location.reload()} />
+        <PageHeader
+          title="Dashboard"
+          subtitle="Super Admin → Create Schools and Provide required access"
+        />
+        <ErrorState
+          description={error}
+          onRetry={() => window.location.reload()}
+        />
       </SuperAdminLayout>
     );
   }

@@ -14,7 +14,11 @@ const TeacherStatusBadge: React.FC<TeacherStatusBadgeProps> = ({ status }) => {
     >
       <span
         className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-          status === "active" ? "bg-green-500" : status === "inactive" ? "bg-red-500" : "bg-yellow-500"
+          status === "active"
+            ? "bg-green-500"
+            : status === "inactive"
+              ? "bg-red-500"
+              : "bg-yellow-500"
         }`}
       ></span>
       {status.charAt(0).toUpperCase() + status.slice(1)}

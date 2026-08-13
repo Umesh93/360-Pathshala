@@ -15,10 +15,7 @@ import {
   submitDemoRequest,
   type PublicModule,
 } from "@/services/demoRequestService";
-import type {
-  CreateDemoRequestPayload,
-  DemoModuleCode,
-} from "@/types/DemoRequest";
+import type { CreateDemoRequestPayload } from "@/types/DemoRequest";
 
 const allowedLogoTypes = ["image/png", "image/jpeg", "image/webp"];
 const maxLogoSize = 2 * 1024 * 1024;
@@ -50,7 +47,7 @@ export default function DemoRequestPage() {
   const logoInput = useRef<HTMLInputElement>(null);
   const [modules, setModules] = useState<PublicModule[]>([]);
   const [modulesLoading, setModulesLoading] = useState(true);
-  const [selected, setSelected] = useState<DemoModuleCode[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
   const [logo, setLogo] = useState<File>();
   const [submitting, setSubmitting] = useState(false);
   const [requestCode, setRequestCode] = useState<string>();
@@ -68,7 +65,18 @@ export default function DemoRequestPage() {
     let active = true;
     getPublicModules()
       .then((items) => {
-        if (active) setModules(items);
+        if (active) {
+          setModules(items);
+          setSelected(
+            items
+              .filter(
+                (module) =>
+                  module.billingType === "REQUIRED" ||
+                  module.billingType === "INCLUDED",
+              )
+              .map((module) => module.code),
+          );
+        }
       })
       .catch(() => showToast("Unable to load available modules.", "error"))
       .finally(() => {
@@ -157,7 +165,15 @@ export default function DemoRequestPage() {
 
   const reset = () => {
     setRequestCode(undefined);
-    setSelected([]);
+    setSelected(
+      modules
+        .filter(
+          (module) =>
+            module.billingType === "REQUIRED" ||
+            module.billingType === "INCLUDED",
+        )
+        .map((module) => module.code),
+    );
     setLogo(undefined);
     setErrors({});
     setForm({
@@ -336,51 +352,88 @@ export default function DemoRequestPage() {
                     <span className="text-sm font-semibold">
                       Modules of interest <span className="text-accent">*</span>
                     </span>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div className="mt-3 space-y-4">
                       {modulesLoading ? (
                         <p className="text-sm text-muted-foreground">
                           Loading modules...
                         </p>
                       ) : (
-                        modules.map((module) => {
-                          const active = selected.includes(
-                            module.code as DemoModuleCode,
-                          );
-                          return (
-                            <label
-                              key={module.code}
-                              className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors duration-200 ${active ? "border-accent bg-accent-soft text-foreground" : "border-input bg-white hover:border-accent/60 hover:bg-secondary"}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={active}
-                                onChange={() => {
-                                  setSelected((current) =>
-                                    active
-                                      ? current.filter(
-                                          (code) => code !== module.code,
-                                        )
-                                      : [
-                                          ...current,
-                                          module.code as DemoModuleCode,
-                                        ],
-                                  );
-                                  setErrors((current) => ({
-                                    ...current,
-                                    interestedModules: "",
-                                  }));
-                                }}
-                                className="sr-only"
-                              />
-                              <span
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${active ? "border-accent bg-accent text-white" : "border-input"}`}
-                              >
-                                {active && <Check className="h-3 w-3" />}
-                              </span>
-                              {moduleLabel(module.code, module.name)}
-                            </label>
-                          );
-                        })
+                        (["REQUIRED", "INCLUDED", "PAID"] as const).map(
+                          (billingType) => {
+                            const group = modules.filter(
+                              (module) => module.billingType === billingType,
+                            );
+                            if (!group.length) return null;
+                            return (
+                              <section key={billingType}>
+                                <h3 className="mb-2 text-xs font-bold uppercase text-muted-foreground">
+                                  {billingType === "REQUIRED"
+                                    ? "Required"
+                                    : billingType === "INCLUDED"
+                                      ? "Included"
+                                      : "Paid Add-ons"}
+                                </h3>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  {group.map((module) => {
+                                    const active = selected.includes(
+                                      module.code,
+                                    );
+                                    const required = billingType === "REQUIRED";
+                                    return (
+                                      <label
+                                        key={module.code}
+                                        className={`flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors duration-200 ${required ? "cursor-not-allowed" : "cursor-pointer"} ${active ? "border-accent bg-accent-soft text-foreground" : "border-input bg-white hover:border-accent/60 hover:bg-secondary"}`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={active}
+                                          disabled={required}
+                                          onChange={() => {
+                                            setSelected((current) =>
+                                              active
+                                                ? current.filter(
+                                                    (code) =>
+                                                      code !== module.code,
+                                                  )
+                                                : [...current, module.code],
+                                            );
+                                            setErrors((current) => ({
+                                              ...current,
+                                              interestedModules: "",
+                                            }));
+                                          }}
+                                          className="sr-only"
+                                        />
+                                        <span
+                                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${active ? "border-accent bg-accent text-white" : "border-input"}`}
+                                        >
+                                          {active && (
+                                            <Check className="h-3 w-3" />
+                                          )}
+                                        </span>
+                                        <span>
+                                          <span className="block">
+                                            {moduleLabel(
+                                              module.code,
+                                              module.name,
+                                            )}
+                                          </span>
+                                          <span className="block text-xs font-normal text-muted-foreground">
+                                            {required
+                                              ? "Required"
+                                              : billingType === "INCLUDED"
+                                                ? "Included"
+                                                : `NPR ${module.annualPrice.toLocaleString()} / ${module.billingPeriod}`}
+                                          </span>
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </section>
+                            );
+                          },
+                        )
                       )}
                     </div>
                     {errors.interestedModules && (

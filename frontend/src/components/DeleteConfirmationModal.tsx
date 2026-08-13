@@ -8,7 +8,12 @@ interface DeleteConfirmationModalProps {
   onCancel: () => void;
 }
 
-export default function DeleteConfirmationModal({ isOpen, schoolName, onConfirm, onCancel }: DeleteConfirmationModalProps) {
+export default function DeleteConfirmationModal({
+  isOpen,
+  schoolName,
+  onConfirm,
+  onCancel,
+}: DeleteConfirmationModalProps) {
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -24,7 +29,10 @@ export default function DeleteConfirmationModal({ isOpen, schoolName, onConfirm,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onCancel}
+      />
       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <button
           type="button"
@@ -38,11 +46,15 @@ export default function DeleteConfirmationModal({ isOpen, schoolName, onConfirm,
           <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
             <AlertTriangle size={24} className="text-red-600" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-800">Delete School</h3>
+          <h3 className="text-lg font-semibold text-slate-800">
+            Delete School
+          </h3>
         </div>
 
         <p className="text-sm text-slate-600 mb-6">
-          Are you sure you want to delete <span className="font-semibold">{schoolName}</span>? This action cannot be undone.
+          Are you sure you want to delete{" "}
+          <span className="font-semibold">{schoolName}</span>? This action
+          cannot be undone.
         </p>
 
         <div className="flex justify-end gap-3">
@@ -60,7 +72,9 @@ export default function DeleteConfirmationModal({ isOpen, schoolName, onConfirm,
             disabled={loading}
             className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
           >
-            {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            {loading && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
             {loading ? "Deleting..." : "Yes, Delete"}
           </button>
         </div>

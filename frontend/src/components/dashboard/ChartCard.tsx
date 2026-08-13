@@ -9,8 +9,16 @@ interface ChartCardProps {
   className?: string;
 }
 
-const ChartCard = ({ title, subtitle, children, action, className = "" }: ChartCardProps) => (
-  <Card className={`rounded-2xl border border-gray-200 bg-white shadow-soft ${className}`}>
+const ChartCard = ({
+  title,
+  subtitle,
+  children,
+  action,
+  className = "",
+}: ChartCardProps) => (
+  <Card
+    className={`rounded-2xl border border-gray-200 bg-white shadow-soft ${className}`}
+  >
     <div className="flex items-center justify-between p-5 border-b border-gray-100">
       <div>
         <h3 className="font-semibold text-gray-800">{title}</h3>

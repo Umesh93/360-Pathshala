@@ -120,10 +120,12 @@ const TeacherDocumentsSection: React.FC<TeacherDocumentsSectionProps> = ({
             className="font-medium text-[#234A91] hover:text-blue-700"
           >
             Upload a file
-          </button>
-          {" "}or drag and drop
+          </button>{" "}
+          or drag and drop
         </p>
-        <p className="mt-1 text-xs text-gray-500">PDF, DOC, JPG, PNG up to 10MB</p>
+        <p className="mt-1 text-xs text-gray-500">
+          PDF, DOC, JPG, PNG up to 10MB
+        </p>
         {uploading && (
           <div className="mt-3 flex items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-[#234A91] border-t-transparent rounded-full animate-spin" />
@@ -140,12 +142,26 @@ const TeacherDocumentsSection: React.FC<TeacherDocumentsSectionProps> = ({
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
             >
               <div className="flex items-center gap-3">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">{file.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="text-sm font-medium text-gray-700">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatFileSize(file.size)}
+                  </p>
                 </div>
               </div>
               <button
@@ -153,8 +169,18 @@ const TeacherDocumentsSection: React.FC<TeacherDocumentsSectionProps> = ({
                 onClick={() => removeFile(file.id)}
                 className="text-red-500 hover:text-red-700"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
                 </svg>
               </button>
             </div>

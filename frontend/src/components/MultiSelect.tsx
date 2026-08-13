@@ -83,7 +83,7 @@ export default function MultiSelect({
     <div ref={wrapperRef} className="relative">
       {/* Input */}
       <div
-        onClick={() => open ? close() : setOpen(true)}
+        onClick={() => (open ? close() : setOpen(true))}
         className={`min-h-[56px] w-full rounded-xl border bg-white px-4 py-3 transition cursor-pointer ${
           open
             ? "border-teal-500 ring-2 ring-teal-100"

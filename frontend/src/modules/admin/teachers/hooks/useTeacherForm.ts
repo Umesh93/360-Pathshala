@@ -95,18 +95,23 @@ export const useTeacherForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<TeacherFormData>(initialFormData);
 
-  const updateSection = useCallback(<T extends SectionKey>(
-    section: T,
-    value: TeacherFormData[T]
-  ) => {
-    if (import.meta.env.DEV) console.debug("[TeacherWizard] section update", section);
-    setFormData((prev) => ({ ...prev, [section]: value }));
-  }, []);
+  const updateSection = useCallback(
+    <T extends SectionKey>(section: T, value: TeacherFormData[T]) => {
+      if (import.meta.env.DEV)
+        console.debug("[TeacherWizard] section update", section);
+      setFormData((prev) => ({ ...prev, [section]: value }));
+    },
+    [],
+  );
 
   const nextStep = useCallback(() => {
     setCurrentStep((prev) => {
       const next = Math.min(prev + 1, 5);
-      if (import.meta.env.DEV) console.debug("[TeacherWizard] step state", { before: prev, after: next });
+      if (import.meta.env.DEV)
+        console.debug("[TeacherWizard] step state", {
+          before: prev,
+          after: next,
+        });
       return next;
     });
   }, []);
@@ -114,7 +119,11 @@ export const useTeacherForm = () => {
   const prevStep = useCallback(() => {
     setCurrentStep((prev) => {
       const next = Math.max(prev - 1, 0);
-      if (import.meta.env.DEV) console.debug("[TeacherWizard] step state", { before: prev, after: next });
+      if (import.meta.env.DEV)
+        console.debug("[TeacherWizard] step state", {
+          before: prev,
+          after: next,
+        });
       return next;
     });
   }, []);
@@ -143,7 +152,10 @@ export const useTeacherForm = () => {
     setFormData(initialFormData);
     setCurrentStep(0);
   }, []);
-  const loadTeacher = useCallback((teacher: TeacherFormData) => setFormData(teacher), []);
+  const loadTeacher = useCallback(
+    (teacher: TeacherFormData) => setFormData(teacher),
+    [],
+  );
 
   return {
     currentStep,

@@ -8,7 +8,9 @@ const statusClasses: Record<AttendanceStatus, string> = {
 };
 
 export const StatusBadge = ({ status }: { status: AttendanceStatus }) => (
-  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses[status]}`}>
+  <span
+    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses[status]}`}
+  >
     {status.charAt(0) + status.slice(1).toLowerCase()}
   </span>
 );
@@ -24,7 +26,10 @@ export const SummaryCards = ({ summary }: { summary: AttendanceSummary }) => {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
       {items.map(([label, value]) => (
-        <div key={label} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div
+          key={label}
+          className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        >
           <p className="text-sm text-gray-500">{label}</p>
           <p className="mt-1 text-2xl font-bold text-gray-800">{value}</p>
         </div>

@@ -10,7 +10,13 @@ interface AnnouncementCardProps {
   badge?: ReactNode;
 }
 
-const AnnouncementCard = ({ title, content, date, author, badge }: AnnouncementCardProps) => (
+const AnnouncementCard = ({
+  title,
+  content,
+  date,
+  author,
+  badge,
+}: AnnouncementCardProps) => (
   <Card className="rounded-2xl border border-gray-200 bg-white shadow-soft p-5">
     <div className="flex items-start gap-3">
       <div className="p-2 rounded-xl bg-orange-50 text-orange-600 mt-0.5">

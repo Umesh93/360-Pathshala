@@ -7,7 +7,10 @@ import {
   exportConversionsExcel,
   exportConversionsPDF,
 } from "@/services/conversionHistoryService";
-import type { ConversionHistory as ConversionHistoryRecord, ConversionDetail } from "@/types/ConversionHistory";
+import type {
+  ConversionHistory as ConversionHistoryRecord,
+  ConversionDetail,
+} from "@/types/ConversionHistory";
 import SuperAdminLayout from "@/layouts/SuperAdminLayout";
 import ConversionDetailModal from "./ConversionDetailModal";
 
@@ -94,7 +97,11 @@ export default function ConversionHistory() {
   };
 
   const filtered = conversions.filter((c) => {
-    if (search && !c.schoolName.toLowerCase().includes(search.toLowerCase()) && !c.conversionCode.toLowerCase().includes(search.toLowerCase())) {
+    if (
+      search &&
+      !c.schoolName.toLowerCase().includes(search.toLowerCase()) &&
+      !c.conversionCode.toLowerCase().includes(search.toLowerCase())
+    ) {
       return false;
     }
     if (dateFrom && c.conversionDate < dateFrom) return false;
@@ -108,16 +115,27 @@ export default function ConversionHistory() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Conversion History</h1>
-            <p className="text-gray-500">Permanent audit log of all demo to paid conversions</p>
+            <p className="text-gray-500">
+              Permanent audit log of all demo to paid conversions
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={handleExportCSV} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button
+              onClick={handleExportCSV}
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
               Export CSV
             </button>
-            <button onClick={handleExportExcel} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button
+              onClick={handleExportExcel}
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
               Export Excel
             </button>
-            <button onClick={handleExportPDF} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button
+              onClick={handleExportPDF}
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
               Export PDF
             </button>
           </div>
@@ -149,32 +167,69 @@ export default function ConversionHistory() {
           {loading ? (
             <div className="text-center text-gray-500 py-12">Loading...</div>
           ) : filtered.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">No conversion history found.</div>
+            <div className="text-center text-gray-500 py-12">
+              No conversion history found.
+            </div>
           ) : (
             <div className="overflow-x-auto rounded-3xl border border-slate-200">
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Conversion Code</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">School Name</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Demo Code</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Paid School Code</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Converted By</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Conversion Date</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Amount</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700">Actions</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Conversion Code
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      School Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Demo Code
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Paid School Code
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Converted By
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Conversion Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                      Amount
+                    </th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((conv) => (
-                    <tr key={conv.id} className="border-t border-slate-200 hover:bg-slate-50">
-                      <td className="px-6 py-4 text-sm font-medium text-slate-800">{conv.conversionCode}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{conv.schoolName}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">DS-{String(conv.demoSchoolId).padStart(6, "0")}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">SCH-{String(conv.paidSchoolId).padStart(6, "0")}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{conv.convertedByName}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{conv.conversionDate}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{conv.paymentAmount ? `NPR ${Number(conv.paymentAmount).toLocaleString()}` : "-"}</td>
+                    <tr
+                      key={conv.id}
+                      className="border-t border-slate-200 hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-4 text-sm font-medium text-slate-800">
+                        {conv.conversionCode}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {conv.schoolName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        DS-{String(conv.demoSchoolId).padStart(6, "0")}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        SCH-{String(conv.paidSchoolId).padStart(6, "0")}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {conv.convertedByName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {conv.conversionDate}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {conv.paymentAmount
+                          ? `NPR ${Number(conv.paymentAmount).toLocaleString()}`
+                          : "-"}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleViewDetail(conv.id)}

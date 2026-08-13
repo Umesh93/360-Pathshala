@@ -1,15 +1,4 @@
-export const DEMO_MODULE_CODES = [
-  "STUDENT_MANAGEMENT",
-  "TEACHER_MANAGEMENT",
-  "PARENT_MANAGEMENT",
-  "ATTENDANCE",
-  "ASSIGNMENT",
-  "EXAMINATION",
-  "STUDENT_DASHBOARD",
-  "TEACHER_DASHBOARD",
-] as const;
-
-export type DemoModuleCode = (typeof DEMO_MODULE_CODES)[number];
+export type DemoModuleCode = string;
 export type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 export type EmailStatus = "SENT" | "FAILED" | "DISABLED" | string;
 

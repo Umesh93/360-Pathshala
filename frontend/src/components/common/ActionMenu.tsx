@@ -1,5 +1,13 @@
 import React from "react";
-import { MoreVertical, Eye, Pencil, Trash2, Printer, Download, RotateCcw } from "lucide-react";
+import {
+  MoreVertical,
+  Eye,
+  Pencil,
+  Trash2,
+  Printer,
+  Download,
+  RotateCcw,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -38,7 +46,10 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
           <span className="sr-only">Open menu</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="z-50 w-48 rounded-xl border border-slate-200 bg-white shadow-elevated">
+      <DropdownMenuContent
+        align="end"
+        className="z-50 w-48 rounded-xl border border-slate-200 bg-white shadow-elevated"
+      >
         {onView && (
           <DropdownMenuItem
             onSelect={() => onView(id)}

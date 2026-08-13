@@ -27,10 +27,7 @@ const TopTeachers: React.FC<TopTeachersProps> = ({ teachers }) => {
 
       <div className="space-y-4">
         {teachers.map((teacher, index) => (
-          <div
-            key={teacher.id}
-            className="flex items-center gap-4"
-          >
+          <div key={teacher.id} className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-[#234A91] text-white flex items-center justify-center text-sm font-medium shrink-0">
               {index + 1}
             </div>

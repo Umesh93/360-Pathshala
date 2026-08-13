@@ -15,7 +15,15 @@ const TeacherAddressSection: React.FC<TeacherAddressSectionProps> = ({
 }) => {
   return (
     <AddressForm
-      data={{ ...data, currentStreet: data.currentStreet || "", permanentProvince: data.permanentProvince || "", permanentDistrict: data.permanentDistrict || "", permanentMunicipality: data.permanentMunicipality || "", permanentWard: data.permanentWard || "", permanentStreet: data.permanentStreet || "" }}
+      data={{
+        ...data,
+        currentStreet: data.currentStreet || "",
+        permanentProvince: data.permanentProvince || "",
+        permanentDistrict: data.permanentDistrict || "",
+        permanentMunicipality: data.permanentMunicipality || "",
+        permanentWard: data.permanentWard || "",
+        permanentStreet: data.permanentStreet || "",
+      }}
       onChange={onChange}
       errors={errors}
     />

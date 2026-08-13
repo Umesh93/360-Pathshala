@@ -17,7 +17,8 @@ export interface Teacher {
   passportNumber?: string;
   photo?: string;
   joiningDate: string;
-  employmentType?: "permanent" | "contract" | "part-time" | "visiting" | "intern";
+  employmentType?:
+    "permanent" | "contract" | "part-time" | "visiting" | "intern";
   department?: string;
   designation?: string;
   status: "active" | "inactive" | "resigned" | "suspended";

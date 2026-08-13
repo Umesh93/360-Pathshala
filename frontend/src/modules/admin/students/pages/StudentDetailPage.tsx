@@ -201,10 +201,16 @@ const StudentDetailPage = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={handlePrintID} className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600">
+              <button
+                onClick={handlePrintID}
+                className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600"
+              >
                 <Printer size={18} />
               </button>
-              <button onClick={handleDownloadPDF} className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600">
+              <button
+                onClick={handleDownloadPDF}
+                className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600"
+              >
                 <Download size={18} />
               </button>
             </div>
@@ -220,35 +226,51 @@ const StudentDetailPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-gray-500">Admission No</p>
-              <p className="text-sm font-medium text-gray-800">{student.admissionNo}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.admissionNo}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Roll Number</p>
-              <p className="text-sm font-medium text-gray-800">{student.rollNumber}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.rollNumber}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Class</p>
-              <p className="text-sm font-medium text-gray-800">{student.class}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.class}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Section</p>
-              <p className="text-sm font-medium text-gray-800">{student.section}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.section}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Admission Date</p>
-              <p className="text-sm font-medium text-gray-800">{student.admissionDate}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.admissionDate}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">House</p>
-              <p className="text-sm font-medium text-gray-800">{student.house || "N/A"}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.house || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Class Teacher</p>
-              <p className="text-sm font-medium text-gray-800">{student.classTeacher || "N/A"}</p>
+              <p className="text-sm font-medium text-gray-800">
+                {student.classTeacher || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Gender</p>
-              <p className="text-sm font-medium text-gray-800 capitalize">{student.gender}</p>
+              <p className="text-sm font-medium text-gray-800 capitalize">
+                {student.gender}
+              </p>
             </div>
           </div>
         </div>
@@ -261,18 +283,58 @@ const StudentDetailPage = () => {
           </h3>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {[
-              { title: "Father", values: [["Name", student.guardian.fatherName], ["Phone", student.guardian.fatherPhone], ["Email", student.guardian.fatherEmail], ["Occupation", student.guardian.fatherOccupation], ["Citizenship", student.guardian.fatherCitizenship]] },
-              { title: "Mother", values: [["Name", student.guardian.motherName], ["Phone", student.guardian.motherPhone], ["Email", student.guardian.motherEmail], ["Occupation", student.guardian.motherOccupation], ["Citizenship", student.guardian.motherCitizenship]] },
-              { title: "Guardian", values: [["Name", student.guardian.guardianName], ["Relationship", student.guardian.relationship], ["Phone", student.guardian.phone], ["Email", student.guardian.email], ["Address", student.guardian.address], ["Occupation", student.guardian.occupation], ["Citizenship", student.guardian.citizenship]] },
-            ].map((section) => <div key={section.title} className="rounded-xl border border-gray-200 p-4">
-              <h4 className="mb-3 font-semibold text-gray-800">{section.title}</h4>
-              <div className="space-y-3">
-                {section.values.map(([label, value]) => <div key={label}>
-                  <p className="text-xs text-gray-500">{label}</p>
-                  <p className="break-words text-sm font-medium text-gray-800">{value || "N/A"}</p>
-                </div>)}
+              {
+                title: "Father",
+                values: [
+                  ["Name", student.guardian.fatherName],
+                  ["Phone", student.guardian.fatherPhone],
+                  ["Email", student.guardian.fatherEmail],
+                  ["Occupation", student.guardian.fatherOccupation],
+                  ["Citizenship", student.guardian.fatherCitizenship],
+                ],
+              },
+              {
+                title: "Mother",
+                values: [
+                  ["Name", student.guardian.motherName],
+                  ["Phone", student.guardian.motherPhone],
+                  ["Email", student.guardian.motherEmail],
+                  ["Occupation", student.guardian.motherOccupation],
+                  ["Citizenship", student.guardian.motherCitizenship],
+                ],
+              },
+              {
+                title: "Guardian",
+                values: [
+                  ["Name", student.guardian.guardianName],
+                  ["Relationship", student.guardian.relationship],
+                  ["Phone", student.guardian.phone],
+                  ["Email", student.guardian.email],
+                  ["Address", student.guardian.address],
+                  ["Occupation", student.guardian.occupation],
+                  ["Citizenship", student.guardian.citizenship],
+                ],
+              },
+            ].map((section) => (
+              <div
+                key={section.title}
+                className="rounded-xl border border-gray-200 p-4"
+              >
+                <h4 className="mb-3 font-semibold text-gray-800">
+                  {section.title}
+                </h4>
+                <div className="space-y-3">
+                  {section.values.map(([label, value]) => (
+                    <div key={label}>
+                      <p className="text-xs text-gray-500">{label}</p>
+                      <p className="break-words text-sm font-medium text-gray-800">
+                        {value || "N/A"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>)}
+            ))}
           </div>
         </div>
 
@@ -286,19 +348,35 @@ const StudentDetailPage = () => {
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Year</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Class</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Section</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    Year
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    Class
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    Section
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {admissionHistory.map((record, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-3 text-sm text-gray-800">{record.year}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{record.class}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{record.section}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{record.status}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {record.year}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {record.class}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {record.section}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {record.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -309,45 +387,65 @@ const StudentDetailPage = () => {
         {/* Additional Information */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Details</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Personal Details
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Blood Group</p>
-                <p className="text-sm font-medium text-gray-800">{student.bloodGroup || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.bloodGroup || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Category</p>
-                <p className="text-sm font-medium text-gray-800">{student.category}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.category}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Religion</p>
-                <p className="text-sm font-medium text-gray-800">{student.religion || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.religion || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Nationality</p>
-                <p className="text-sm font-medium text-gray-800">{student.nationality || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.nationality || "N/A"}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Additional Info</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Additional Info
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Previous School</p>
-                <p className="text-sm font-medium text-gray-800">{student.previousSchool || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.previousSchool || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Transport</p>
-                <p className="text-sm font-medium text-gray-800">{student.transport || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.transport || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Hostel</p>
-                <p className="text-sm font-medium text-gray-800">{student.hostel || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.hostel || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Medical Conditions</p>
-                <p className="text-sm font-medium text-gray-800">{student.medicalConditions || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {student.medicalConditions || "N/A"}
+                </p>
               </div>
             </div>
           </div>

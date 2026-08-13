@@ -7,13 +7,19 @@ interface TransportSectionProps {
   errors?: Record<string, string>;
 }
 
-const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange, errors = {} }) => {
+const TransportSection: React.FC<TransportSectionProps> = ({
+  data,
+  onChange,
+  errors = {},
+}) => {
   const update = (field: keyof TransportData, value: string | boolean) => {
     onChange({ ...data, [field]: value });
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) =>
+    error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -44,7 +50,9 @@ const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange, err
       {data.usesTransport && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Route (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Route (Optional)
+            </label>
             <select
               data-field="route"
               value={data.route}
@@ -60,7 +68,9 @@ const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange, err
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Pickup Point (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Pickup Point (Optional)
+            </label>
             <input
               data-field="pickupPoint"
               type="text"
@@ -71,7 +81,9 @@ const TransportSection: React.FC<TransportSectionProps> = ({ data, onChange, err
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Vehicle (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Vehicle (Optional)
+            </label>
             <input
               data-field="vehicle"
               type="text"

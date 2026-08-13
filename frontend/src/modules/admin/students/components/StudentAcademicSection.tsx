@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { AcademicInfoData } from "../schemas/student.schema";
-import { getNextRollNumber, getClasses, getSections } from "../services/student.service";
+import {
+  getNextRollNumber,
+  getClasses,
+  getSections,
+} from "../services/student.service";
 import RequiredLabel from "../../../../components/forms/RequiredLabel";
 
 interface StudentAcademicSectionProps {
@@ -21,13 +25,18 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
   lookupData,
   autoGenerateRollNumber = true,
 }) => {
-  const update = useCallback((field: keyof AcademicInfoData, value: string) => {
-    onChange({ ...data, [field]: value });
-  }, [data, onChange]);
+  const update = useCallback(
+    (field: keyof AcademicInfoData, value: string) => {
+      onChange({ ...data, [field]: value });
+    },
+    [data, onChange],
+  );
 
   const [rollNumberLoading, setRollNumberLoading] = useState(false);
   const [classes, setClasses] = useState<{ id: number; name: string }[]>([]);
-  const [sections, setSections] = useState<{ id: number; name: string; classId: number }[]>([]);
+  const [sections, setSections] = useState<
+    { id: number; name: string; classId: number }[]
+  >([]);
   const rollRequestRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -59,20 +68,24 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
       if (rollRequestRef.current === requestKey) return;
       rollRequestRef.current = requestKey;
       Promise.resolve().then(() => setRollNumberLoading(true));
-      getNextRollNumber(data.class, data.section).then((result) => {
-        update("rollNumber", String(result.nextRollNumber));
-        setRollNumberLoading(false);
-      }).catch(() => {
-        rollRequestRef.current = undefined;
-        setRollNumberLoading(false);
-      });
+      getNextRollNumber(data.class, data.section)
+        .then((result) => {
+          update("rollNumber", String(result.nextRollNumber));
+          setRollNumberLoading(false);
+        })
+        .catch(() => {
+          rollRequestRef.current = undefined;
+          setRollNumberLoading(false);
+        });
     } else if (!data.class || !data.section) {
       rollRequestRef.current = undefined;
     }
   }, [autoGenerateRollNumber, data.class, data.section, update]);
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
-  const errorText = (error?: string) => error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const errorText = (error?: string) =>
+    error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -101,7 +114,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Medium (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Medium (Optional)
+          </label>
           <select
             data-field="medium"
             value={data.medium}
@@ -152,7 +167,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
               onChange({
                 ...data,
                 class: classId,
-                className: classes.find((item) => String(item.id) === classId)?.name ?? "",
+                className:
+                  classes.find((item) => String(item.id) === classId)?.name ??
+                  "",
                 section: "",
                 sectionName: "",
                 rollNumber: "",
@@ -164,7 +181,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
           >
             <option value="">Select Class</option>
             {classes.map((c) => (
-              <option key={c.id} value={String(c.id)}>{c.name}</option>
+              <option key={c.id} value={String(c.id)}>
+                {c.name}
+              </option>
             ))}
           </select>
           {errorText(errors.class)}
@@ -180,7 +199,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
               onChange({
                 ...data,
                 section: sectionId,
-                sectionName: sections.find((item) => String(item.id) === sectionId)?.name ?? "",
+                sectionName:
+                  sections.find((item) => String(item.id) === sectionId)
+                    ?.name ?? "",
                 rollNumber: "",
               });
             }}
@@ -190,7 +211,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
           >
             <option value="">Select Section</option>
             {availableSections.map((s) => (
-              <option key={s.id} value={String(s.id)}>{s.name}</option>
+              <option key={s.id} value={String(s.id)}>
+                {s.name}
+              </option>
             ))}
           </select>
           {errorText(errors.section)}
@@ -215,7 +238,9 @@ const StudentAcademicSection: React.FC<StudentAcademicSectionProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">House (Optional)</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            House (Optional)
+          </label>
           <select
             data-field="house"
             value={data.house}

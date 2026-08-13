@@ -16,7 +16,8 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
   };
 
   const generatePassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let password = "";
     for (let i = 0; i < 8; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -25,11 +26,14 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
     update("confirmPassword", password);
   };
 
-  const fieldClass = (error?: string) => `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
+  const fieldClass = (error?: string) =>
+    `h-10 w-full rounded-xl border px-3 text-sm outline-none focus:border-[#234A91] focus:ring-2 focus:ring-blue-100 ${error ? "border-red-500" : "border-gray-200"}`;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Login Account</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Login Account
+      </h2>
 
       <div className="flex items-center gap-2 mb-4">
         <input
@@ -47,7 +51,9 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
       {data.createLogin && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Student Email (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Student Email (Optional)
+            </label>
             <input
               data-field="email"
               type="email"
@@ -58,7 +64,9 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Username (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Username (Optional)
+            </label>
             <input
               data-field="username"
               type="text"
@@ -69,7 +77,9 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Password (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Password (Optional)
+            </label>
             <div className="relative">
               <input
                 data-field="password"
@@ -98,7 +108,9 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Confirm Password (Optional)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Confirm Password (Optional)
+            </label>
             <div className="relative">
               <input
                 data-field="confirmPassword"

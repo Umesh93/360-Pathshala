@@ -48,7 +48,7 @@ const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({ attendance }) => {
           {attendance.trend.map((dayItem) => {
             const maxPresent = Math.max(
               ...attendance.trend.map((d) => d.present),
-              1
+              1,
             );
             const heightPercent = (dayItem.present / maxPresent) * 100;
             return (
