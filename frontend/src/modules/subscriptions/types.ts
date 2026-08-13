@@ -55,6 +55,15 @@ export interface CurrentSubscription {
   featureCodes: string[];
   startsOn: string | null;
   endsOn: string | null;
+  entitlements: SubscriptionEntitlement[];
+}
+
+export interface SubscriptionEntitlement {
+  code: string;
+  active: boolean;
+  managedBySubscription: boolean;
+  startsOn: string | null;
+  endsOn: string | null;
 }
 
 export interface Payment {

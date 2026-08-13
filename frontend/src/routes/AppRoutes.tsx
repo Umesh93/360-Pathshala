@@ -51,6 +51,8 @@ import {
 } from "../modules/timetables/PortalTimetablePages";
 import SubscriptionPage from "../modules/subscriptions/SubscriptionPage";
 import PaymentResultPage from "../modules/subscriptions/PaymentResultPage";
+import SettingsShell from "../modules/settings/SettingsShell";
+import ProfilePage from "../modules/settings/ProfilePage";
 
 const AppRoutes = () => {
   return (
@@ -110,7 +112,7 @@ const AppRoutes = () => {
       <Route
         path="/admin/dashboard"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
             <AdminDashboard />
           </ProtectedRoute>
         }
@@ -118,7 +120,7 @@ const AppRoutes = () => {
       <Route
         path="/admin/timetable"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
             <AdminTimetablePage />
           </ProtectedRoute>
         }
@@ -126,7 +128,7 @@ const AppRoutes = () => {
       <Route
         path="/admin/attendance"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
             <AdminAttendance />
           </ProtectedRoute>
         }
@@ -134,7 +136,7 @@ const AppRoutes = () => {
       <Route
         path="/admin/examinations"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
             <AdminExaminations />
           </ProtectedRoute>
         }
@@ -286,23 +288,35 @@ const AppRoutes = () => {
       <Route
         path="/admin/settings"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
-            <Navigate to="/admin/settings/subscription" replace />
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <Navigate to="/admin/settings/profile" replace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings/profile"
+        element={
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SettingsShell>
+              <ProfilePage />
+            </SettingsShell>
           </ProtectedRoute>
         }
       />
       <Route
         path="/admin/settings/subscription"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
-            <SubscriptionPage />
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
+            <SettingsShell>
+              <SubscriptionPage embedded />
+            </SettingsShell>
           </ProtectedRoute>
         }
       />
       <Route
         path="/admin/settings/subscription/payment-result"
         element={
-          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN"]}>
+          <ProtectedRoute allowedRoles={["SCHOOL_ADMIN", "ADMIN"]}>
             <PaymentResultPage />
           </ProtectedRoute>
         }

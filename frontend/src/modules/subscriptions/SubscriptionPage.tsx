@@ -90,7 +90,11 @@ const FeatureChips = ({ codes }: { codes: string[] }) => (
   </div>
 );
 
-export default function SubscriptionPage() {
+export default function SubscriptionPage({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const { showToast } = useToast();
   const [features, setFeatures] = useState<Feature[]>([]);
   const [current, setCurrent] = useState<CurrentSubscription | null>(null);
@@ -144,8 +148,12 @@ export default function SubscriptionPage() {
     (total, feature) => total + feature.annualPrice,
     0,
   );
+  const entitlementFor = (code: string) =>
+    current?.entitlements?.find((entitlement) => entitlement.code === code);
+  const isFeatureActive = (code: string) =>
+    entitlementFor(code)?.active ?? activeCodes.includes(code);
   const activePaidCount = paidFeatures.filter((feature) =>
-    activeCodes.includes(feature.code),
+    isFeatureActive(feature.code),
   ).length;
 
   const toggleFeature = (code: string) => {
@@ -173,8 +181,8 @@ export default function SubscriptionPage() {
     }
   };
 
-  return (
-    <AdminLayout>
+  const body = (
+    <>
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <header>
           <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">
@@ -329,12 +337,11 @@ export default function SubscriptionPage() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {paidFeatures.map((feature) => {
-                    const active = activeCodes.includes(feature.code);
+                    const entitlement = entitlementFor(feature.code);
+                    const active =
+                      entitlement?.active ?? activeCodes.includes(feature.code);
                     const selected = selectedCodes.includes(feature.code);
-                    const renewal =
-                      active && current?.featureCodes.includes(feature.code)
-                        ? current.endsOn
-                        : null;
+                    const renewal = active ? entitlement?.endsOn : null;
                     return (
                       <article
                         key={feature.code}
@@ -369,13 +376,17 @@ export default function SubscriptionPage() {
                           {feature.billingPeriod}
                         </p>
                         <div className="mt-auto pt-5">
-                          {active && (
+                          {active ? (
                             <p className="mb-3 text-sm font-medium text-emerald-700">
                               {renewal
                                 ? `Active, renew by ${date(renewal)}`
                                 : "Active"}
                             </p>
-                          )}
+                          ) : entitlement ? (
+                            <p className="mb-3 text-sm font-medium text-red-700">
+                              Expired / not active
+                            </p>
+                          ) : null}
                           <Button
                             variant={selected ? "default" : "outline"}
                             className={
@@ -537,6 +548,8 @@ export default function SubscriptionPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
+
+  return embedded ? body : <AdminLayout>{body}</AdminLayout>;
 }
