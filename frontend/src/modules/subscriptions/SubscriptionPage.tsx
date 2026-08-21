@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ArrowRight,
   CalendarDays,
   Check,
   Clock3,
   CreditCard,
   Loader2,
   PackageCheck,
+  ShieldCheck,
 } from "lucide-react";
 
 import ErrorState from "@/components/feedback/ErrorState";
@@ -67,6 +69,14 @@ const statusClass = (status: string) => {
     return "bg-amber-50 text-amber-700";
   if (status === "REFUNDED") return "bg-blue-50 text-blue-700";
   return "bg-red-50 text-red-700";
+};
+
+const billingLabel = (value: string) => {
+  const normalized = value.replaceAll("_", " ").toLowerCase();
+  if (normalized.includes("annual") || normalized.includes("year")) {
+    return "Annual";
+  }
+  return normalized.replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
 const Badge = ({ value }: { value: string }) => (
@@ -148,6 +158,11 @@ export default function SubscriptionPage({
     (total, feature) => total + feature.annualPrice,
     0,
   );
+  const selectedBillingLabels = Array.from(
+    new Set(selectedFeatures.map((feature) => billingLabel(feature.billingPeriod))),
+  );
+  const selectedBilling =
+    selectedBillingLabels.length === 1 ? selectedBillingLabels[0] : "Multiple";
   const entitlementFor = (code: string) =>
     current?.entitlements?.find((entitlement) => entitlement.code === code);
   const isFeatureActive = (code: string) =>
@@ -500,50 +515,95 @@ export default function SubscriptionPage({
         open={confirming}
         onOpenChange={(open) => !open && !submitting && setConfirming(false)}
       >
-        <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto rounded-lg">
-          <DialogHeader>
-            <DialogTitle>Confirm feature payment</DialogTitle>
-            <DialogDescription>
-              You will be redirected to Khalti to complete payment securely. The
-              server confirms feature availability and pricing.
+        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-[560px] overflow-hidden rounded-lg !bg-white p-0 dark:!bg-white">
+          <DialogHeader className="border-b border-slate-100 px-5 py-5 pr-12 text-left sm:px-6">
+            <DialogTitle className="text-xl font-bold text-slate-900">
+              Confirm Payment
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-sm leading-6 text-slate-500">
+              Review your selected add-ons before continuing to Khalti.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-5">
-            <dl className="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4">
-              <div>
-                <dt className="text-xs text-slate-500">Add-ons</dt>
-                <dd className="mt-1 font-semibold text-slate-900">
-                  {selectedFeatures.length} selected
-                </dd>
+          <div className="space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
+            <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-slate-100 bg-slate-50 px-4 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-sm font-medium text-slate-600">
+                    Selected Add-ons
+                  </dt>
+                  <dd className="text-sm font-bold text-slate-900">
+                    {selectedFeatures.length}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-sm font-medium text-slate-600">
+                    Billing
+                  </dt>
+                  <dd className="text-sm font-bold text-slate-900">
+                    {selectedBilling}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="divide-y divide-slate-100">
+                {selectedFeatures.map((feature) => (
+                  <div
+                    key={feature.code}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 px-4 py-4"
+                  >
+                    <h3 className="min-w-0 text-sm font-semibold text-slate-900">
+                      {feature.name}
+                    </h3>
+                    <p className="text-right text-sm font-semibold text-slate-800">
+                      {money(feature.annualPrice)}
+                      <span className="ml-1 font-normal text-slate-500">
+                        / year
+                      </span>
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div>
-                <dt className="text-xs text-slate-500">Billing</dt>
-                <dd className="mt-1 font-semibold text-slate-900">Annual</dd>
+
+              <div className="border-t border-slate-200 bg-slate-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase text-slate-500">
+                  Total
+                </p>
+                <div className="mt-2 flex items-baseline justify-between gap-4">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Total Amount
+                  </span>
+                  <span className="text-xl font-bold text-slate-900">
+                    {money(selectedTotal)}
+                  </span>
+                </div>
               </div>
-              <div className="col-span-2">
-                <dt className="text-xs text-slate-500">Amount</dt>
-                <dd className="mt-1 text-xl font-bold text-slate-900">
-                  {money(selectedTotal)}
-                </dd>
-              </div>
-            </dl>
-            <FeatureChips codes={selectedCodes} />
+            </section>
+
+            <p className="flex items-start gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm leading-6 text-slate-600">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#234A91]" />
+              <span>
+                You will be securely redirected to Khalti to complete your
+                payment.
+              </span>
+            </p>
           </div>
-          <DialogFooter className="gap-2 sm:space-x-0">
+          <DialogFooter className="border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:space-x-0 sm:px-6">
             <Button
               variant="outline"
+              className="sm:min-w-28"
               disabled={submitting}
               onClick={() => setConfirming(false)}
             >
               Cancel
             </Button>
             <Button
-              className="bg-[#234A91] hover:bg-[#193b78]"
+              className="bg-[#234A91] hover:bg-[#193b78] sm:min-w-44"
               disabled={submitting}
               onClick={() => void proceed()}
             >
               {submitting && <Loader2 className="animate-spin" />}
               {submitting ? "Starting payment" : "Proceed to Khalti"}
+              {!submitting && <ArrowRight />}
             </Button>
           </DialogFooter>
         </DialogContent>
