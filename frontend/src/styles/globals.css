@@ -235,6 +235,15 @@ p {
   box-shadow: none;
 }
 
+.bulk-marksheet-render-host {
+  position: fixed;
+  left: -12000px;
+  top: 0;
+  width: 210mm;
+  background: #fff;
+  pointer-events: none;
+}
+
 @page {
   size: A4 portrait;
   margin: 10mm;

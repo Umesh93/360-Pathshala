@@ -12,6 +12,7 @@ import {
   Eye,
   Pencil,
   Plus,
+  Printer,
   Save,
   SlidersHorizontal,
   Tags,
@@ -23,7 +24,7 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
 import PageHeader from "../../../components/layout/PageHeader";
 import { useToast } from "../students/components/Toast";
-import { ResultCard } from "../../examinations/components";
+import { BulkResultSheets, ResultCard } from "../../examinations/components";
 import type { ExamResult } from "../../examinations/types";
 import * as service from "./examination.service";
 import type {
@@ -1866,6 +1867,8 @@ function Results({
   const [loading, setLoading] = useState(false);
   const [scopesLoading, setScopesLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState<number>();
+  const [bulkLogoLoading, setBulkLogoLoading] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const [error, setError] = useState("");
   const [scopeError, setScopeError] = useState("");
   const [mutation, setMutation] = useState<string>();
@@ -2022,6 +2025,65 @@ function Results({
     }
   };
 
+  const printAllMarksheets = async () => {
+    if (!loaded) {
+      showToast("Please load the results before printing marksheets.", "validation");
+      return;
+    }
+    if (!rows.length) {
+      showToast(
+        "No student results are available for the selected class and section.",
+        "validation",
+      );
+      return;
+    }
+    const source = document.querySelector<HTMLElement>(
+      ".bulk-marksheet-print-root",
+    );
+    if (!source || bulkLogoLoading || printing) return;
+    const printWindow = window.open(
+      "",
+      "bulk-grade-sheet-print",
+      "width=1200,height=900",
+    );
+    if (!printWindow) return;
+    setPrinting(true);
+    const styles = Array.from(
+      document.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
+        'link[rel="stylesheet"], style',
+      ),
+    )
+      .map((element) => element.outerHTML)
+      .join("");
+    printWindow.document.open();
+    printWindow.document.write(
+      `<!doctype html><html><head><title>Bulk Marksheets</title>${styles}<style>@page{size:A4 portrait;margin:8mm}html,body{margin:0;background:#fff}.bulk-marksheet-print-root{display:block!important}.grade-sheet-print-root{margin:0}.grade-sheet-actions{display:none!important}.bulk-marksheet{height:281mm;overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important;break-after:page;page-break-after:always}.bulk-marksheet:last-child{break-after:auto;page-break-after:auto}.bulk-marksheet .overflow-x-auto{overflow:visible!important}.bulk-marksheet .grade-sheet-table{table-layout:fixed;width:100%}.bulk-marksheet .grade-sheet-table thead{display:table-header-group}.bulk-marksheet .grade-sheet-table tr,.bulk-marksheet .grade-sheet-section{break-inside:avoid;page-break-inside:avoid}</style></head><body>${source.outerHTML}</body></html>`,
+    );
+    printWindow.document.close();
+    try {
+      await Promise.all(
+        Array.from(printWindow.document.images).map((image) =>
+          image.complete
+            ? image.decode().catch(() => undefined)
+            : new Promise<void>((resolve) => {
+                image.addEventListener("load", () => resolve(), { once: true });
+                image.addEventListener("error", () => resolve(), { once: true });
+              }),
+        ),
+      );
+      await printWindow.document.fonts?.ready;
+      printWindow.focus();
+      printWindow.print();
+      printWindow.addEventListener("afterprint", () => printWindow.close(), {
+        once: true,
+      });
+    } catch {
+      printWindow.close();
+    } finally {
+      setPrinting(false);
+    }
+  };
+
   const meritTitle = classId
     ? sectionId
       ? `Merit list: ${examClasses.find((item) => item.id === classId)?.name || "Class"} - ${sectionOptions.find((item) => item.id === sectionId)?.name || "Section"}`
@@ -2081,13 +2143,33 @@ function Results({
             setDetail(undefined);
           }}
         />
-        <button
-          className={`${primary} mt-5`}
-          disabled={!sessionId || !examId || loading || scopesLoading}
-          onClick={load}
-        >
-          {loading ? "Loading..." : "Load results"}
-        </button>
+        <div className="mt-5 flex flex-wrap gap-2 lg:col-span-1">
+          <button
+            className={primary}
+            disabled={!sessionId || !examId || loading || scopesLoading}
+            onClick={load}
+          >
+            {loading ? "Loading..." : "Load results"}
+          </button>
+          <button
+            type="button"
+            className={secondary}
+            disabled={
+              !sessionId ||
+              !examId ||
+              !classId ||
+              !sectionId ||
+              !loaded ||
+              !rows.length ||
+              bulkLogoLoading ||
+              printing
+            }
+            onClick={() => void printAllMarksheets()}
+          >
+            <Printer size={16} />
+            {printing ? "Preparing..." : "Print All Marksheets"}
+          </button>
+        </div>
       </div>
       {scopeError && <Notice text={scopeError} error />}
       {error && <Notice text={error} error />}
@@ -2214,6 +2296,14 @@ function Results({
             <ResultCard result={detail} />
           </div>
         </Dialog>
+      )}
+      {loaded && rows.length > 0 && (
+        <div className="bulk-marksheet-render-host" aria-hidden="true">
+          <BulkResultSheets
+            results={rows}
+            onLogoLoadingChange={setBulkLogoLoading}
+          />
+        </div>
       )}
     </div>
   );

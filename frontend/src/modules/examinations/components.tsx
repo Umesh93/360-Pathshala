@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { Download, Printer } from "lucide-react";
 import { loadSchoolLogoUrl } from "../../services/schoolService";
 import type { ExamResult } from "./types";
@@ -44,12 +44,21 @@ function useProtectedLogo(source?: string | null) {
   };
 }
 
-export function ResultCard({ result }: { result: ExamResult }) {
+export function ResultCard({
+  result,
+  bulk = false,
+  resolvedLogoUrl,
+}: {
+  result: ExamResult;
+  bulk?: boolean;
+  resolvedLogoUrl?: string;
+}) {
   const sheetRef = useRef<HTMLElement>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const { url: logoUrl, loading: logoLoading } = useProtectedLogo(
-    result.schoolLogoUrl,
+  const { url: protectedLogoUrl, loading: logoLoading } = useProtectedLogo(
+    resolvedLogoUrl ? undefined : result.schoolLogoUrl,
   );
+  const logoUrl = resolvedLogoUrl || protectedLogoUrl;
   const showCredits =
     result.totalCreditHours != null ||
     result.subjects.some((subject) => subject.creditHours != null);
@@ -179,7 +188,7 @@ export function ResultCard({ result }: { result: ExamResult }) {
 
   return (
     <div className="grade-sheet-print-root">
-      <div className="grade-sheet-actions no-print mb-3 flex justify-end gap-2">
+      {!bulk && <div className="grade-sheet-actions no-print mb-3 flex justify-end gap-2">
         <button
           type="button"
           onClick={print}
@@ -197,10 +206,10 @@ export function ResultCard({ result }: { result: ExamResult }) {
           <Download className="h-4 w-4" />
           {pdfLoading ? "Generating PDF..." : "Download PDF"}
         </button>
-      </div>
+      </div>}
       <article
         ref={sheetRef}
-        className="grade-sheet overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+        className={`grade-sheet overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm ${bulk ? "bulk-marksheet" : ""}`}
       >
         <header className="grade-sheet-section border-b-2 border-[#234A91] px-5 py-5 text-center">
           <div className="flex items-center justify-center gap-4">
@@ -230,8 +239,8 @@ export function ResultCard({ result }: { result: ExamResult }) {
           </h2>
         </header>
 
-        <section className="grade-sheet-section grid gap-4 border-b border-gray-200 p-5 sm:grid-cols-[90px_1fr]">
-          {result.studentPhoto ? (
+        <section className={`grade-sheet-section grid gap-4 border-b border-gray-200 p-5 ${bulk ? "grid-cols-1" : "sm:grid-cols-[90px_1fr]"}`}>
+          {!bulk && (result.studentPhoto ? (
             <img
               src={result.studentPhoto}
               alt={result.studentName}
@@ -241,7 +250,7 @@ export function ResultCard({ result }: { result: ExamResult }) {
             <div className="flex h-28 w-24 items-center justify-center border border-gray-300 bg-gray-50 text-xs text-gray-400">
               Student Photo
             </div>
-          )}
+          ))}
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
             {[
               ["Student", result.studentName],
@@ -251,10 +260,12 @@ export function ResultCard({ result }: { result: ExamResult }) {
               ["Class", result.className],
               ["Section", result.sectionName],
               ["Examination", result.examName],
-              [
-                "Exam Dates",
-                `${date(result.examStartsOn)} to ${date(result.examEndsOn)}`,
-              ],
+              ...(!bulk
+                ? [[
+                    "Exam Dates",
+                    `${date(result.examStartsOn)} to ${date(result.examEndsOn)}`,
+                  ]]
+                : []),
               ["Result Published", date(result.resultPublishDate)],
             ].map(([label, content]) => (
               <div key={label}>
@@ -367,3 +378,30 @@ export function ResultCard({ result }: { result: ExamResult }) {
     </div>
   );
 }
+
+export const BulkResultSheets = forwardRef<
+  HTMLDivElement,
+  { results: ExamResult[]; onLogoLoadingChange?: (loading: boolean) => void }
+>(({ results, onLogoLoadingChange }, ref) => {
+  const logoSource = results[0]?.schoolLogoUrl;
+  const { url: logoUrl, loading } = useProtectedLogo(logoSource);
+
+  useEffect(() => {
+    onLogoLoadingChange?.(loading);
+  }, [loading, onLogoLoadingChange]);
+
+  return (
+    <div ref={ref} className="bulk-marksheet-print-root">
+      {results.map((result) => (
+        <ResultCard
+          key={result.studentId}
+          result={result}
+          bulk
+          resolvedLogoUrl={logoUrl}
+        />
+      ))}
+    </div>
+  );
+});
+
+BulkResultSheets.displayName = "BulkResultSheets";
