@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiSettings } from "react-icons/fi";
 import logo from "../../assets/images/logo.png";
 import { login } from "../../services/authService";
@@ -119,7 +119,7 @@ const LoginForm = () => {
             Remember me
           </label>
 
-          <a href="#">Forgot Password?</a>
+          <Link to="/forgot-password">Forgot Password?</Link>
         </div>
 
         {error && <p className="error-message">{error}</p>}

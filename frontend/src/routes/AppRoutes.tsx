@@ -6,6 +6,8 @@ import Pricing from "../public/pages/Pricing";
 import Contact from "../public/pages/Contact";
 import DemoRequest from "../public/pages/DemoRequest";
 import Login from "../pages/auth/Login";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import Dashboard from "../pages/super-admin/Dashboard";
 import Schools from "../pages/super-admin/Schools";
 import DemoRequests from "../pages/super-admin/DemoRequests";
@@ -65,6 +67,8 @@ const AppRoutes = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/demo" element={<DemoRequest />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Super Admin Routes */}
       <Route

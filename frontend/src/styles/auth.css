@@ -149,6 +149,42 @@
   cursor: pointer;
 }
 
+.login-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.recovery-link {
+  display: block;
+  margin-top: 24px;
+  color: #f58220;
+  text-align: center;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.recovery-success {
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  padding: 20px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.recovery-primary-link {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  border-radius: 8px;
+  background: #1f4a93;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .error-message {
   color: red;
   margin-bottom: 15px;

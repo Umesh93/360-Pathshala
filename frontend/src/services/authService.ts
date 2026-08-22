@@ -55,3 +55,20 @@ export const changePassword = async (
 ): Promise<void> => {
   await api.post("/auth/me/change-password", request);
 };
+
+export const requestPasswordReset = async (email: string): Promise<string> =>
+  (await api.post<{ message: string }>("/auth/forgot-password", { email })).data
+    .message;
+
+export const resetPassword = async (
+  token: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<string> =>
+  (
+    await api.post<{ message: string }>("/auth/reset-password", {
+      token,
+      newPassword,
+      confirmPassword,
+    })
+  ).data.message;
