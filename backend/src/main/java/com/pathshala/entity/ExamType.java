@@ -11,5 +11,7 @@ import lombok.Setter;
 @Table(name = "exam_types")
 public class ExamType extends TenantEntity {
     private String name;
+    private String description;
     private Integer weightage;
+    private boolean active = true;
 }

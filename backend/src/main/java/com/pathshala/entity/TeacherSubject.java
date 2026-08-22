@@ -11,6 +11,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "teacher_subjects")
 public class TeacherSubject extends TenantEntity {
+    @Column(name = "academic_session_id")
+    private Long academicSessionId;
     @Column(name = "teacher_id")
     private Long teacherId;
     @Column(name = "subject_id")

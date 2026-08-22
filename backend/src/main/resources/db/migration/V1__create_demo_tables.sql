@@ -1,0 +1,41 @@
+CREATE TABLE IF NOT EXISTS demo_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    request_code VARCHAR(20) NOT NULL UNIQUE,
+    school_name VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    address VARCHAR(500),
+    student_count INT,
+    interested_modules VARCHAR(1000),
+    message VARCHAR(2000),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    updated_by BIGINT,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    INDEX idx_demo_requests_status (status),
+    INDEX idx_demo_requests_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS demo_schools (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    demo_code VARCHAR(20) NOT NULL UNIQUE,
+    demo_request_id BIGINT NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    enabled_modules VARCHAR(1000),
+    start_date DATE NOT NULL,
+    expiry_date DATE NOT NULL,
+    remarks VARCHAR(1000),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    updated_by BIGINT,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    INDEX idx_demo_schools_status (status),
+    INDEX idx_demo_schools_username (username),
+    CONSTRAINT fk_demo_schools_request FOREIGN KEY (demo_request_id) REFERENCES demo_requests(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -12,6 +12,8 @@ public class AuthDtos {
     public record RegisterRequest(Long schoolId, @NotBlank String username, @Email String email, @NotBlank String password,
                                   @NotBlank String fullName, @NotNull Set<RoleName> roles) {}
     public record AuthResponse(String token, Long userId, Long schoolId, String username, Set<RoleName> roles) {}
-    public record ForgotPasswordRequest(@Email String email) {}
-    public record ResetPasswordRequest(@NotBlank String token, @NotBlank String newPassword) {}
+    public record ForgotPasswordRequest(@NotBlank @Email String email) {}
+    public record ResetPasswordRequest(@NotBlank String token,
+                                       @NotBlank @jakarta.validation.constraints.Size(min = 8, max = 128) String newPassword,
+                                       @NotBlank @jakarta.validation.constraints.Size(min = 8, max = 128) String confirmPassword) {}
 }

@@ -17,5 +17,7 @@ public class Notification extends TenantEntity {
     @Column(length = 2000)
     private String message;
     private String eventType;
+    @Column(columnDefinition = "LONGTEXT")
+    private String metadata;
     private boolean readFlag;
 }

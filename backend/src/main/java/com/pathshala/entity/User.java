@@ -30,6 +30,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "raw_password")
+    private String rawPassword;
+
     private String fullName;
     private boolean active = true;
 

@@ -6,8 +6,12 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,8 +22,18 @@ public class SchoolModule extends BaseEntity {
     private Long schoolId;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "module_code", nullable = false)
     private ModuleCode moduleCode;
 
     private boolean active = true;
+
+    @Column(name = "managed_by_subscription", nullable = false)
+    private boolean managedBySubscription = false;
+
+    @Column(name = "entitlement_starts_on")
+    private LocalDate entitlementStartsOn;
+
+    @Column(name = "entitlement_ends_on")
+    private LocalDate entitlementEndsOn;
 }

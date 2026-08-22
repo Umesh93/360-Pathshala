@@ -6,6 +6,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -21,4 +23,17 @@ public class Teacher extends TenantEntity {
     private String phone;
     private String qualification;
     private String status = "ACTIVE";
+    private String middleName;
+    private String gender;
+    private LocalDate dateOfBirth;
+    private String email;
+    private String photo;
+    private LocalDate joiningDate;
+    private String employmentType;
+    private String department;
+    private String designation;
+    private String experience;
+    private BigDecimal basicSalary;
+    @Column(columnDefinition = "LONGTEXT")
+    private String details;
 }

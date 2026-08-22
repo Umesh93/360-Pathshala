@@ -1,5 +1,6 @@
 package com.pathshala.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -13,6 +14,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "exams")
 public class Exam extends TenantEntity {
+    @Column(name = "academic_session_id")
+    private Long academicSessionId;
     @Column(name = "exam_type_id")
     private Long examTypeId;
     @Column(name = "class_id")
@@ -20,5 +23,17 @@ public class Exam extends TenantEntity {
     private String name;
     private LocalDate startsOn;
     private LocalDate endsOn;
+    @Column(name = "publish_date")
+    private LocalDate resultPublishDate;
+    @Column(length = 1000)
+    private String description;
+    private String status = "UPCOMING";
     private boolean published;
+    private boolean includeInCgpa;
+
+    @Deprecated
+    @JsonProperty("publishDate")
+    public LocalDate legacyPublishDate() {
+        return resultPublishDate;
+    }
 }

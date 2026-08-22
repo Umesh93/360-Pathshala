@@ -4,6 +4,14 @@ import com.pathshala.dto.ApiDtos.*;
 import com.pathshala.entity.*;
 import com.pathshala.repository.Repositories.*;
 import com.pathshala.service.ModuleAccessService;
+import com.pathshala.service.AttendanceService;
+import com.pathshala.service.ExaminationService;
+import com.pathshala.service.AssignmentService;
+import com.pathshala.dto.ExaminationDtos.BulkMarksRequest;
+import com.pathshala.dto.ExaminationDtos.ExamRequest;
+import com.pathshala.dto.ExaminationDtos.MarkInput;
+import com.pathshala.dto.AttendanceDtos.BulkStudentRequest;
+import com.pathshala.dto.AttendanceDtos.StudentMarkRequest;
 import com.pathshala.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,12 +30,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OperationsController {
     private final AttendanceRepository attendanceRepository;
+    private final AttendanceService attendanceService;
+    private final AcademicYearRepository academicYearRepository;
     private final ExamTypeRepository examTypeRepository;
     private final ExamRepository examRepository;
     private final ExamSubjectRepository examSubjectRepository;
     private final MarkRepository markRepository;
-    private final AssignmentRepository assignmentRepository;
-    private final AssignmentSubmissionRepository submissionRepository;
+    private final AssignmentService assignmentService;
     private final FeeCategoryRepository feeCategoryRepository;
     private final FeeStructureRepository feeStructureRepository;
     private final FeeCollectionRepository feeCollectionRepository;
@@ -35,75 +44,71 @@ public class OperationsController {
     private final NotificationRepository notificationRepository;
     private final SecurityUtils securityUtils;
     private final ModuleAccessService moduleAccessService;
+    private final ExaminationService examinationService;
 
     @PostMapping("/attendance")
     @PreAuthorize("hasAnyRole('TEACHER','SCHOOL_ADMIN','SUPER_ADMIN')")
     public Attendance markAttendance(@RequestBody AttendanceRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId();
-        moduleAccessService.require(schoolId, ModuleCode.ATTENDANCE);
-        Attendance attendance = new Attendance();
-        attendance.setSchoolId(schoolId); attendance.setStudentId(request.studentId()); attendance.setClassId(request.classId());
-        attendance.setSectionId(request.sectionId()); attendance.setAttendanceDate(request.attendanceDate()); attendance.setStatus(request.status()); attendance.setRemarks(request.remarks());
-        return attendanceRepository.save(attendance);
+        Long schoolId = attendanceService.school();
+        AcademicYear session = academicYearRepository.findFirstBySchoolIdAndActiveTrueAndDeletedFalseOrderByStartsOnDesc(schoolId)
+                .orElseThrow(() -> new IllegalArgumentException("No active academic session"));
+        var saved = attendanceService.bulk(new BulkStudentRequest(session.getId(), request.classId(), request.sectionId(),
+                request.attendanceDate(), true, java.util.List.of(new StudentMarkRequest(request.studentId(), request.status(), request.remarks())))).getFirst();
+        return attendanceRepository.findByIdAndSchoolIdAndDeletedFalse(saved.id(), schoolId).orElseThrow();
     }
 
     @GetMapping("/attendance/student/{studentId}")
     @PreAuthorize("hasAnyRole('STUDENT','PARENT','TEACHER','SCHOOL_ADMIN','SUPER_ADMIN')")
     public java.util.List<Attendance> attendance(@PathVariable Long studentId, @RequestParam LocalDate start, @RequestParam LocalDate end) {
-        Long schoolId = securityUtils.requiredSchoolId();
-        moduleAccessService.require(schoolId, ModuleCode.ATTENDANCE);
+        Long schoolId = attendanceService.school();
+        attendanceService.studentHistory(studentId, start, end, null, null);
         return attendanceRepository.findBySchoolIdAndStudentIdAndAttendanceDateBetweenAndDeletedFalse(schoolId, studentId, start, end);
     }
 
     @PostMapping("/exam-types")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN')")
     public ExamType examType(@RequestBody ExamTypeRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.EXAMINATION);
-        ExamType type = new ExamType(); type.setSchoolId(schoolId); type.setName(request.name()); type.setWeightage(request.weightage()); return examTypeRepository.save(type);
+        return examinationService.createExamType(null, request.name(), request.weightage());
     }
 
     @PostMapping("/exams")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN')")
-    public Exam exam(@RequestBody ExamRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.EXAMINATION);
-        Exam exam = new Exam(); exam.setSchoolId(schoolId); exam.setExamTypeId(request.examTypeId()); exam.setClassId(request.classId());
-        exam.setName(request.name()); exam.setStartsOn(request.startsOn()); exam.setEndsOn(request.endsOn()); exam.setPublished(request.published()); return examRepository.save(exam);
+    public Exam exam(@RequestBody com.pathshala.dto.ApiDtos.ExamRequest request) {
+        if (request.published()) throw new IllegalArgumentException("Use the examination publish endpoint after completing all marks");
+        Long schoolId = examinationService.school(null);
+        AcademicYear session = academicYearRepository.findFirstBySchoolIdAndActiveTrueAndDeletedFalseOrderByStartsOnDesc(schoolId).orElseThrow(() -> new IllegalArgumentException("No active academic session"));
+        Exam exam = examinationService.createExam(null, new ExamRequest(session.getId(), request.examTypeId(), request.name(), request.startsOn(), request.endsOn(), request.endsOn(), null, "UPCOMING", false));
+        return exam;
     }
 
     @PostMapping("/exam-subjects")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN')")
     public ExamSubject examSubject(@RequestBody ExamSubjectRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.EXAMINATION);
-        ExamSubject subject = new ExamSubject(); subject.setSchoolId(schoolId); subject.setExamId(request.examId()); subject.setSubjectId(request.subjectId());
-        subject.setExamDate(request.examDate()); subject.setFullMarks(request.fullMarks()); subject.setPassMarks(request.passMarks()); return examSubjectRepository.save(subject);
+        throw new IllegalArgumentException("Legacy routine endpoint lacks class, section and time; use POST /api/examinations/routine");
     }
 
     @PostMapping("/marks")
     @PreAuthorize("hasAnyRole('TEACHER','SCHOOL_ADMIN','SUPER_ADMIN')")
     public Mark mark(@RequestBody MarkRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.EXAMINATION);
-        BigDecimal percentage = request.obtainedMarks().multiply(BigDecimal.valueOf(100)).divide(request.fullMarks(), 2, java.math.RoundingMode.HALF_UP);
-        Mark mark = new Mark(); mark.setSchoolId(schoolId); mark.setExamSubjectId(request.examSubjectId()); mark.setStudentId(request.studentId()); mark.setObtainedMarks(request.obtainedMarks());
-        mark.setGrade(percentage.compareTo(BigDecimal.valueOf(90)) >= 0 ? "A+" : percentage.compareTo(BigDecimal.valueOf(80)) >= 0 ? "A" : percentage.compareTo(BigDecimal.valueOf(60)) >= 0 ? "B" : percentage.compareTo(BigDecimal.valueOf(40)) >= 0 ? "C" : "F");
-        mark.setGpa(percentage.divide(BigDecimal.valueOf(20), 2, java.math.RoundingMode.HALF_UP));
-        mark.setResultStatus(request.obtainedMarks().compareTo(request.passMarks()) >= 0 ? "PASS" : "FAIL");
-        return markRepository.save(mark);
+        return examinationService.bulkMarks(null, new BulkMarksRequest(request.examSubjectId(), java.util.List.of(new MarkInput(request.studentId(), request.obtainedMarks(), false)))).getFirst();
     }
 
     @PostMapping("/assignments")
     @PreAuthorize("hasAnyRole('TEACHER','SCHOOL_ADMIN','SUPER_ADMIN')")
     public Assignment assignment(@RequestBody AssignmentRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.ASSIGNMENT);
-        Assignment assignment = new Assignment(); assignment.setSchoolId(schoolId); assignment.setTeacherId(request.teacherId()); assignment.setClassId(request.classId());
-        assignment.setSectionId(request.sectionId()); assignment.setSubjectId(request.subjectId()); assignment.setTitle(request.title()); assignment.setDescription(request.description()); assignment.setDueAt(request.dueAt()); return assignmentRepository.save(assignment);
+        return assignmentRepositoryResult(assignmentService.legacyCreate(request).id());
     }
 
     @PostMapping("/assignment-submissions")
     @PreAuthorize("hasAnyRole('STUDENT','SCHOOL_ADMIN','SUPER_ADMIN')")
     public AssignmentSubmission submit(@RequestBody SubmissionRequest request) {
-        Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.ASSIGNMENT);
-        AssignmentSubmission submission = new AssignmentSubmission(); submission.setSchoolId(schoolId); submission.setAssignmentId(request.assignmentId()); submission.setStudentId(request.studentId());
-        submission.setFileUrl(request.fileUrl()); submission.setAnswerText(request.answerText()); submission.setSubmittedAt(LocalDateTime.now()); return submissionRepository.save(submission);
+        var saved = assignmentService.legacySubmit(request);
+        AssignmentSubmission value = new AssignmentSubmission(); value.setId(saved.id()); value.setSchoolId(securityUtils.requiredSchoolId()); value.setAssignmentId(saved.assignmentId()); value.setStudentId(saved.studentId()); value.setAnswerText(saved.answerText()); value.setSubmittedAt(saved.submittedAt()); value.setStatus(saved.status()); return value;
+    }
+
+    private Assignment assignmentRepositoryResult(Long id) { return assignmentServiceEntity(id); }
+    private Assignment assignmentServiceEntity(Long id) {
+        var value = assignmentService.get(null, id); Assignment a = new Assignment(); a.setId(value.id()); a.setSchoolId(securityUtils.requiredSchoolId()); a.setAcademicSessionId(value.academicSessionId()); a.setTeacherId(value.teacherId()); a.setClassId(value.classId()); a.setSectionId(value.sectionIds().getFirst()); a.setSubjectId(value.subjectId()); a.setTitle(value.title()); a.setDescription(value.description()); a.setDueAt(value.dueAt()); a.setStatus(value.status()); return a;
     }
 
     @PostMapping("/fee-categories")
