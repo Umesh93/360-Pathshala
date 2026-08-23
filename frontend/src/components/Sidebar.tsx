@@ -171,6 +171,13 @@ const STUDENT_LINKS = [
     icon: Award,
     moduleCode: "EXAMINATION",
   },
+  {
+    to: "/student/calendar",
+    label: "Academic Calendar",
+    icon: Calendar,
+    moduleCode: "ACADEMIC_CALENDAR",
+  },
+  { to: "/student/profile", label: "My Profile", icon: UserCircle },
 ];
 
 const PARENT_LINKS = [

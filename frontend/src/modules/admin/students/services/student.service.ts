@@ -143,6 +143,8 @@ const mapStudent = (
     documents: (details.documents as string) ?? "",
     documentCategories: (details.documentCategories as string) ?? "",
     notes: (details.notes as string) ?? "",
+    loginAccountCreated: Boolean(record.loginAccountCreated),
+    loginUsername: (record.loginUsername as string) ?? undefined,
   };
 };
 
@@ -270,6 +272,11 @@ export const buildStudentPayload = (
       ? flat.documentCategories.join(",")
       : flat.documentCategories,
     notes: flat.notes,
+    createLogin: Boolean(flat.createLogin),
+    loginEmail: String(flat.email || "").trim() || undefined,
+    username: String(flat.username || "").trim() || undefined,
+    password: String(flat.password || "") || undefined,
+    confirmPassword: String(flat.confirmPassword || "") || undefined,
   };
 };
 
@@ -315,6 +322,17 @@ export const createStudent = async (
   const response = await api.post("/people/students", payload);
   return mapStudent(response.data);
 };
+
+export const createStudentLoginAccount = async (
+  id: number,
+  credentials: {
+    email: string;
+    username: string;
+    password: string;
+    confirmPassword: string;
+  },
+): Promise<{ studentId: number; userId: number; username: string; email: string }> =>
+  (await api.post(`/people/students/${id}/login-account`, credentials)).data;
 
 export const updateStudent = async (
   id: number,

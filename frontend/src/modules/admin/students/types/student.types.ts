@@ -79,6 +79,8 @@ export interface Student {
   documents?: string;
   documentCategories?: string;
   notes?: string;
+  loginAccountCreated?: boolean;
+  loginUsername?: string;
 }
 
 export interface StudentResponse {
@@ -106,6 +108,8 @@ export interface StudentResponse {
   ward: number | null;
   street: string | null;
   details: StudentDetailsResponse | null;
+  loginAccountCreated: boolean;
+  loginUsername: string | null;
 }
 
 export interface StudentDetailsResponse {
@@ -263,6 +267,11 @@ export interface StudentRequest {
   documents?: unknown;
   documentCategories?: unknown;
   notes?: unknown;
+  createLogin?: boolean;
+  loginEmail?: string;
+  username?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 export interface StudentEditLookups {

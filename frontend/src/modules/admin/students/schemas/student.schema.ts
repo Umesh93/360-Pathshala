@@ -155,13 +155,23 @@ export const documentsSchema = z.object({
   documentCategories: z.array(z.string()).optional(),
 });
 
-export const loginSchema = z.object({
-  createLogin: z.boolean().default(false),
-  email: z.string().email("Invalid email").optional().or(z.literal("")),
-  username: z.string().optional(),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-});
+export const loginSchema = z
+  .object({
+    createLogin: z.boolean().default(false),
+    email: z.string().email("Invalid email").optional().or(z.literal("")),
+    username: z.string().optional(),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+  })
+  .superRefine((value, context) => {
+    if (!value.createLogin) return;
+    if (!value.email?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["email"], message: "Login email is required" });
+    if (!value.username?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["username"], message: "Username is required" });
+    if (!value.password || value.password.length < 8 || value.password.length > 128)
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: "Password must be between 8 and 128 characters" });
+    if (value.password !== value.confirmPassword)
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Passwords do not match" });
+  });
 
 export const notesSchema = z.object({
   notes: z.string().optional(),

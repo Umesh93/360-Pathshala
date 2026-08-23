@@ -18,6 +18,7 @@ import {
   generateAdmissionNo,
   loadStudentEditData,
   updateStudent,
+  createStudentLoginAccount,
 } from "../services/student.service";
 import type { StudentEditLookups } from "../types/student.types";
 import { useToast } from "./Toast";
@@ -156,6 +157,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
   const hasLoadedAdmissionNumber = useRef(false);
   const submissionLock = useRef(false);
   const [editLookups, setEditLookups] = useState<StudentEditLookups>();
+  const [loginAccountCreated, setLoginAccountCreated] = useState(false);
+  const [loginUsername, setLoginUsername] = useState<string>();
   const [successData, setSuccessData] = useState<{
     admissionNo: string;
     rollNumber: string;
@@ -355,6 +358,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
               },
             };
             loadStudent(formData);
+            setLoginAccountCreated(Boolean(student.loginAccountCreated));
+            setLoginUsername(student.loginUsername);
             setEditLookups(lookups);
             hasLoadedStudent.current = true;
           }
@@ -447,6 +452,16 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
       let savedStudentId = studentId;
       if (studentId) {
         await updateStudent(studentId, parsed.data);
+        if (!loginAccountCreated && parsed.data.login.createLogin) {
+          await createStudentLoginAccount(studentId, {
+            email: parsed.data.login.email || "",
+            username: parsed.data.login.username || "",
+            password: parsed.data.login.password || "",
+            confirmPassword: parsed.data.login.confirmPassword || "",
+          });
+          setLoginAccountCreated(true);
+          setLoginUsername(parsed.data.login.username);
+        }
         showToast("Student updated successfully!", "success");
       } else {
         const saved = await createStudent(parsed.data);
@@ -660,6 +675,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ studentId }) => {
             <LoginSection
               data={formData.login}
               onChange={(data) => updateSection("login", data)}
+              accountCreated={loginAccountCreated}
+              loginUsername={loginUsername}
             />
             <NotesSection
               data={formData.notes}

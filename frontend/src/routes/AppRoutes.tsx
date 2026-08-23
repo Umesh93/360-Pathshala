@@ -36,6 +36,8 @@ import ParentResults from "../pages/parent/Results";
 import AdminAssignments from "../pages/admin/Assignments";
 import TeacherAssignments from "../pages/teacher/Assignments";
 import StudentAssignments from "../pages/student/Homework";
+import StudentAcademicCalendar from "../pages/student/AcademicCalendar";
+import StudentProfilePage from "../pages/student/Profile";
 import ParentAssignments from "../pages/parent/Assignments";
 import ProtectedRoute from "./ProtectedRoute";
 import AcademicSetupPage from "../modules/admin/academic/AcademicSetupPage";
@@ -422,6 +424,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["STUDENT"]}>
             <StudentAssignments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/calendar"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentAcademicCalendar />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/profile"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentProfilePage />
           </ProtectedRoute>
         }
       />

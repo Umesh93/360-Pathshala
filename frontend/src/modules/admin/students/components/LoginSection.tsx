@@ -5,9 +5,11 @@ import type { LoginData } from "../schemas/student.schema";
 interface LoginSectionProps {
   data: LoginData;
   onChange: (data: LoginData) => void;
+  accountCreated?: boolean;
+  loginUsername?: string;
 }
 
-const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
+const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange, accountCreated, loginUsername }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -34,6 +36,12 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Login Account
       </h2>
+
+      {accountCreated ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Login account is active{loginUsername ? ` for ${loginUsername}` : ""}.
+        </p>
+      ) : <>
 
       <div className="flex items-center gap-2 mb-4">
         <input
@@ -130,6 +138,7 @@ const LoginSection: React.FC<LoginSectionProps> = ({ data, onChange }) => {
           </div>
         </div>
       )}
+      </>}
     </div>
   );
 };
