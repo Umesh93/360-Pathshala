@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { BankData } from "../schemas/teacher.schema";
 import { uploadDocuments } from "../services/teacher.service";
 import { formatFileSize } from "../utils/teacherFormHelpers";
@@ -24,6 +24,12 @@ const TeacherBankSection: React.FC<TeacherBankSectionProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (Array.isArray(data.documents)) {
+      setUploadedFiles(data.documents as UploadedFile[]);
+    }
+  }, [data.documents]);
 
   const update = (field: keyof BankData, value: string) => {
     onChange({ ...data, [field]: value });

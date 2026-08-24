@@ -149,6 +149,12 @@ const TEACHER_LINKS = [
     icon: CheckSquare,
     moduleCode: "EXAMINATION",
   },
+  {
+    to: "/teacher/timetable",
+    label: "My Timetable",
+    icon: Calendar,
+    moduleCode: "TIMETABLE",
+  },
 ];
 
 const STUDENT_LINKS = [

@@ -116,6 +116,8 @@ const mapTeacher = (record: Record<string, unknown>): Teacher => ({
   })(),
   ...(record as unknown as Teacher),
   id: record.id as number,
+  userId: record.userId as number | undefined,
+  loginAccountCreated: Boolean(record.userId),
   teacherId: record.employeeNumber as string,
   employeeCode: (() => {
     try {
@@ -183,9 +185,7 @@ export const getTeacherById = async (
 export const createTeacher = async (
   teacher: TeacherFormData,
 ): Promise<Teacher> => {
-  console.log("Teacher Form Data", teacher);
   const payload = buildTeacherPayload(teacher);
-  console.log("Teacher Payload:", payload);
   const response = await api.post("/people/teachers", payload);
   return mapTeacher(response.data);
 };
@@ -194,12 +194,15 @@ export const updateTeacher = async (
   id: number,
   teacher: TeacherFormData,
 ): Promise<Teacher | undefined> => {
-  console.log("Teacher Form Data", teacher);
   const payload = buildTeacherPayload(teacher);
-  console.log("Teacher Payload:", payload);
   const response = await api.put(`/people/teachers/${id}`, payload);
   return mapTeacher(response.data);
 };
+
+export const createTeacherLoginAccount = async (
+  id: number,
+  credentials: { email: string; username: string; password: string; confirmPassword: string },
+) => (await api.post(`/people/teachers/${id}/login-account`, credentials)).data;
 
 export const deleteTeacher = async (id: number): Promise<boolean> => {
   await api.delete(`/people/teachers/${id}`);

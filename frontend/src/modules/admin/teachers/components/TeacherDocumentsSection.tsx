@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { DocumentsData } from "../schemas/teacher.schema";
 import { uploadDocuments } from "../services/teacher.service";
 import { formatFileSize } from "../utils/teacherFormHelpers";
@@ -17,12 +17,19 @@ interface UploadedFile {
 }
 
 const TeacherDocumentsSection: React.FC<TeacherDocumentsSectionProps> = ({
+  data,
   onChange,
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (Array.isArray(data.documents)) {
+      setUploadedFiles(data.documents as UploadedFile[]);
+    }
+  }, [data.documents]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();

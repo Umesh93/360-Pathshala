@@ -103,6 +103,14 @@ export const loginSchema = z.object({
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   password: z.string().optional(),
   confirmPassword: z.string().optional(),
+}).superRefine((value, context) => {
+  if (!value.createLogin) return;
+  if (!value.username?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["username"], message: "Username is required" });
+  if (!value.email?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["email"], message: "Email is required" });
+  if (!value.password || value.password.length < 8 || value.password.length > 128)
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: "Password must be between 8 and 128 characters" });
+  if (value.password !== value.confirmPassword)
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: "Passwords do not match" });
 });
 
 export const teacherFormSchema = z.object({

@@ -66,6 +66,7 @@ const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
   const hasLoadedTeacher = useRef(false);
   const hasLoadedGeneratedIds = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [loginAccountCreated, setLoginAccountCreated] = useState(false);
 
   useEffect(() => {
     if (teacherId || hasLoadedGeneratedIds.current) return;
@@ -103,6 +104,7 @@ const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
     getTeacherById(teacherId)
       .then((teacher) => {
         if (!teacher) return;
+        setLoginAccountCreated(Boolean(teacher.loginAccountCreated));
         loadTeacher({
           employment: {
             teacherId: teacher.teacherId,
@@ -139,7 +141,8 @@ const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
               "",
             emergencyContactNumber:
               teacher.emergencyContactNumber || teacher.emergencyPhone || "",
-            alternativePhone: teacher.alternativePhone || "",
+            alternativePhone:
+              teacher.emergencyAlternativePhone || teacher.alternativePhone || "",
             email: teacher.emergencyEmail || "",
           },
           education: {
@@ -177,19 +180,19 @@ const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
             permanentStreet: teacher.permanentStreet || "",
           },
           bank: {
-            bankName: "",
-            accountNumber: "",
-            accountHolderName: "",
-            panNumber: "",
-            documents: undefined,
+            bankName: teacher.bankName || "",
+            accountNumber: teacher.accountNumber || "",
+            accountHolderName: teacher.accountHolderName || "",
+            panNumber: teacher.panNumber || "",
+            documents: teacher.documents || undefined,
             photo: undefined,
-            notes: "",
+            notes: teacher.notes || "",
           },
-          documents: { documents: undefined },
+          documents: { documents: teacher.documents || undefined },
           login: {
-            createLogin: false,
-            username: "",
-            email: "",
+            createLogin: !teacher.loginAccountCreated && Boolean(teacher.createLogin),
+            username: teacher.username || "",
+            email: teacher.email || "",
             password: "",
             confirmPassword: "",
           },
@@ -389,6 +392,7 @@ const TeacherForm: React.FC<{ teacherId?: number }> = ({ teacherId }) => {
             <TeacherLoginSection
               data={formData.login}
               onChange={(data) => updateSection("login", data)}
+              accountCreated={loginAccountCreated}
             />
           </div>
         )}

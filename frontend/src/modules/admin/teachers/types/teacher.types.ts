@@ -52,6 +52,7 @@ export interface Teacher {
   emergencyRelationship?: string;
   emergencyPhone?: string;
   emergencyEmail?: string;
+  emergencyAlternativePhone?: string;
   currentAddress?: string;
   currentProvince?: string;
   currentDistrict?: string;
@@ -92,11 +93,14 @@ export interface Teacher {
   username?: string;
   password?: string;
   role?: string;
+  userId?: number;
+  loginAccountCreated?: boolean;
   bio?: string;
   teachingPhilosophy?: string;
   achievements?: string;
   awards?: string;
   remarks?: string;
+  notes?: string;
 }
 
 export interface TeacherDocument {

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import {
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
   ClipboardCheck,
+  Clock3,
   FileText,
+  MapPin,
   School,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -13,6 +16,8 @@ import Skeleton from "../../components/Skeleton";
 import TeacherLayout from "../../layouts/TeacherLayout";
 import { getTeacherDashboard } from "../../services/dashboardService";
 import type { TeacherDashboardResponse } from "../../types/dashboard";
+import { getTeacherSchedule } from "../../modules/timetables/service";
+import type { ScheduleResponse } from "../../modules/timetables/types";
 
 const formatDate = (value: string | null) =>
   value
@@ -25,11 +30,27 @@ const TeacherDashboard = () => {
   const [data, setData] = useState<TeacherDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<ScheduleResponse>();
+  const [scheduleLoading, setScheduleLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
     getTeacherDashboard()
-      .then((response) => active && setData(response))
+      .then(async (response) => {
+        if (!active) return;
+        setData(response);
+        if (response.modules.includes("TIMETABLE")) {
+          setScheduleLoading(true);
+          try {
+            const timetable = await getTeacherSchedule();
+            if (active) setSchedule(timetable);
+          } catch {
+            if (active) setSchedule(undefined);
+          } finally {
+            if (active) setScheduleLoading(false);
+          }
+        }
+      })
       .catch(() => active && setError("Failed to load dashboard data."))
       .finally(() => active && setLoading(false));
     return () => {
@@ -73,6 +94,28 @@ const TeacherDashboard = () => {
   const subjects = new Set(
     data.teachingAssignments.map((assignment) => assignment.subjectId),
   );
+  const upcomingClasses = schedule?.todayEntries.length
+    ? schedule.todayEntries
+    : schedule?.tomorrowEntries || [];
+  const scheduleLabel = schedule?.todayEntries.length
+    ? "Today"
+    : schedule?.tomorrowEntries.length
+      ? "Tomorrow"
+      : "No classes";
+  const quickActions = [
+    ...(modules.has("ATTENDANCE")
+      ? [{ label: "Mark Attendance", to: "/teacher/attendance", icon: ClipboardCheck }]
+      : []),
+    ...(modules.has("ASSIGNMENT")
+      ? [{ label: "Assignments", to: "/teacher/assignments", icon: FileText }]
+      : []),
+    ...(modules.has("EXAMINATION")
+      ? [{ label: "Enter Marks", to: "/teacher/marks", icon: CheckCircle2 }]
+      : []),
+    ...(modules.has("TIMETABLE")
+      ? [{ label: "My Timetable", to: "/teacher/timetable", icon: CalendarDays }]
+      : []),
+  ];
   const cards = [
     {
       label: "Classes",
@@ -118,6 +161,19 @@ const TeacherDashboard = () => {
             detail: "Assigned examination subjects",
             icon: CheckCircle2,
             to: "/teacher/marks",
+          },
+        ]
+      : []),
+    ...(modules.has("TIMETABLE")
+      ? [
+          {
+            label: "Today's Classes",
+            value: scheduleLoading ? "..." : scheduleLabel,
+            detail: scheduleLoading
+              ? "Checking your timetable"
+              : `${upcomingClasses.length} scheduled ${upcomingClasses.length === 1 ? "period" : "periods"}`,
+            icon: CalendarDays,
+            to: "/teacher/timetable",
           },
         ]
       : []),
@@ -182,6 +238,34 @@ const TeacherDashboard = () => {
           ))}
         </section>
 
+        {quickActions.length > 0 && (
+          <section className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="mb-4">
+              <h2 className="font-semibold text-gray-900">Quick Actions</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Open your current teaching workflows.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.to}
+                  to={action.to}
+                  className="group flex items-center justify-between rounded-lg border border-gray-200 p-4 transition hover:border-[#234A91] hover:bg-blue-50/50"
+                >
+                  <span className="flex items-center gap-3 font-medium text-gray-800">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-[#234A91]">
+                      <action.icon size={20} />
+                    </span>
+                    {action.label}
+                  </span>
+                  <ArrowRight className="text-gray-400 group-hover:text-[#234A91]" size={18} />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="overflow-hidden rounded-lg bg-white shadow-sm">
           <div className="border-b border-gray-100 px-5 py-4">
             <h2 className="font-semibold text-gray-900">
@@ -228,27 +312,40 @@ const TeacherDashboard = () => {
         </section>
 
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
-          <section className="min-w-0 rounded-lg bg-white p-5 shadow-sm">
+          {modules.has("TIMETABLE") && <section className="min-w-0 rounded-lg bg-white p-5 shadow-sm">
             <div className="flex items-center gap-2">
               <CalendarDays size={20} className="text-[#234A91]" />
               <h2 className="font-semibold text-gray-900">Today's Classes</h2>
             </div>
-            {!data.timetableAvailable || data.timetableEntries.length === 0 ? (
+            {scheduleLoading ? (
+              <Skeleton className="mt-4 h-32" />
+            ) : upcomingClasses.length === 0 ? (
               <div className="py-10 text-center">
                 <p className="font-medium text-gray-700">
                   No timetable available yet
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
-                  Timetable scheduling is coming soon.
+                  Open My Timetable to view your complete weekly schedule.
                 </p>
               </div>
             ) : (
-              <p className="py-10 text-center text-sm text-gray-500">
-                Timetable entries are not available in the current response
-                format.
-              </p>
+              <div className="mt-4 space-y-3">
+                {upcomingClasses.slice(0, 4).map((entry) => (
+                  <article key={`${entry.dayOfWeek}-${entry.periodId}`} className="rounded-lg border border-gray-200 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-gray-900">{entry.subjectName || entry.periodName}</p>
+                        <p className="mt-1 text-sm text-gray-600">{entry.className} · {entry.sectionName}</p>
+                      </div>
+                      <span className="rounded bg-blue-50 px-2 py-1 text-xs font-medium text-[#234A91]">{scheduleLabel}</span>
+                    </div>
+                    <p className="mt-3 flex items-center gap-2 text-sm text-gray-600"><Clock3 size={15} /> {entry.startTime} - {entry.endTime}</p>
+                    {entry.room && <p className="mt-2 flex items-center gap-2 text-sm text-gray-500"><MapPin size={15} /> {entry.room}</p>}
+                  </article>
+                ))}
+              </div>
             )}
-          </section>
+          </section>}
 
           {modules.has("ASSIGNMENT") && data.assignments && (
             <section className="min-w-0 rounded-lg bg-white p-5 shadow-sm">

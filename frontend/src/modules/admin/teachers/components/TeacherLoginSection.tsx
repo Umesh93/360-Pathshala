@@ -6,12 +6,14 @@ interface TeacherLoginSectionProps {
   data: LoginData;
   onChange: (data: LoginData) => void;
   errors?: Record<string, string>;
+  accountCreated?: boolean;
 }
 
 const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
   data,
   onChange,
   errors = {},
+  accountCreated = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -22,8 +24,7 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
 
   const handleGeneratePassword = () => {
     const newPassword = generatePassword();
-    update("password", newPassword);
-    update("confirmPassword", newPassword);
+    onChange({ ...data, password: newPassword, confirmPassword: newPassword });
   };
 
   return (
@@ -31,6 +32,12 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Login Account
       </h2>
+
+      {accountCreated ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Login account is active for this Teacher.
+        </p>
+      ) : <>
 
       <div className="flex items-center gap-2 mb-4">
         <input
@@ -133,6 +140,7 @@ const TeacherLoginSection: React.FC<TeacherLoginSectionProps> = ({
           </div>
         </div>
       )}
+      </>}
     </div>
   );
 };

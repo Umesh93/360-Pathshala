@@ -15,6 +15,26 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
     ...formData.bank,
     ...formData.login,
   };
+  const details: Record<string, unknown> = {
+    ...payload,
+    emergencyContactName: formData.emergency.emergencyContactName,
+    emergencyRelationship: formData.emergency.relationship,
+    emergencyContactNumber: formData.emergency.emergencyContactNumber,
+    emergencyAlternativePhone: formData.emergency.alternativePhone,
+    emergencyEmail: formData.emergency.email,
+    currentProvince: formData.address.currentProvince,
+    currentDistrict: formData.address.currentDistrict,
+    currentMunicipality: formData.address.currentMunicipality,
+    currentWard: formData.address.currentWard,
+    currentStreet: formData.address.currentStreet,
+    permanentProvince: formData.address.permanentProvince,
+    permanentDistrict: formData.address.permanentDistrict,
+    permanentMunicipality: formData.address.permanentMunicipality,
+    permanentWard: formData.address.permanentWard,
+    permanentStreet: formData.address.permanentStreet,
+  };
+  delete details.password;
+  delete details.confirmPassword;
 
   const relationshipMap: Record<string, string> = {
     Father: "father",
@@ -85,7 +105,8 @@ export const buildTeacherPayload = (formData: TeacherFormData) => {
     createLogin: payload.createLogin,
     username: payload.username,
     password: payload.password,
-    details: JSON.stringify(payload),
+    confirmPassword: payload.confirmPassword,
+    details: JSON.stringify(details),
     assignments: [],
   };
 };
