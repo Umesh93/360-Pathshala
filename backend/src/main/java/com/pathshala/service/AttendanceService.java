@@ -316,6 +316,13 @@ public class AttendanceService {
         return holidayRepository.findBySchoolIdAndDeletedFalseOrderByStartsOnAsc(schoolId).stream().map(this::holidayResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<HolidayResponse> academicCalendar() {
+        Long schoolId = securityUtils.requiredSchoolId();
+        moduleAccessService.require(schoolId, ModuleCode.ACADEMIC_CALENDAR);
+        return holidayRepository.findBySchoolIdAndDeletedFalseOrderByStartsOnAsc(schoolId).stream().map(this::holidayResponse).toList();
+    }
+
     @Transactional
     public HolidayResponse createHoliday(HolidayRequest request) {
         Long schoolId = school(); requireAdmin(); validateHoliday(request);

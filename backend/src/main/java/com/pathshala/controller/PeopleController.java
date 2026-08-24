@@ -7,6 +7,7 @@ import com.pathshala.service.ModuleAccessService;
 import com.pathshala.service.PeopleIdentifierService;
 import com.pathshala.util.SecurityUtils;
 import com.pathshala.exception.ResourceNotFoundException;
+import com.pathshala.exception.ForbiddenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.criteria.Predicate;
@@ -54,6 +56,8 @@ public class PeopleController {
     private final ModuleAccessService moduleAccessService;
     private final PeopleIdentifierService peopleIdentifierService;
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
+
 
     @GetMapping("/self")
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT','PARENT','SCHOOL_ADMIN')")
@@ -92,6 +96,29 @@ public class PeopleController {
                 .orElseThrow(() -> new ResourceNotFoundException("School administrator profile not found for authenticated user"));
         return new SelfProfile(RoleName.SCHOOL_ADMIN.name(), hasText(persisted.getFullName()) ? persisted.getFullName() : persisted.getUsername(),
                 null, schoolId, persisted.getId(), null, null, null, null, null, null);
+    }
+
+    @GetMapping("/students/self")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Transactional(readOnly = true)
+    public StudentSelfProfile studentSelf() {
+        var user = securityUtils.currentUser();
+        Long schoolId = securityUtils.requiredSchoolId();
+        Student student = studentRepository.findBySchoolIdAndUserIdAndDeletedFalse(schoolId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for authenticated user"));
+        User account = userRepository.findByIdAndDeletedFalse(user.getId()).orElse(null);
+        String className = student.getClassId() == null ? null : schoolClassRepository
+                .findByIdAndSchoolIdAndDeletedFalse(student.getClassId(), schoolId).map(SchoolClass::getName).orElse(null);
+        String sectionName = student.getSectionId() == null ? null : sectionRepository
+                .findByIdAndSchoolIdAndDeletedFalse(student.getSectionId(), schoolId).map(Section::getName).orElse(null);
+        com.fasterxml.jackson.databind.JsonNode guardian = readParentGuardianDetails(student.getParentGuardianDetails());
+        String address = java.util.stream.Stream.of(student.getStreet(), student.getMunicipality(), student.getDistrict(), student.getProvince())
+                .filter(PeopleController::hasText).collect(java.util.stream.Collectors.joining(", "));
+        return new StudentSelfProfile(student.getId(), personName(student.getFirstName(), student.getMiddleName(), student.getLastName()),
+                student.getPhoto(), student.getAdmissionNumber(), student.getRollNumber(), className, sectionName,
+                hasText(student.getStudentEmail()) ? student.getStudentEmail() : account == null ? null : account.getEmail(),
+                student.getStudentPhone(), student.getDateOfBirth(), student.getGender(), address,
+                text(guardian, "guardianName"), text(guardian, "guardianRelationship"), text(guardian, "guardianPhone"), text(guardian, "guardianEmail"));
     }
 
     private static String personName(String... parts) {
@@ -188,12 +215,14 @@ public class PeopleController {
                         student.getDisability(), student.getEmergencyContactPerson(), student.getEmergencyContactNumber(), student.getPreviousSchool(),
                         student.getPreviousAddress(), student.getPreviousClass(), student.getTransferCertificateNumber(), student.getReasonForLeaving(),
                         student.getHasHostel(), student.getHostel(), student.getRoomNumber(), student.getBedNumber(), student.getUsesTransport(),
-                        student.getRoute(), student.getPickupPoint(), student.getVehicle(), student.getDocuments(), student.getDocumentCategories(), student.getNotes())
+                         student.getRoute(), student.getPickupPoint(), student.getVehicle(), student.getDocuments(), student.getDocumentCategories(), student.getNotes()),
+                student.getUserId() != null,
+                student.getUserId() == null ? null : userRepository.findByIdAndDeletedFalse(student.getUserId()).map(User::getUsername).orElse(null)
         );
     }
 
     @GetMapping("/students")
-    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','TEACHER','PARENT','STUDENT','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','TEACHER','PARENT','SUPER_ADMIN')")
     public Page<StudentResponse> students(Pageable pageable) {
         Long schoolId = securityUtils.requiredSchoolId();
         moduleAccessService.require(schoolId, ModuleCode.STUDENT_MANAGEMENT);
@@ -219,6 +248,11 @@ public class PeopleController {
     public StudentResponse student(@PathVariable Long id) {
         Long schoolId = securityUtils.requiredSchoolId();
         moduleAccessService.require(schoolId, ModuleCode.STUDENT_MANAGEMENT);
+        if (securityUtils.currentUser().getRoles().contains(RoleName.STUDENT)) {
+            Student own = studentRepository.findBySchoolIdAndUserIdAndDeletedFalse(schoolId, securityUtils.currentUser().getId())
+                    .orElseThrow(() -> new ForbiddenException("Student profile required"));
+            if (!own.getId().equals(id)) throw new ForbiddenException("Student profile access denied");
+        }
         Student student = studentRepository.findByIdAndSchoolIdAndDeletedFalse(id, schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
         return buildStudentResponse(student);
@@ -238,7 +272,29 @@ public class PeopleController {
         StudentRequest generatedRequest = withGeneratedStudentNumbers(request, admissionNumber, String.valueOf(rollNumber));
         validateReferences(generatedRequest, schoolId, null);
         Student student = applyRequest(new Student(), generatedRequest, schoolId);
-        return buildStudentResponse(studentRepository.save(student));
+        student = studentRepository.save(student);
+        if (Boolean.TRUE.equals(request.createLogin())) {
+            User account = createStudentAccount(student, request.loginEmail(), request.username(), request.password(), request.confirmPassword());
+            student.setUserId(account.getId());
+            student = studentRepository.save(student);
+        }
+        return buildStudentResponse(student);
+    }
+
+    @PostMapping("/students/{id}/login-account")
+    @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+    @Transactional
+    public StudentLoginAccountResponse createStudentLoginAccount(@PathVariable Long id,
+                                                                  @Valid @RequestBody StudentLoginAccountRequest request) {
+        Long schoolId = securityUtils.requiredSchoolId();
+        moduleAccessService.require(schoolId, ModuleCode.STUDENT_MANAGEMENT);
+        Student student = studentRepository.findByIdAndSchoolIdAndDeletedFalse(id, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        if (student.getUserId() != null) throw new IllegalStateException("Student login account already exists");
+        User account = createStudentAccount(student, request.email(), request.username(), request.password(), request.confirmPassword());
+        student.setUserId(account.getId());
+        studentRepository.save(student);
+        return new StudentLoginAccountResponse(student.getId(), account.getId(), account.getUsername(), account.getEmail());
     }
 
     private StudentRequest withGeneratedStudentNumbers(StudentRequest request, String admissionNumber, String rollNumber) {
@@ -255,7 +311,8 @@ public class PeopleController {
                  request.medicalBloodGroup(), request.height(), request.weight(), request.medicalConditions(), request.medicalConditionsOther(), request.allergies(),
                 request.disability(), request.emergencyContactPerson(), request.emergencyContactNumber(), request.previousSchool(), request.previousAddress(),
                 request.previousClass(), request.transferCertificateNumber(), request.reasonForLeaving(), request.hasHostel(), request.hostel(), request.roomNumber(),
-                request.bedNumber(), request.usesTransport(), request.route(), request.pickupPoint(), request.vehicle(), request.documents(), request.documentCategories(), request.notes());
+                 request.bedNumber(), request.usesTransport(), request.route(), request.pickupPoint(), request.vehicle(), request.documents(), request.documentCategories(), request.notes(),
+                 request.createLogin(), request.loginEmail(), request.username(), request.password(), request.confirmPassword());
     }
 
     @PutMapping("/students/{id}")
@@ -308,6 +365,30 @@ public class PeopleController {
         student.setDocuments(request.documents()); student.setDocumentCategories(request.documentCategories()); student.setNotes(request.notes());
 
          return student;
+    }
+
+    private User createStudentAccount(Student student, String email, String username, String password, String confirmPassword) {
+        String normalizedUsername = username == null ? "" : username.trim();
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase(java.util.Locale.ROOT);
+        if (normalizedUsername.isBlank()) throw new IllegalArgumentException("Username is required");
+        if (normalizedEmail.isBlank()) throw new IllegalArgumentException("Email is required");
+        if (password == null || password.length() < 8 || password.length() > 128)
+            throw new IllegalArgumentException("Password must be between 8 and 128 characters");
+        if (!password.equals(confirmPassword)) throw new IllegalArgumentException("Password confirmation does not match");
+        if (userRepository.findByUsernameAndDeletedFalse(normalizedUsername).isPresent())
+            throw new IllegalArgumentException("Username already exists");
+        if (userRepository.findByEmailIgnoreCaseAndDeletedFalse(normalizedEmail).isPresent())
+            throw new IllegalArgumentException("Email already exists");
+        User account = new User();
+        account.setSchoolId(student.getSchoolId());
+        account.setUsername(normalizedUsername);
+        account.setEmail(normalizedEmail);
+        account.setPassword(passwordEncoder.encode(password));
+        account.setRawPassword(null);
+        account.setFullName(personName(student.getFirstName(), student.getMiddleName(), student.getLastName()));
+        account.setRoles(java.util.Set.of(RoleName.STUDENT));
+        account.setActive(true);
+        return userRepository.save(account);
     }
 
     private String writeParentGuardianDetails(StudentRequest request) {

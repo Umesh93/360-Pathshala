@@ -129,6 +129,10 @@ public class AttendanceController {
     @PreAuthorize("hasAnyRole('STUDENT','PARENT','TEACHER','SCHOOL_ADMIN')")
     public List<HolidayResponse> holidays() { return service.holidays(); }
 
+    @GetMapping("/academic-calendar")
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<HolidayResponse> academicCalendar() { return service.academicCalendar(); }
+
     @PostMapping("/holidays")
     @PreAuthorize("hasRole('SCHOOL_ADMIN')")
     public HolidayResponse createHoliday(@Valid @RequestBody HolidayRequest request) { return service.createHoliday(request); }

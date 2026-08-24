@@ -91,7 +91,9 @@ public class ApiDtos {
             String transferCertificateNumber, String reasonForLeaving,
             Boolean hasHostel, String hostel, String roomNumber, String bedNumber,
             Boolean usesTransport, String route, String pickupPoint, String vehicle,
-            String documents, String documentCategories, String notes) {}
+            String documents, String documentCategories, String notes,
+            Boolean createLogin, String loginEmail, String username,
+            @Size(min = 8, max = 128) String password, String confirmPassword) {}
     public record StudentDetailsResponse(
             String academicYear, String medium, String admissionDate, String house, String scholarship,
              String middleName, String bloodGroup, String religion, String caste, String nationality,
@@ -120,7 +122,11 @@ public class ApiDtos {
                                      GuardianResponse guardian,
                                      Long provinceId, String province, Long districtId, String district,
                                      Long municipalityId, String municipality, Long wardId, Integer ward, String street,
-                                     StudentDetailsResponse details) {}
+                                     StudentDetailsResponse details, boolean loginAccountCreated, String loginUsername) {}
+    public record StudentLoginAccountRequest(@NotBlank @jakarta.validation.constraints.Email String email, @NotBlank String username,
+                                             @NotBlank @Size(min = 8, max = 128) String password,
+                                             @NotBlank String confirmPassword) {}
+    public record StudentLoginAccountResponse(Long studentId, Long userId, String username, String email) {}
     public record TeacherRequest(@NotBlank String employeeNumber, @NotBlank String firstName, @NotBlank String lastName,
                                  @NotBlank String phone, @NotBlank String email, String middleName, String gender,
                                  LocalDate dateOfBirth, String photo, LocalDate joiningDate, String employmentType,
@@ -175,6 +181,11 @@ public class ApiDtos {
     public record SelfProfile(String role, String displayName, String photo, Long schoolId, Long personId,
                               Long classId, String className, Long sectionId, String sectionName,
                               String employeeNumber, String department) {}
+    public record StudentSelfProfile(Long id, String fullName, String photo, String admissionNumber,
+                                     String rollNumber, String className, String sectionName, String email,
+                                     String phone, LocalDate dateOfBirth, String gender, String address,
+                                     String guardianName, String guardianRelationship, String guardianPhone,
+                                     String guardianEmail) {}
     public record RoleDashboardContext(Long schoolId, String schoolName, Long academicSessionId,
                                        String academicSessionName) {}
     public record DashboardAssignment(Long id, String title, LocalDateTime dueAt, String status,

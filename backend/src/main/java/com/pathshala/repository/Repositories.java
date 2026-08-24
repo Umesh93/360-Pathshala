@@ -357,10 +357,14 @@ public interface Repositories {
     interface FeeStructureRepository extends TenantRepository<FeeStructure> {
         @Query("select coalesce(sum(f.amount),0) from FeeStructure f where f.schoolId = :schoolId and f.deleted = false")
         BigDecimal totalExpected(Long schoolId);
+        @Query("select coalesce(sum(f.amount),0) from FeeStructure f where f.schoolId = :schoolId and f.classId = :classId and f.deleted = false")
+        BigDecimal totalExpectedForClass(Long schoolId, Long classId);
     }
     interface FeeCollectionRepository extends TenantRepository<FeeCollection> {
         @Query("select coalesce(sum(f.paidAmount),0) from FeeCollection f where f.schoolId = :schoolId and f.deleted = false")
         BigDecimal totalCollected(Long schoolId);
+        @Query("select coalesce(sum(f.paidAmount),0) from FeeCollection f where f.schoolId = :schoolId and f.studentId = :studentId and f.deleted = false")
+        BigDecimal totalCollectedForStudent(Long schoolId, Long studentId);
     }
     interface LeaveRequestRepository extends TenantRepository<LeaveRequest> {
         List<LeaveRequest> findBySchoolIdAndTeacherIdAndDeletedFalse(Long schoolId, Long teacherId);
@@ -371,6 +375,7 @@ public interface Repositories {
     }
     interface NotificationRepository extends TenantRepository<Notification> {
         boolean existsBySchoolIdAndUserIdAndEventTypeAndMetadataAndDeletedFalse(Long schoolId, Long userId, String eventType, String metadata);
+        Page<Notification> findBySchoolIdAndUserIdAndDeletedFalse(Long schoolId, Long userId, Pageable pageable);
     }
     interface AuditLogRepository extends JpaRepository<AuditLog, Long> {}
     interface DataAccessLogRepository extends JpaRepository<DataAccessLog, Long> {}

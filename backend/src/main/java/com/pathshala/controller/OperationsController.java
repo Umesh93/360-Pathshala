@@ -13,6 +13,7 @@ import com.pathshala.dto.ExaminationDtos.MarkInput;
 import com.pathshala.dto.AttendanceDtos.BulkStudentRequest;
 import com.pathshala.dto.AttendanceDtos.StudentMarkRequest;
 import com.pathshala.util.SecurityUtils;
+import com.pathshala.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ public class OperationsController {
     private final FeeCategoryRepository feeCategoryRepository;
     private final FeeStructureRepository feeStructureRepository;
     private final FeeCollectionRepository feeCollectionRepository;
+    private final StudentRepository studentRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final NotificationRepository notificationRepository;
     private final SecurityUtils securityUtils;
@@ -137,6 +139,12 @@ public class OperationsController {
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','PARENT','STUDENT','SUPER_ADMIN')")
     public Map<String, BigDecimal> outstandingFees() {
         Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.FEE_MANAGEMENT);
+        if (securityUtils.hasRole(RoleName.STUDENT)) {
+            Student student = currentStudent(schoolId);
+            BigDecimal expected = feeStructureRepository.totalExpectedForClass(schoolId, student.getClassId());
+            BigDecimal collected = feeCollectionRepository.totalCollectedForStudent(schoolId, student.getId());
+            return Map.of("expected", expected, "collected", collected, "outstanding", expected.subtract(collected));
+        }
         BigDecimal expected = feeStructureRepository.totalExpected(schoolId); BigDecimal collected = feeCollectionRepository.totalCollected(schoolId);
         return Map.of("expected", expected, "collected", collected, "outstanding", expected.subtract(collected));
     }
@@ -145,7 +153,8 @@ public class OperationsController {
     @PreAuthorize("hasAnyRole('TEACHER','PARENT','STUDENT','SCHOOL_ADMIN','SUPER_ADMIN')")
     public LeaveRequest leave(@RequestBody LeaveRequestDto request) {
         Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.LEAVE_MANAGEMENT);
-        LeaveRequest leave = new LeaveRequest(); leave.setSchoolId(schoolId); leave.setRequesterUserId(securityUtils.currentUser().getId()); leave.setStudentId(request.studentId());
+        LeaveRequest leave = new LeaveRequest(); leave.setSchoolId(schoolId); leave.setRequesterUserId(securityUtils.currentUser().getId());
+        leave.setStudentId(securityUtils.hasRole(RoleName.STUDENT) ? currentStudent(schoolId).getId() : request.studentId());
         leave.setTeacherId(request.teacherId()); leave.setStartsOn(request.startsOn()); leave.setEndsOn(request.endsOn()); leave.setReason(request.reason()); return leaveRequestRepository.save(leave);
     }
 
@@ -166,6 +175,14 @@ public class OperationsController {
     @GetMapping("/notifications")
     public Page<Notification> notifications(Pageable pageable) {
         Long schoolId = securityUtils.requiredSchoolId(); moduleAccessService.require(schoolId, ModuleCode.NOTIFICATIONS);
+        if (securityUtils.hasRole(RoleName.STUDENT)) {
+            return notificationRepository.findBySchoolIdAndUserIdAndDeletedFalse(schoolId, securityUtils.currentUser().getId(), pageable);
+        }
         return notificationRepository.findBySchoolIdAndDeletedFalse(schoolId, pageable);
+    }
+
+    private Student currentStudent(Long schoolId) {
+        return studentRepository.findBySchoolIdAndUserIdAndDeletedFalse(schoolId, securityUtils.currentUser().getId())
+                .orElseThrow(() -> new ForbiddenException("Student profile mapping not found"));
     }
 }

@@ -109,16 +109,19 @@ class AuthServiceProfileTest {
     }
 
     @Test
-    void profileRoutesExplicitlyRequireAuthenticatedSchoolAdmin() throws Exception {
+    void profileRoutesUseExplicitAuthorization() throws Exception {
         for (Method method : new Method[]{
                 AuthController.class.getMethod("me"),
-                AuthController.class.getMethod("updateMe", UpdateAccountProfile.class),
-                AuthController.class.getMethod("changePassword", ChangePasswordRequest.class)}) {
+                AuthController.class.getMethod("updateMe", UpdateAccountProfile.class)}) {
             PreAuthorize authorization = method.getAnnotation(PreAuthorize.class);
             assertNotNull(authorization, method.getName());
             assertTrue(authorization.value().contains("isAuthenticated()"), method.getName());
             assertTrue(authorization.value().contains("hasRole('SCHOOL_ADMIN')"), method.getName());
         }
+        PreAuthorize passwordAuthorization = AuthController.class.getMethod("changePassword", ChangePasswordRequest.class)
+                .getAnnotation(PreAuthorize.class);
+        assertTrue(passwordAuthorization.value().contains("SCHOOL_ADMIN"));
+        assertTrue(passwordAuthorization.value().contains("STUDENT"));
     }
 
     private User user(Long id, Long schoolId, String username, String email, String fullName, String password) {

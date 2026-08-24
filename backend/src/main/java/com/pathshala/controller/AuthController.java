@@ -37,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/me/change-password")
-    @PreAuthorize("isAuthenticated() and hasRole('SCHOOL_ADMIN')")
+    @PreAuthorize("isAuthenticated() and hasAnyRole('SCHOOL_ADMIN','STUDENT')")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(request);
         return ResponseEntity.noContent().build();

@@ -121,7 +121,7 @@ class RoleDashboardControllerTest {
                 mock(AcademicYearRepository.class), mock(ProvinceRepository.class), mock(DistrictRepository.class),
                 mock(MunicipalityRepository.class), mock(WardRepository.class), mock(TeacherSubjectRepository.class),
                 mock(LeaveRequestRepository.class), peopleSecurity, mock(ModuleAccessService.class),
-                mock(PeopleIdentifierService.class), new com.fasterxml.jackson.databind.ObjectMapper());
+                mock(PeopleIdentifierService.class), new com.fasterxml.jackson.databind.ObjectMapper(), new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
 
         SelfProfile profile = people.self();
 
@@ -130,6 +130,62 @@ class RoleDashboardControllerTest {
         assertEquals("photo-key", profile.photo());
         assertNull(profile.employeeNumber());
         verify(peopleStudents).findBySchoolIdAndUserIdAndDeletedFalse(9L, 45L);
+    }
+
+    @Test
+    void studentDetailedProfileUsesAuthenticatedStudentMapping() {
+        StudentRepository peopleStudents = mock(StudentRepository.class);
+        UserRepository users = mock(UserRepository.class);
+        SecurityUtils peopleSecurity = mock(SecurityUtils.class);
+        UserPrincipal principal = principal(45L, 9L, RoleName.STUDENT);
+        when(peopleSecurity.currentUser()).thenReturn(principal);
+        when(peopleSecurity.requiredSchoolId()).thenReturn(9L);
+        Student student = student(55L, 9L, 45L);
+        student.setAdmissionNumber("ADM-55");
+        student.setStudentEmail("student@example.test");
+        when(peopleStudents.findBySchoolIdAndUserIdAndDeletedFalse(9L, 45L)).thenReturn(Optional.of(student));
+        PeopleController people = new PeopleController(peopleStudents, mock(SchoolRepository.class), mock(TeacherRepository.class),
+                mock(ParentRepository.class), users, mock(SchoolClassRepository.class), mock(SectionRepository.class),
+                mock(AcademicYearRepository.class), mock(ProvinceRepository.class), mock(DistrictRepository.class),
+                mock(MunicipalityRepository.class), mock(WardRepository.class), mock(TeacherSubjectRepository.class),
+                mock(LeaveRequestRepository.class), peopleSecurity, mock(ModuleAccessService.class),
+                mock(PeopleIdentifierService.class), new com.fasterxml.jackson.databind.ObjectMapper(), new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
+
+        var profile = people.studentSelf();
+
+        assertEquals(55L, profile.id());
+        assertEquals("ADM-55", profile.admissionNumber());
+        assertEquals("student@example.test", profile.email());
+        verify(peopleStudents).findBySchoolIdAndUserIdAndDeletedFalse(9L, 45L);
+        verify(peopleStudents, never()).findByIdAndSchoolIdAndDeletedFalse(anyLong(), anyLong());
+    }
+
+    @Test
+    void studentCannotReadAnotherStudentById() {
+        StudentRepository peopleStudents = mock(StudentRepository.class);
+        SecurityUtils peopleSecurity = mock(SecurityUtils.class);
+        when(peopleSecurity.currentUser()).thenReturn(principal(45L, 9L, RoleName.STUDENT));
+        when(peopleSecurity.requiredSchoolId()).thenReturn(9L);
+        when(peopleStudents.findBySchoolIdAndUserIdAndDeletedFalse(9L, 45L))
+                .thenReturn(Optional.of(student(55L, 9L, 45L)));
+        PeopleController people = new PeopleController(peopleStudents, mock(SchoolRepository.class), mock(TeacherRepository.class),
+                mock(ParentRepository.class), mock(UserRepository.class), mock(SchoolClassRepository.class), mock(SectionRepository.class),
+                mock(AcademicYearRepository.class), mock(ProvinceRepository.class), mock(DistrictRepository.class),
+                mock(MunicipalityRepository.class), mock(WardRepository.class), mock(TeacherSubjectRepository.class),
+                mock(LeaveRequestRepository.class), peopleSecurity, mock(ModuleAccessService.class),
+                mock(PeopleIdentifierService.class), new com.fasterxml.jackson.databind.ObjectMapper(), new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
+
+        assertThrows(com.pathshala.exception.ForbiddenException.class, () -> people.student(99L));
+        verify(peopleStudents, never()).findByIdAndSchoolIdAndDeletedFalse(99L, 9L);
+    }
+
+    @Test
+    void studentRoleCannotListAllStudents() throws Exception {
+        PreAuthorize authorization = PeopleController.class.getMethod("students", org.springframework.data.domain.Pageable.class)
+                .getAnnotation(PreAuthorize.class);
+
+        assertNotNull(authorization);
+        assertFalse(authorization.value().contains("'STUDENT'"));
     }
 
     private void assertAuthorize(String methodName, String expected) throws Exception {
