@@ -21,6 +21,7 @@ import {
   titleCase,
 } from "../../modules/assignments/ui";
 import { useToast } from "../../modules/admin/students/components/Toast";
+import { useSearchParams } from "react-router-dom";
 
 const effectiveDeadline = (item: StudentAssignment) =>
   item.assignment.allowLateSubmission && item.assignment.lateSubmissionDeadline
@@ -28,6 +29,8 @@ const effectiveDeadline = (item: StudentAssignment) =>
     : item.assignment.dueAt;
 
 export default function StudentHomework() {
+  const [searchParams] = useSearchParams();
+  const requestedAssignmentId = Number(searchParams.get("assignment"));
   const { showToast } = useToast();
   const [rows, setRows] = useState<StudentAssignment[]>([]);
   const [selected, setSelected] = useState<StudentAssignment>();
@@ -42,7 +45,14 @@ export default function StudentHomework() {
     setLoading(true);
     setError("");
     try {
-      setRows(await service.getStudentAssignments());
+      const assignments = await service.getStudentAssignments();
+      setRows(assignments);
+      if (
+        Number.isFinite(requestedAssignmentId) &&
+        assignments.some((item) => item.assignment.id === requestedAssignmentId)
+      ) {
+        await open(requestedAssignmentId);
+      }
     } catch (e) {
       setError(service.assignmentError(e));
     } finally {

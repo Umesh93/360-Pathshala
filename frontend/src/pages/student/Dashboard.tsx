@@ -18,6 +18,8 @@ import { getStudentDashboard } from "../../services/dashboardService";
 import type { StudentDashboardResponse } from "../../types/dashboard";
 import { getStudentSchedule } from "../../modules/timetables/service";
 import type { ScheduleResponse } from "../../modules/timetables/types";
+import { getStudentAssignments } from "../../modules/assignments/service";
+import type { StudentAssignment } from "../../modules/assignments/types";
 
 const formatDate = (value: string | null) =>
   value
@@ -32,6 +34,8 @@ const StudentDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleResponse>();
   const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [studentAssignments, setStudentAssignments] = useState<StudentAssignment[]>();
+  const [assignmentsLoading, setAssignmentsLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -39,6 +43,17 @@ const StudentDashboard = () => {
       .then(async (response) => {
         if (!active) return;
         setData(response);
+        if (response.modules.includes("ASSIGNMENT")) {
+          setAssignmentsLoading(true);
+          try {
+            const assignments = await getStudentAssignments();
+            if (active) setStudentAssignments(assignments);
+          } catch {
+            if (active) setStudentAssignments(undefined);
+          } finally {
+            if (active) setAssignmentsLoading(false);
+          }
+        }
         if (response.modules.includes("TIMETABLE")) {
           setScheduleLoading(true);
           try {
@@ -89,6 +104,10 @@ const StudentDashboard = () => {
     .filter(Boolean)
     .join(" · ");
   const result = data.results?.latestResult;
+  const visibleAssignments = studentAssignments ?? [];
+  const pendingAssignments = visibleAssignments.filter((item) =>
+    ["PENDING", "RETURNED"].includes(item.submission?.status ?? "PENDING"),
+  ).length;
   const upcomingClasses = schedule?.todayEntries.length
     ? schedule.todayEntries
     : schedule?.tomorrowEntries || [];
@@ -164,7 +183,7 @@ const StudentDashboard = () => {
               </p>
             </div>
           )}
-          {modules.has("ASSIGNMENT") && data.assignments && (
+          {modules.has("ASSIGNMENT") && (
             <div className="rounded-lg bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-500">
@@ -173,10 +192,10 @@ const StudentDashboard = () => {
                 <FileText className="text-[#234A91]" size={21} />
               </div>
               <p className="mt-3 text-2xl font-bold text-gray-900">
-                {data.assignments.pending}
+                {assignmentsLoading ? "..." : pendingAssignments}
               </p>
               <p className="mt-1 text-sm text-gray-500">
-                of {data.assignments.count} total
+                of {assignmentsLoading ? "..." : visibleAssignments.length} total
               </p>
             </div>
           )}
@@ -251,7 +270,7 @@ const StudentDashboard = () => {
         )}
 
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
-          {modules.has("ASSIGNMENT") && data.assignments && (
+          {modules.has("ASSIGNMENT") && (
             <section className="min-w-0 rounded-lg bg-white p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="font-semibold text-gray-900">
@@ -264,22 +283,28 @@ const StudentDashboard = () => {
                   View all
                 </Link>
               </div>
-              {data.assignments.recent.length ? (
+              {assignmentsLoading ? (
+                <Skeleton className="h-32" />
+              ) : visibleAssignments.length ? (
                 <div className="divide-y divide-gray-100">
-                  {data.assignments.recent.map((assignment) => (
-                    <div key={assignment.id} className="py-3 first:pt-0">
+                  {visibleAssignments.slice(0, 5).map(({ assignment, submission }) => (
+                    <Link
+                      key={assignment.id}
+                      to={`/student/assignments?assignment=${assignment.id}`}
+                      className="block py-3 first:pt-0 hover:bg-gray-50"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <p className="min-w-0 font-medium text-gray-900">
                           {assignment.title}
                         </p>
                         <span className="shrink-0 rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                          {assignment.submissionStatus || assignment.status}
+                          {submission?.status || assignment.status}
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-gray-500">
                         Due {formatDate(assignment.dueAt)}
                       </p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
